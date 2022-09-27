@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.HomeChat.Base" parent="Theme.Material3.DayNight">
+        <item name="colorPrimary">#900081</item>
+        <item name="colorPrimaryVariant">#900081</item>
+        <item name="colorOnPrimary">?colorPrimary</item>
+        <item name="colorSecondary">#FFF</item>
+        <item name="colorSecondaryVariant">#FFF</item>
+        <item name="colorOnSecondary">?colorSecondary</item>
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+    </style>
+
+    <style name="Theme.HomeChat" parent="Theme.HomeChat.Base" />
+</resources>
