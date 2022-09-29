@@ -2,9 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!--<uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />-->
+    <!--<uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />-->
+    <!--<uses-permission android:name="android.permission.VIBRATE" />-->
 
     <application
         android:allowBackup="true"
@@ -18,7 +19,7 @@
         tools:ignore="UnusedAttribute">
 
         <activity
-            android:name=".ActivityMain"
+            android:name=".Main"
             android:exported="true">
 
             <intent-filter>
@@ -27,33 +28,5 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
-        <activity
-            android:name=".ActivityDiscovery"
-            android:configChanges="keyboard|keyboardHidden|orientation" />
-
-        <activity
-            android:name=".ActivityPortscan"
-            android:configChanges="keyboard|keyboardHidden"
-            android:exported="true">
-
-            <intent-filter>
-                <action android:name=".SCAN_HOST" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-        </activity>
-
-        <activity
-            android:name=".Utils.Prefs"
-            android:configChanges="keyboard|keyboardHidden|orientation"
-            android:exported="true">
-
-            <intent-filter>
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.PREFERENCE" />
-            </intent-filter>
-        </activity>
-
-        <activity android:name=".Utils.Help" />
     </application>
 </manifest>

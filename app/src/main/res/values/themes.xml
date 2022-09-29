@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.HomeChat.Base" parent="Theme.Material3.DayNight">
+    <style name="Theme.HomeChat.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#900081</item>
         <item name="colorPrimaryVariant">#900081</item>
         <item name="colorOnPrimary">?colorPrimary</item>

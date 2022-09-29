@@ -1,9 +1,12 @@
 package ir.mahdiparastesh.homechat.data
 
+import android.net.nsd.NsdServiceInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 class Model : ViewModel() {
+    val discoveryResults = arrayListOf<NsdServiceInfo>()
+
 
     @Suppress("UNCHECKED_CAST")
     class Factory : ViewModelProvider.Factory {
