@@ -2,6 +2,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.VIBRATE" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,7 +17,7 @@
         tools:ignore="UnusedAttribute">
 
         <activity
-            android:name=".Main"
+            android:name=".ActivityMain"
             android:exported="true">
 
             <intent-filter>
@@ -23,5 +26,33 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".ActivityDiscovery"
+            android:configChanges="keyboard|keyboardHidden|orientation" />
+
+        <activity
+            android:name=".ActivityPortscan"
+            android:configChanges="keyboard|keyboardHidden"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name=".SCAN_HOST" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name=".Utils.Prefs"
+            android:configChanges="keyboard|keyboardHidden|orientation"
+            android:exported="true">
+
+            <intent-filter>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.PREFERENCE" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name=".Utils.Help" />
     </application>
 </manifest>
