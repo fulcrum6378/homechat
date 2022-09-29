@@ -52,7 +52,5 @@
             android:layout_height="wrap_content"
             android:autoLink="web"
             android:text="@string/help_links_content" />
-
     </LinearLayout>
-
 </ScrollView>

@@ -3,7 +3,6 @@ package ir.mahdiparastesh.homechat.Utils;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
-import android.util.Log;
 
 import ir.mahdiparastesh.homechat.Network.HostBean;
 
@@ -31,8 +30,8 @@ public class Save {
             } else if (host.hostname != null) {
                 name = host.hostname;
             }
-        } catch (SQLiteException | IllegalStateException e) {
-            Log.e(TAG, e.getMessage());
+        } catch (SQLiteException | IllegalStateException | NullPointerException e) {
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         } finally {
             if (c != null) {
                 c.close();
@@ -48,7 +47,7 @@ public class Save {
                 db.execSQL(INSERT, new String[]{name, mac.replace(":", "").toUpperCase()});
             }
         } catch (SQLiteException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         } finally {
             closeDb();
         }
@@ -61,7 +60,7 @@ public class Save {
                 db.execSQL(DELETE, new String[]{mac.replace(":", "").toUpperCase()});
             }
         } catch (SQLiteException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         } finally {
             closeDb();
         }

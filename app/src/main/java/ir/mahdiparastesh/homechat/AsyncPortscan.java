@@ -99,7 +99,7 @@ public class AsyncPortscan extends AsyncTask<Void, Object, Void> {
             }
 
         } catch (UnknownHostException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
             publishProgress(0, UNREACHABLE, null);
         }
         return null;
@@ -153,7 +153,7 @@ public class AsyncPortscan extends AsyncTask<Void, Object, Void> {
                                             key.interestOps(SelectionKey.OP_WRITE);
                                         }
                                     } catch (IOException e) {
-                                        Log.e(TAG, e.getMessage());
+                                        // TODO MAHDI Log.e(TAG, e.getMessage());
                                     }
                                 } else if (key.isWritable()) {
                                     key.interestOps(SelectionKey.OP_READ | SelectionKey.OP_WRITE);
@@ -183,13 +183,13 @@ public class AsyncPortscan extends AsyncTask<Void, Object, Void> {
                                 } else if (Objects.equals(e.getMessage(), E_TIMEOUT)) {
                                     finishKey(key, FILTERED);
                                 } else {
-                                    Log.e(TAG, e.getMessage());
+                                    // TODO MAHDI Log.e(TAG, e.getMessage());
                                     e.printStackTrace();
                                     finishKey(key, FILTERED);
                                 }
                             } catch (Exception e) {
                                 try {
-                                    Log.e(TAG, e.getMessage());
+                                    // TODO MAHDI Log.e(TAG, e.getMessage());
                                 } catch (java.lang.NullPointerException e1) {
                                     e1.printStackTrace();
                                 } finally {
@@ -216,7 +216,7 @@ public class AsyncPortscan extends AsyncTask<Void, Object, Void> {
                 }
             }
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         } finally {
             closeSelector();
         }
@@ -233,7 +233,7 @@ public class AsyncPortscan extends AsyncTask<Void, Object, Void> {
             data.start = System.nanoTime();
             socket.register(selector, SelectionKey.OP_CONNECT, data);
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         }
     }
 
@@ -249,9 +249,9 @@ public class AsyncPortscan extends AsyncTask<Void, Object, Void> {
                 selector.close();
             }
         } catch (IOException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         } catch (ClosedSelectorException e) {
-            if (e.getMessage() != null) Log.e(TAG, e.getMessage());
+            // TODO MAHDI if (e.getMessage() != null) Log.e(TAG, e.getMessage());
         }
     }
 

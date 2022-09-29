@@ -24,7 +24,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
     private final static int[] DPORTS = {139, 445, 22, 80};
     private final static int TIMEOUT_SCAN = 3600; // seconds
     private final static int TIMEOUT_SHUTDOWN = 10; // seconds
-    private final static int THREADS = 10; //FIXME: Test, plz set in options again ?
+    private final static int THREADS = 10; // FIXME: Test, plz set in options again ?
     private int pt_move = 2; // 1=backward 2=forward
     private ExecutorService mPool;
     private boolean doRateControl;
@@ -102,7 +102,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
                         }
                     }
                 } catch (InterruptedException e) {
-                    Log.e(TAG, e.getMessage());
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
                     mPool.shutdownNow();
                     Thread.currentThread().interrupt();
                 } finally {
@@ -136,10 +136,9 @@ public class DefaultDiscovery extends AbstractDiscovery {
 
         if (mDiscover != null) {
             final ActivityDiscovery discover = mDiscover.get();
-            if (discover != null) {
+            if (discover != null)
                 return Integer.parseInt(discover.prefs.getString(Prefs.KEY_TIMEOUT_DISCOVER,
                         Prefs.DEFAULT_TIMEOUT_DISCOVER));
-            }
         }
         return 1;
     }
@@ -169,7 +168,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
                     mRateControl.adaptRate();
                 }
                 // Arp Check #1
-                host.hardwareAddress = HardwareAddress.getHardwareAddress(addr);
+                host.hardwareAddress = HardwareAddress.getHardwareAddress(mDiscover.get(), addr);
                 if (!NetInfo.NOMAC.equals(host.hardwareAddress)) {
                     Log.e(TAG, "found using arp #1 " + addr);
                     publish(host);
@@ -187,7 +186,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
                     return;
                 }
                 // Arp Check #2
-                host.hardwareAddress = HardwareAddress.getHardwareAddress(addr);
+                host.hardwareAddress = HardwareAddress.getHardwareAddress(mDiscover.get(), addr);
                 if (!NetInfo.NOMAC.equals(host.hardwareAddress)) {
                     Log.e(TAG, "found using arp #2 " + addr);
                     publish(host);
@@ -211,7 +210,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
                 }
                 */
                 // Arp Check #3
-                host.hardwareAddress = HardwareAddress.getHardwareAddress(addr);
+                host.hardwareAddress = HardwareAddress.getHardwareAddress(mDiscover.get(), addr);
                 if (!NetInfo.NOMAC.equals(host.hardwareAddress)) {
                     Log.e(TAG, "found using arp #3 " + addr);
                     publish(host);
@@ -221,7 +220,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
 
             } catch (IOException e) {
                 publish(null);
-                Log.e(TAG, e.getMessage());
+                // TODO MAHDI Log.e(TAG, e.getMessage());
             }
         }
     }
@@ -237,17 +236,15 @@ public class DefaultDiscovery extends AbstractDiscovery {
             final ActivityDiscovery discover = mDiscover.get();
             if (discover != null) {
                 // Mac Addr not already detected
-                if (NetInfo.NOMAC.equals(host.hardwareAddress)) {
-                    host.hardwareAddress = HardwareAddress.getHardwareAddress(host.ipAddress);
-                }
+                if (NetInfo.NOMAC.equals(host.hardwareAddress))
+                    host.hardwareAddress = HardwareAddress.getHardwareAddress(mDiscover.get(), host.ipAddress);
 
                 // NIC vendor
                 host.nicVendor = HardwareAddress.getNicVendor(host.hardwareAddress);
 
                 // Is gateway ?
-                if (discover.net.gatewayIp.equals(host.ipAddress)) {
+                if (discover.net.gatewayIp.equals(host.ipAddress))
                     host.deviceType = HostBean.TYPE_GATEWAY;
-                }
 
                 // FQDN
                 // Static
@@ -257,7 +254,7 @@ public class DefaultDiscovery extends AbstractDiscovery {
                             Prefs.DEFAULT_RESOLVE_NAME)) try {
                         host.hostname = (InetAddress.getByName(host.ipAddress)).getCanonicalHostName();
                     } catch (UnknownHostException e) {
-                        Log.e(TAG, e.getMessage());
+                        // TODO MAHDI Log.e(TAG, e.getMessage());
                     }
                     // TODO: NETBIOS
                     //try {

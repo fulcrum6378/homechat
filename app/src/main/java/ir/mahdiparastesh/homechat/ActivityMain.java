@@ -139,7 +139,7 @@ final public class ActivityMain extends Activity {
                     d.setProgressBarIndeterminateVisibility(true);
                     progress = ProgressDialog.show(d, "", d.getString(R.string.task_services));
                 } catch (Exception e) {
-                    Log.e(TAG, e.getMessage());
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
                 }
             }
         }
@@ -166,11 +166,11 @@ final public class ActivityMain extends Activity {
                     data.insert("nic", null, values);
                     data.close();
                 } catch (NullPointerException e) {
-                    Log.e(TAG, e.getMessage());
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
                 } catch (IOException e) {
-                    if (e.getMessage() != null)
-                        Log.e(TAG, e.getMessage());
-                    else Log.e(TAG, "Unknown IOException");
+                    if (e.getMessage() != null) {
+                        // TODO MAHDI Log.e(TAG, e.getMessage());
+                    } else Log.e(TAG, "Unknown IOException");
                     e.printStackTrace();
                 }
             }
@@ -191,7 +191,7 @@ final public class ActivityMain extends Activity {
                             PKG, 0).versionCode);
                     edit.apply();
                 } catch (NameNotFoundException e) {
-                    Log.e(TAG, e.getMessage());
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
                 } finally {
                     d.startDiscoverActivity(d);
                 }

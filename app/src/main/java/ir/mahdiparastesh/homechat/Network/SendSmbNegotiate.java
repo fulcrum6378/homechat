@@ -47,7 +47,7 @@ public class SendSmbNegotiate implements Runnable {
             s.close();
         } catch (IOException e) {
             String TAG = "SendSmbNegociate";
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         }
         // setMessage(host.getHostAddress() + " sent buffer");
     }

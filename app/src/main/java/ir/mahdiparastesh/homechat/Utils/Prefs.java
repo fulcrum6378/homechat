@@ -1,12 +1,9 @@
 package ir.mahdiparastesh.homechat.Utils;
 
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
-import android.content.pm.PackageManager.NameNotFoundException;
-import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
@@ -17,7 +14,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 import android.preference.PreferenceScreen;
 import android.provider.Settings;
-import android.util.Log;
 import android.view.Window;
 import android.widget.Toast;
 
@@ -28,7 +24,6 @@ import java.util.Collections;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import ir.mahdiparastesh.homechat.ActivityMain;
 import ir.mahdiparastesh.homechat.Network.NetInfo;
 import ir.mahdiparastesh.homechat.R;
 
@@ -103,19 +98,6 @@ public class Prefs extends PreferenceActivity implements OnSharedPreferenceChang
     public static final String KEY_CIDR = "cidr";
     public static final String DEFAULT_CIDR = "24";
 
-    public static final String KEY_DONATE = "donate";
-    public static final String KEY_WEBSITE = "website";
-    public static final String KEY_EMAIL = "email";
-    public static final String KEY_VERSION = "version";
-    public static final String KEY_WIFI = "wifi";
-
-    private static final String URL_DONATE =
-            "https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=MDSDWG83PJSNG&lc=CH&item_name=Network%20Discovery%20for%20Android&currency_code=CHF&bn=PP%2dDonationsBF%3abtn_donate_LG%2egif%3aNonHosted";
-    private static final String URL_WEB =
-            "http://rorist.github.com/android-network-discovery/";
-    private static final String URL_EMAIL =
-            "aubort.jeanbaptiste@gmail.com";
-
     private Context ctxt;
     private PreferenceScreen ps = null;
     private String before_ip_start;
@@ -137,7 +119,7 @@ public class Prefs extends PreferenceActivity implements OnSharedPreferenceChang
         checkTimeout();
 
         // Reset Nic DB click listener
-        Preference resetdb = (Preference) ps.findPreference(KEY_RESET_NICDB);
+        Preference resetdb = ps.findPreference(KEY_RESET_NICDB);
         resetdb.setOnPreferenceClickListener(preference -> {
             new UpdateNicDb(Prefs.this);
             return false;
@@ -174,59 +156,17 @@ public class Prefs extends PreferenceActivity implements OnSharedPreferenceChang
             } else {
                 intf.setEnabled(false);
             }
-        } catch (SocketException e) {
+        } catch (SocketException | NullPointerException e) {
             String TAG = "Prefs";
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
             intf.setEnabled(false);
         }
 
         // Wifi settings listener
-        ((Preference) ps.findPreference(KEY_WIFI)).setOnPreferenceClickListener(preference -> {
+        ps.findPreference("wifi").setOnPreferenceClickListener(preference -> {
             startActivity(new Intent(Settings.ACTION_WIFI_SETTINGS));
             return true;
         });
-
-        // Donate click listener
-        ((Preference) ps.findPreference(KEY_DONATE)).setOnPreferenceClickListener(preference -> {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(URL_DONATE));
-            startActivity(i);
-            return true;
-        });
-
-        // Website
-        Preference website = (Preference) ps.findPreference(KEY_WEBSITE);
-        website.setSummary(URL_WEB);
-        website.setOnPreferenceClickListener(preference -> {
-            Intent i = new Intent(Intent.ACTION_VIEW);
-            i.setData(Uri.parse(URL_WEB));
-            startActivity(i);
-            return true;
-        });
-
-        // Contact
-        Preference contact = (Preference) ps.findPreference(KEY_EMAIL);
-        contact.setSummary(URL_EMAIL);
-        contact.setOnPreferenceClickListener(preference -> {
-            final Intent emailIntent = new Intent(Intent.ACTION_SEND);
-            emailIntent.setType("plain/text");
-            emailIntent.putExtra(Intent.EXTRA_EMAIL, new String[]{URL_EMAIL});
-            emailIntent.putExtra(Intent.EXTRA_SUBJECT, "Network Discovery");
-            try {
-                startActivity(emailIntent);
-            } catch (ActivityNotFoundException ignored) {
-            }
-            return true;
-        });
-
-        // Version
-        Preference version = (Preference) ps.findPreference(KEY_VERSION);
-        try {
-            version.setSummary(getPackageManager().getPackageInfo(ActivityMain.PKG, 0).versionName);
-        } catch (NameNotFoundException e) {
-            version.setSummary("0.3.x");
-        }
-
     }
 
     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {

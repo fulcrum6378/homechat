@@ -117,7 +117,6 @@
 
     <string name="preferences_help">Help</string>
     <string name="preferences_export">Export</string>
-    <string name="preferences_credits">Credits</string>
     <string name="preferences_discover">Discovery</string>
     <string name="preferences_portscan">Port Scan</string>
     <string name="preferences_advanced">General</string>
@@ -156,9 +155,6 @@
     <string name="preferences_resetdb_summary">Pull and update MAC addresses database</string>
     <string name="preferences_resetdb_action">Do you want to download %1$s ? (~%2$sk)</string>
     <string name="preferences_resetdb_ok">Database updated ! %s new entries …</string>
-    <string name="preferences_version_title">Version</string>
-    <string name="preferences_website_title">Website</string>
-    <string name="preferences_email_title">Contact</string>
     <string name="preferences_intf_title">Network interface</string>
     <string name="preferences_intf_summary">Choose which interface to use</string>
     <string name="preferences_discover_method_title">Discover Method</string>

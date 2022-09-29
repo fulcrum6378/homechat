@@ -12,16 +12,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
-import java.util.zip.GZIPInputStream;
 
-import javax.net.ssl.SSLException;
-
-/*import org.apache.hc.client5.http.ClientProtocolException;
-import org.apache.hc.client5.http.classic.HttpClient;
-import org.apache.hc.client5.http.classic.methods.HttpGet;
-import org.apache.hc.client5.http.impl.classic.HttpClientBuilder;
-import org.apache.hc.core5.http.HttpEntity;
-import org.apache.hc.core5.http.HttpResponse;*/
 
 import android.content.Context;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -66,9 +57,9 @@ public class DownloadFile {
                 in.close();
                 if (out != null) out.close();
             } catch (Exception e) {
-                if (e.getMessage() != null)
-                    Log.e(TAG, e.getMessage());
-                else Log.e(TAG, "fastChannelCopy() unknown error");
+                if (e.getMessage() != null) {
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
+                } else Log.e(TAG, "fastChannelCopy() unknown error");
             }
         }
     }
@@ -90,7 +81,7 @@ public class DownloadFile {
         } catch (ClientProtocolException e) {
             Log.e(TAG, "There was a protocol based error", e);
         } catch (UnknownHostException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         } catch (IOException e) {
             Log.e(TAG, "There was an IO Stream related error", e);
         }*/

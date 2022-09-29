@@ -35,7 +35,7 @@ public class Export {
             return true;
         } catch (IOException e) {
             String TAG = "Export";
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
             e.printStackTrace();
         }
         return false;

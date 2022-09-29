@@ -127,7 +127,7 @@ public class UpdateNicDb extends AsyncTask<Void, String, Void> {
                             ActivityMain.PKG, 0).versionCode);
                     edit.apply();
                 } catch (NameNotFoundException e) {
-                    Log.e(TAG, e.getMessage());
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
                 }
             }
         }

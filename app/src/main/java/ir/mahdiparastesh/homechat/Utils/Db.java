@@ -2,6 +2,7 @@ package ir.mahdiparastesh.homechat.Utils;
 
 import ir.mahdiparastesh.homechat.Network.DownloadFile;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.channels.Channels;
@@ -9,6 +10,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.zip.GZIPInputStream;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -19,7 +21,7 @@ public class Db {
     private final static String TAG = "Db";
     private final Context ctxt;
 
-    // Databases information
+    @SuppressLint("SdCardPath")
     public static final String PATH = "/data/data/ir.mahdiparastesh.homechat/files/";
     public static final String DB_SERVICES = "services.db";
     public static final String DB_PROBES = "probes.db";
@@ -28,7 +30,8 @@ public class Db {
 
     public Db(Context ctxt) {
         this.ctxt = ctxt;
-        // new File(PATH).mkdirs();
+        //noinspection ResultOfMethodCallIgnored
+        new File(PATH).mkdirs();
     }
 
     public static SQLiteDatabase openDb(String db_name) {
@@ -39,7 +42,7 @@ public class Db {
         try {
             return SQLiteDatabase.openDatabase(PATH + db_name, null, flags);
         } catch (SQLiteException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         }
         return null;
     }

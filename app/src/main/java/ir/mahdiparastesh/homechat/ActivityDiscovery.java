@@ -333,7 +333,7 @@ final public class ActivityDiscovery extends ActivityNet implements OnItemClickL
             method = Integer.parseInt(prefs.getString(Prefs.KEY_METHOD_DISCOVER,
                     Prefs.DEFAULT_METHOD_DISCOVER));
         } catch (NumberFormatException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
         }
         switch (method) {
             case 1:

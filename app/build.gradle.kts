@@ -13,7 +13,7 @@ android {
         minSdk = 21
         targetSdk = 33
         versionCode = 1
-        versionName = "0.2.0"
+        versionName = "0.2.5"
     }
 
     sourceSets.getByName("main") {
@@ -33,20 +33,10 @@ android {
     }
     kotlinOptions { jvmTarget = "1.8" }
     buildFeatures { viewBinding = true }
-
-    packagingOptions {
-        //resources.excludes.apply {
-        exclude("org/apache/httpcomponents/client5/httpclient5/version.properties")
-        exclude("org/apache/httpcomponents/core5/httpcore5-h2/version.properties")
-        exclude("org/apache/httpcomponents/core5/httpcore5/version.properties")
-        //}
-    }
 }
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.5.1")
     //implementation("androidx.core:core-ktx:1.9.0")
     implementation("com.google.android.material:material:1.6.1")
-    implementation("org.apache.httpcomponents.client5:httpclient5:5.1.3")
-    implementation("org.apache.httpcomponents.core5:httpcore5-h2:5.1.3")
 }

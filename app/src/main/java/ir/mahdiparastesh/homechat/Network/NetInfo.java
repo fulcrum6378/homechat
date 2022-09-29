@@ -12,6 +12,8 @@ import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+import androidx.annotation.Nullable;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
@@ -43,7 +45,7 @@ public class NetInfo {
     private WifiInfo info;
     private final SharedPreferences prefs;
 
-    public String intf = "eth0";
+    public @Nullable String intf = "eth0";
     public String ip = NOIP;
     public int cidr = 24;
 
@@ -66,7 +68,7 @@ public class NetInfo {
         // Runtime.getRuntime().exec("su -C ip link set dev " + intf +
         // " arp on");
         // } catch (Exception e) {
-        // Log.e(TAG, e.getMessage());
+        // // TODO MAHDI Log.e(TAG, e.getMessage());
         // }
         // Runtime.getRuntime().exec("echo 1 > /proc/sys/net/ipv4/conf/" + intf
         // + "/proxy_arp");
@@ -80,7 +82,7 @@ public class NetInfo {
         int ip_end = prefs.getString(Prefs.KEY_IP_END, Prefs.DEFAULT_IP_END).hashCode();
         int cidr_custom = prefs.getBoolean(Prefs.KEY_CIDR_CUSTOM, Prefs.DEFAULT_CIDR_CUSTOM) ? 1 : 0;
         int cidr = prefs.getString(Prefs.KEY_CIDR, Prefs.DEFAULT_CIDR).hashCode();
-        return 42 + intf.hashCode() + ip.hashCode() + cidr + ip_custom + ip_start + ip_end + cidr_custom + cidr;
+        return 42 + (intf != null ? intf.hashCode() : 0) + ip.hashCode() + cidr + ip_custom + ip_start + ip_end + cidr_custom + cidr;
     }
 
     public void getIp() {
@@ -88,8 +90,7 @@ public class NetInfo {
         try {
             if (Objects.equals(intf, Prefs.DEFAULT_INTF) || NOIF.equals(intf)) {
                 // Automatic interface selection
-                for (Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en
-                        .hasMoreElements(); ) {
+                for (@Nullable Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces(); en != null && en.hasMoreElements(); ) {
                     NetworkInterface ni = en.nextElement();
                     intf = ni.getName();
                     ip = getInterfaceFirstIp(ni);
@@ -100,7 +101,7 @@ public class NetInfo {
                 ip = getInterfaceFirstIp(NetworkInterface.getByName(intf));
             }
         } catch (SocketException e) {
-            Log.e(TAG, e.getMessage());
+            // TODO MAHDI Log.e(TAG, e.getMessage());
             //Editor edit = prefs.edit();
             //edit.putString(Prefs.KEY_INTF, Prefs.DEFAULT_INTF);
             //edit.apply();

@@ -371,7 +371,7 @@ final public class ActivityPortscan extends TabActivity {
                         Log.e(TAG, "Market not found !");
                     }
                 }
-                Log.e(TAG, e.getMessage());
+                // TODO MAHDI Log.e(TAG, e.getMessage());
             }
         }
     }
@@ -504,12 +504,12 @@ final public class ActivityPortscan extends TabActivity {
                                 break;
                             }
                         } catch (PatternSyntaxException e) {
-                            // Log.e(TAG, e.getMessage());
+                            // // TODO MAHDI Log.e(TAG, e.getMessage());
                         }
                     } while (c.moveToNext());
                     c.close();
                 } catch (SQLiteException e) {
-                    Log.e(TAG, e.getMessage());
+                    // TODO MAHDI Log.e(TAG, e.getMessage());
                     Editor edit = PreferenceManager.getDefaultSharedPreferences(ctxt).edit();
                     edit.putInt(Prefs.KEY_RESET_SERVICESDB, 1);
                     edit.apply();
