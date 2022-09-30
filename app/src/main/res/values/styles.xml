@@ -6,4 +6,11 @@
         <item name="android:layout_height">match_parent</item>
         <item name="android:layoutDirection">ltr</item>
     </style>
+
+    <style name="parentConstraint">
+        <item name="layout_constraintTop_toTopOf">parent</item>
+        <item name="layout_constraintBottom_toBottomOf">parent</item>
+        <item name="layout_constraintStart_toStartOf">parent</item>
+        <item name="layout_constraintEnd_toEndOf">parent</item>
+    </style>
 </resources>

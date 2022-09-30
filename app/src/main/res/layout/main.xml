@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:tools="http://schemas.android.com/tools"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     style="@style/body"
-    tools:context=".Main" />
+    tools:context=".Main"
+    tools:ignore="MissingConstraints">
+
+    <TextView
+        android:id="@+id/test"
+        style="@style/parentConstraint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:lineSpacingExtra="15sp"
+        android:textSize="18sp" />
+</androidx.constraintlayout.widget.ConstraintLayout>

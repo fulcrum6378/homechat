@@ -1,11 +1,10 @@
 package ir.mahdiparastesh.homechat.data
 
-import android.net.nsd.NsdServiceInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 class Model : ViewModel() {
-    val discoveryResults = arrayListOf<NsdServiceInfo>()
+    val radar = arrayListOf<Device>()
 
 
     @Suppress("UNCHECKED_CAST")
