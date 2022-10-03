@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 class Model : ViewModel() {
-    val radar = arrayListOf<Device>()
+    val radar = mutableSetOf<Device>()
 
 
     @Suppress("UNCHECKED_CAST")

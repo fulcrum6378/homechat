@@ -28,7 +28,7 @@ class Main : BaseActivity() {
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
-                    HANDLE_FOUND, HANDLE_LOST -> updateDevices()
+                    MSG_FOUND, MSG_LOST -> updateDevices()
                 }
             }
         }
@@ -78,17 +78,17 @@ class Main : BaseActivity() {
         }
 
         override fun onServiceFound(srvInfo: NsdServiceInfo) {
-            if (srvInfo.serviceType == SERVICE_TYPE && srvInfo.serviceName.startsWith(SERVICE_NAME))
+            if (srvInfo.serviceType == SERVICE_TYPE && srvInfo.serviceName.startsWith(SERVICE_NAME)) try {
                 nsdManager.resolveService(srvInfo, resolveListener)
-            else Toast.makeText(
-                c,
-                "improper -> ${srvInfo.serviceType} ${srvInfo.serviceName}", Toast.LENGTH_LONG
-            ).show()
+            } catch (e: IllegalArgumentException) {
+                // "listener already in use"
+                Toast.makeText(c, "${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        override fun onServiceLost(srvInfo: NsdServiceInfo) {
+        override fun onServiceLost(srvInfo: NsdServiceInfo) { // don't wrap Device around it!
             m.radar.removeAll { it.service == srvInfo.serviceName }
-            handler?.obtainMessage(HANDLE_LOST)?.sendToTarget()
+            handler?.obtainMessage(MSG_LOST)?.sendToTarget()
         }
 
         override fun onDiscoveryStopped(serviceType: String) {
@@ -104,7 +104,7 @@ class Main : BaseActivity() {
     private val resolveListener = object : NsdManager.ResolveListener { // not UI thread
         override fun onServiceResolved(srvInfo: NsdServiceInfo) {
             m.radar.add(Device(srvInfo, mServiceName))
-            handler?.obtainMessage(HANDLE_FOUND)?.sendToTarget()
+            handler?.obtainMessage(MSG_FOUND)?.sendToTarget()
         }
 
         override fun onResolveFailed(srvInfo: NsdServiceInfo, errorCode: Int) {
@@ -133,8 +133,8 @@ class Main : BaseActivity() {
     companion object {
         const val SERVICE_NAME = "HomeChat"
         const val SERVICE_TYPE = "_homechat._tcp."
-        const val HANDLE_FOUND = 1
-        const val HANDLE_LOST = 2
+        const val MSG_FOUND = 1
+        const val MSG_LOST = 2
         var handler: Handler? = null
     }
 }
