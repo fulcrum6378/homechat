@@ -13,4 +13,22 @@
         <item name="layout_constraintStart_toStartOf">parent</item>
         <item name="layout_constraintEnd_toEndOf">parent</item>
     </style>
+
+
+    <!-- #TextAppearance -->
+    <style name="TextAppearance.HomeChat.Regular" parent="@android:style/TextAppearance">
+        <item name="fontFamily">@font/ubuntu_regular</item>
+    </style>
+
+    <style name="TextAppearance.HomeChat.Bold" parent="@android:style/TextAppearance">
+        <item name="fontFamily">@font/ubuntu_bold</item>
+    </style>
+
+    <style name="TextAppearance.HomeChat.Light" parent="@android:style/TextAppearance">
+        <item name="fontFamily">@font/ubuntu_light</item>
+    </style>
+
+    <style name="TextAppearance.HomeChat.Italic" parent="@android:style/TextAppearance">
+        <item name="fontFamily">@font/ubuntu_light</item>
+    </style>
 </resources>

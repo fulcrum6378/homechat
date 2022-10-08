@@ -7,16 +7,23 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
+import android.provider.Settings
+import android.view.MenuItem
 import android.widget.Toast
+import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.navigation.NavController
+import androidx.navigation.fragment.NavHostFragment
+import com.google.android.material.navigation.NavigationView
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.more.BaseActivity
 import java.net.ServerSocket
 
-class Main : BaseActivity() {
+class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
+    private lateinit var nav: NavController
     private val nsdManager: NsdManager by lazy { getSystemService(Context.NSD_SERVICE) as NsdManager }
-    private var mServiceName = SERVICE_NAME
+    private lateinit var mServiceName: String
     private var mServicePort = 0
     private var registered = false
     private var discovering = false
@@ -28,18 +35,40 @@ class Main : BaseActivity() {
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: Message) {
                 when (msg.what) {
-                    MSG_FOUND, MSG_LOST -> updateDevices()
+                    MSG_FOUND -> (msg.obj as NsdServiceInfo).also { srvInfo ->
+                        val dev = Device(srvInfo, mServiceName)
+                        if (m.radar.value?.contains(dev) == true) return
+                        m.radar.value = m.radar.value?.plus(dev)
+                    }
+                    MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
+                        // don't wrap Device around it!
+                        m.radar.value = m.radar.value?.filter { it.name != srvInfo.serviceName }
+                    }
                 }
             }
         }
 
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
+        mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
         nsdManager.registerService(NsdServiceInfo().apply {
-            serviceName = SERVICE_NAME
+            serviceName = mServiceName
             serviceType = SERVICE_TYPE
             port = mServicePort
+            //setAttribute("location", "802,102")
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
+
+        // Navigation
+        ActionBarDrawerToggle(
+            this, b.root, b.toolbar, R.string.navOpen, R.string.navClose
+        ).apply {
+            b.root.addDrawerListener(this)
+            isDrawerIndicatorEnabled = true
+            syncState()
+        }
+        nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
+        nav.navigate(R.id.page_rad)
+        b.nav.setNavigationItemSelectedListener(this)
     }
 
     private val regListener = object : NsdManager.RegistrationListener {
@@ -78,7 +107,7 @@ class Main : BaseActivity() {
         }
 
         override fun onServiceFound(srvInfo: NsdServiceInfo) {
-            if (srvInfo.serviceType == SERVICE_TYPE && srvInfo.serviceName.startsWith(SERVICE_NAME)) try {
+            if (srvInfo.serviceType == SERVICE_TYPE) try {
                 nsdManager.resolveService(srvInfo, resolveListener)
             } catch (e: IllegalArgumentException) {
                 // "listener already in use"
@@ -86,9 +115,8 @@ class Main : BaseActivity() {
             }
         }
 
-        override fun onServiceLost(srvInfo: NsdServiceInfo) { // don't wrap Device around it!
-            m.radar.removeAll { it.service == srvInfo.serviceName }
-            handler?.obtainMessage(MSG_LOST)?.sendToTarget()
+        override fun onServiceLost(srvInfo: NsdServiceInfo) {
+            handler?.obtainMessage(MSG_LOST, srvInfo)?.sendToTarget()
         }
 
         override fun onDiscoveryStopped(serviceType: String) {
@@ -103,20 +131,12 @@ class Main : BaseActivity() {
 
     private val resolveListener = object : NsdManager.ResolveListener { // not UI thread
         override fun onServiceResolved(srvInfo: NsdServiceInfo) {
-            m.radar.add(Device(srvInfo, mServiceName))
-            handler?.obtainMessage(MSG_FOUND)?.sendToTarget()
+            handler?.obtainMessage(MSG_FOUND, srvInfo)?.sendToTarget()
         }
 
         override fun onResolveFailed(srvInfo: NsdServiceInfo, errorCode: Int) {
             Toast.makeText(c, "onResolveFailed: $errorCode", Toast.LENGTH_LONG).show()
         }
-    }
-
-    private fun updateDevices() {
-        b.test.text = StringBuilder().apply {
-            for (dev: Device in m.radar)
-                append(dev.toString()).append(" (${dev.service})\n")
-        }.toString()
     }
 
     override fun onPause() {
@@ -131,10 +151,15 @@ class Main : BaseActivity() {
     }
 
     companion object {
-        const val SERVICE_NAME = "HomeChat"
         const val SERVICE_TYPE = "_homechat._tcp."
         const val MSG_FOUND = 1
         const val MSG_LOST = 2
         var handler: Handler? = null
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+        }
+        return true
     }
 }

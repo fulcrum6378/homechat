@@ -1,10 +1,11 @@
 package ir.mahdiparastesh.homechat.data
 
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 
 class Model : ViewModel() {
-    val radar = mutableSetOf<Device>()
+    val radar = MutableLiveData(listOf<Device>())
 
 
     @Suppress("UNCHECKED_CAST")

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    app:startDestination="@id/page_rad">
+
+    <fragment
+        android:id="@+id/page_rad"
+        android:name="ir.mahdiparastesh.homechat.page.PageRad"
+        android:label="Radar" />
+
+    <fragment
+        android:id="@+id/page_set"
+        android:name="ir.mahdiparastesh.homechat.page.PageSet"
+        android:label="Settings" />
+</navigation>

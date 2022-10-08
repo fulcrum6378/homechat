@@ -13,7 +13,7 @@ android {
         minSdk = 21
         targetSdk = 33
         versionCode = 1
-        versionName = "0.1.5"
+        versionName = "0.2"
     }
 
     sourceSets.getByName("main") {
@@ -36,7 +36,11 @@ android {
 }
 
 dependencies {
+    val navVersion = "2.5.2"
+
     implementation("androidx.appcompat:appcompat:1.5.1")
     //implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    implementation("androidx.preference:preference-ktx:1.2.0")
     implementation("com.google.android.material:material:1.6.1")
 }

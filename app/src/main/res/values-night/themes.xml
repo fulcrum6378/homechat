@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <style name="Theme.HomeChat" parent="Theme.HomeChat.Base" />
+    <style name="Theme.HomeChat" parent="Theme.HomeChat.Base">
+        <item name="android:textColor">?colorSecondary</item>
+    </style>
 </resources>

@@ -8,8 +8,14 @@
         <item name="colorSecondary">#FFF</item>
         <item name="colorSecondaryVariant">#FFF</item>
         <item name="colorOnSecondary">?colorSecondary</item>
-        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="itemRippleColor">#33900081</item>
+        <item name="android:textAppearance">@style/TextAppearance.HomeChat.Regular</item>
+        <item name="android:textAppearanceSmall">@style/TextAppearance.HomeChat.Regular</item>
+        <item name="android:textAppearanceMedium">@style/TextAppearance.HomeChat.Regular</item>
+        <item name="android:textAppearanceLarge">@style/TextAppearance.HomeChat.Bold</item>
     </style>
 
-    <style name="Theme.HomeChat" parent="Theme.HomeChat.Base" />
+    <style name="Theme.HomeChat" parent="Theme.HomeChat.Base">
+        <item name="android:textColor">?colorPrimary</item>
+    </style>
 </resources>
