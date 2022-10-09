@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="listTitle">18.5sp</dimen>
+
+    <!-- #GLOBAL -->
+    <dimen name="large">22sp</dimen>
+    <dimen name="normal">19sp</dimen>
+    <dimen name="small">15sp</dimen>
+    <dimen name="listTitle">18sp</dimen>
     <dimen name="listSubtitle">15sp</dimen>
     <dimen name="listBtwTitle">4dp</dimen>
     <dimen name="listPadH">22dp</dimen>
     <dimen name="listPadV">14dp</dimen>
-    <dimen name="listAbovePad">20dp</dimen>
-    <dimen name="listBeneathPad">30dp</dimen>
+    <dimen name="pageAbovePad">10dp</dimen>
+    <dimen name="pageBeneathPad">15dp</dimen>
 </resources>

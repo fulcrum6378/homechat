@@ -2,6 +2,10 @@
 <resources>
     <string name="app_name">Home Chat</string>
 
+    <!-- #GLOBAL -->
+    <string name="radar">Radar</string>
+    <string name="settings">Settings</string>
+
     <!-- PageRad -->
     <string name="navOpen">Open</string>
     <string name="navClose">Close</string>

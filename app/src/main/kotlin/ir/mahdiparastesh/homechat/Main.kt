@@ -11,6 +11,7 @@ import android.provider.Settings
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.core.view.forEach
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
@@ -22,6 +23,11 @@ import java.net.ServerSocket
 class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
     private lateinit var nav: NavController
+    private val navMap = mutableMapOf<Int, Int>().apply {
+        this[R.id.navRadar] = R.id.page_rad
+        this[R.id.navSettings] = R.id.page_set
+    }.toMap()
+
     private val nsdManager: NsdManager by lazy { getSystemService(Context.NSD_SERVICE) as NsdManager }
     private lateinit var mServiceName: String
     private var mServicePort = 0
@@ -68,6 +74,9 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         }
         nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
         nav.navigate(R.id.page_rad)
+        nav.addOnDestinationChangedListener { _, dest, _ ->
+            //b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
+        }
         b.nav.setNavigationItemSelectedListener(this)
     }
 
@@ -158,8 +167,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        when (item.itemId) {
-        }
-        return true
+        //item.isChecked = true
+        nav.navigate(navMap[item.itemId]!!); return true
     }
 }
