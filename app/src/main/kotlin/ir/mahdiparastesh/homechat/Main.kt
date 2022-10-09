@@ -1,6 +1,7 @@
 package ir.mahdiparastesh.homechat
 
 import android.content.Context
+import android.content.Intent
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
@@ -11,7 +12,6 @@ import android.provider.Settings
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.core.view.forEach
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
@@ -45,6 +45,8 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
                         val dev = Device(srvInfo, mServiceName)
                         if (m.radar.value?.contains(dev) == true) return
                         m.radar.value = m.radar.value?.plus(dev)
+                            ?.sortedBy { it.name }?.sortedBy { it.isMe }
+                        if (dev.isMe) startService(Intent(c, Antenna::class.java))
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!
@@ -74,9 +76,9 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         }
         nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
         nav.navigate(R.id.page_rad)
-        nav.addOnDestinationChangedListener { _, dest, _ ->
-            //b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
-        }
+        /*nav.addOnDestinationChangedListener { _, dest, _ -> TODO
+            b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
+        }*/
         b.nav.setNavigationItemSelectedListener(this)
     }
 
@@ -118,8 +120,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         override fun onServiceFound(srvInfo: NsdServiceInfo) {
             if (srvInfo.serviceType == SERVICE_TYPE) try {
                 nsdManager.resolveService(srvInfo, resolveListener)
-            } catch (e: IllegalArgumentException) {
-                // "listener already in use"
+            } catch (e: IllegalArgumentException) { // "listener already in use"
                 Toast.makeText(c, "${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -167,7 +168,6 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        //item.isChecked = true
         nav.navigate(navMap[item.itemId]!!); return true
     }
 }

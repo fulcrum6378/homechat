@@ -4,7 +4,6 @@
     <item
         android:id="@+id/navRadar"
         android:title="@string/radar" />
-
     <item
         android:id="@+id/navSettings"
         android:title="@string/settings" />

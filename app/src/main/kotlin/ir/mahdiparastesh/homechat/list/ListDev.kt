@@ -19,5 +19,6 @@ class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevB
         h.b.root.setOnClickListener { }
     }
 
-    override fun getItemCount(): Int = c.m.radar.value?.size ?: 0
+    override fun getItemCount(): Int =
+        c.m.radar.value?.let { if (it.size < 2) 0 else it.size - 1 } ?: 0
 }

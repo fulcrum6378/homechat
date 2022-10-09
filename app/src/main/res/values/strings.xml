@@ -9,4 +9,5 @@
     <!-- PageRad -->
     <string name="navOpen">Open</string>
     <string name="navClose">Close</string>
+    <string name="radarEmpty">No other devices found!</string>
 </resources>
