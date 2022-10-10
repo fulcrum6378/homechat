@@ -22,10 +22,10 @@ import java.net.ServerSocket
 class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
     lateinit var nav: NavController
-    private val navMap = mutableMapOf<Int, Int>().apply {
-        this[R.id.navRadar] = R.id.page_rad
-        this[R.id.navSettings] = R.id.page_set
-    }.toMap()
+    private val navMap = mapOf(
+        R.id.navRadar to R.id.page_rad,
+        R.id.navSettings to R.id.page_set,
+    )
 
     private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String

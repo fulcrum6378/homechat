@@ -5,5 +5,14 @@ import androidx.room.PrimaryKey
 
 @Entity
 class Chat(
-    @PrimaryKey(autoGenerate = true) var id: Long,
-) // a chat can have multiple contacts
+    var contacts: String, // separated by ","
+) {
+    @PrimaryKey(autoGenerate = true)
+    var id = 0L
+}
+
+/*
+* A chat can have multiple contacts.
+* Remember that this is a first-person database;
+* the user will be exempted from all viewing statuses.
+ */

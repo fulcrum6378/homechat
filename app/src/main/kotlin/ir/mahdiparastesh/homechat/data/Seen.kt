@@ -6,20 +6,15 @@ import androidx.room.PrimaryKey
 
 @Entity(
     foreignKeys = [ForeignKey(
-        entity = Chat::class,
+        entity = Message::class,
         parentColumns = arrayOf("id"),
-        childColumns = arrayOf("chat"),
+        childColumns = arrayOf("msg"),
         onDelete = ForeignKey.CASCADE
     )]
 )
-class Message(
-    val chat: Long,
-    val type: Byte,
+class Seen(
+    val msg: Long,
 ) {
     @PrimaryKey(autoGenerate = true)
     var id = 0L
-
-    enum class Type(value: Byte) {
-        TEXT(0),
-    }
 }
