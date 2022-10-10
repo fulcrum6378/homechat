@@ -7,9 +7,7 @@ import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.os.Message
 import android.provider.Settings
-import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -41,14 +39,13 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         setContentView(b.root)
 
         handler = object : Handler(Looper.getMainLooper()) {
-            override fun handleMessage(msg: Message) {
+            override fun handleMessage(msg: android.os.Message) {
                 when (msg.what) {
                     MSG_FOUND -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         val dev = Device(srvInfo, mServiceName)
                         if (m.radar.value?.contains(dev) == true) return
                         m.radar.value = m.radar.value?.plus(dev)
                             ?.sortedBy { it.name }?.sortedBy { it.isMe }
-                        Log.println(Log.ASSERT, "TRIJNTJE", "MSG_FOUND ${dev.isMe}")
                         if (dev.isMe) startService(antennaIntent)
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
@@ -87,16 +84,16 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     }
 
     private val regListener = object : NsdManager.RegistrationListener {
-        override fun onRegistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {}
-        override fun onServiceRegistered(serviceInfo: NsdServiceInfo) {
+        override fun onRegistrationFailed(srvInfo: NsdServiceInfo, errorCode: Int) {}
+        override fun onServiceRegistered(srvInfo: NsdServiceInfo) {
             registered = true
             // Android may have changed the service name in order to resolve a conflict!
-            mServiceName = serviceInfo.serviceName
+            mServiceName = srvInfo.serviceName
             startDiscovery()
         }
 
-        override fun onUnregistrationFailed(serviceInfo: NsdServiceInfo, errorCode: Int) {}
-        override fun onServiceUnregistered(serviceInfo: NsdServiceInfo) {
+        override fun onUnregistrationFailed(srvInfo: NsdServiceInfo, errorCode: Int) {}
+        override fun onServiceUnregistered(srvInfo: NsdServiceInfo) {
             registered = false
         }
     }
@@ -153,6 +150,10 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         }
     }
 
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        nav.navigate(navMap[item.itemId]!!); return true
+    }
+
     override fun onPause() {
         super.onPause()
         if (discovering) nsdManager.stopServiceDiscovery(discoveryListener)
@@ -170,9 +171,5 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         const val MSG_FOUND = 1
         const val MSG_LOST = 2
         var handler: Handler? = null
-    }
-
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        nav.navigate(navMap[item.itemId]!!); return true
     }
 }

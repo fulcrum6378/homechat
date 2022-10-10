@@ -15,7 +15,7 @@
 
     <fragment
         android:id="@+id/page_thd"
-        android:name="ir.mahdiparastesh.homechat.page.PageThd" />
+        android:name="ir.mahdiparastesh.homechat.page.PageCht" />
 
     <fragment
         android:id="@+id/page_set"

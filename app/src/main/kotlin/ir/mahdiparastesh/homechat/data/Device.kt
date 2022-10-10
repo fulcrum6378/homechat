@@ -9,18 +9,18 @@ class Device(srvInfo: NsdServiceInfo, mServiceName: String) {
     val port: Int
     val name: String
     val isMe: Boolean
-    var lat: Double? = null
-    var lng: Double? = null
+    // var lat: Double? = null
+    // var lng: Double? = null
 
     init {
         host = srvInfo.host
         port = srvInfo.port
         name = srvInfo.serviceName
         isMe = srvInfo.serviceName == mServiceName
-        srvInfo.attributes["location"]?.let { String(it) }?.split(",")?.also {
+        /*srvInfo.attributes["location"]?.let { String(it) }?.split(",")?.also {
             lat = it[0].toDouble()
             lng = it[1].toDouble()
-        }
+        }*/
     }
 
     override fun toString(): String = "${host.hostAddress}:$port"
