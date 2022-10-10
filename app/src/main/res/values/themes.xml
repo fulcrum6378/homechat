@@ -15,9 +15,7 @@
         <item name="android:textAppearanceSmall">@style/TextAppearance.HomeChat.Regular</item>
         <item name="android:textAppearanceMedium">@style/TextAppearance.HomeChat.Regular</item>
         <item name="android:textAppearanceLarge">@style/TextAppearance.HomeChat.Bold</item>
-        <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
-        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">true</item>
-        <item name="colorControlNormal">?colorPrimary</item><!--drawerToggle-->
+        <item name="colorControlNormal">?android:textColor</item><!--drawerToggle-->
         <item name="itemRippleColor">#33900081</item>
         <item name="navigationViewStyle">@style/Widget.HomeChat.NavigationView</item>
         <item name="titleTextColor">?android:textColor</item><!--toolbar-->
@@ -25,6 +23,8 @@
 
     <style name="Theme.HomeChat" parent="Theme.HomeChat.Base">
         <item name="android:textColor">?colorPrimary</item>
+        <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
+        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">true</item>
     </style>
 
     <style name="Widget.HomeChat.NavigationView" parent="Widget.Material3.NavigationView">

@@ -1,8 +1,10 @@
 package ir.mahdiparastesh.homechat
 
 import android.app.Service
+import android.content.Context
 import android.content.Intent
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
@@ -10,7 +12,8 @@ import ir.mahdiparastesh.homechat.data.Model
 import java.net.ServerSocket
 
 class Antenna : Service(), ViewModelStoreOwner {
-    private val mViewModelStore = ViewModelStore() // LifecycleService is not a ViewModelStoreOwner
+    private val c: Context get() = applicationContext
+    private val mViewModelStore = ViewModelStore()
     private lateinit var m: Model
     private lateinit var server: ServerSocket
 
@@ -23,6 +26,7 @@ class Antenna : Service(), ViewModelStoreOwner {
         super.onStartCommand(intent, flags, startId)
         if (!::server.isInitialized) {
             server = ServerSocket(intent.getIntExtra("PORT", 0))
+            Log.println(Log.ASSERT, "TRIJNTJE", "Server opened at ${server.localPort}...")
         }
         return START_NOT_STICKY
     }
@@ -30,6 +34,7 @@ class Antenna : Service(), ViewModelStoreOwner {
     override fun onDestroy() {
         super.onDestroy()
         server.close()
+        Log.println(Log.ASSERT, "TRIJNTJE", "Server ${server.localPort} closed!")
     }
 
     override fun onBind(intent: Intent): IBinder? = null

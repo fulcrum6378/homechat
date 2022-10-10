@@ -9,6 +9,7 @@ import android.os.Handler
 import android.os.Looper
 import android.os.Message
 import android.provider.Settings
+import android.util.Log
 import android.view.MenuItem
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -22,17 +23,18 @@ import java.net.ServerSocket
 
 class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
-    private lateinit var nav: NavController
+    lateinit var nav: NavController
     private val navMap = mutableMapOf<Int, Int>().apply {
         this[R.id.navRadar] = R.id.page_rad
         this[R.id.navSettings] = R.id.page_set
     }.toMap()
 
-    private val nsdManager: NsdManager by lazy { getSystemService(Context.NSD_SERVICE) as NsdManager }
+    private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String
     private var mServicePort = 0
     private var registered = false
     private var discovering = false
+    private val antennaIntent: Intent by lazy { Intent(c, Antenna::class.java) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,7 +48,8 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
                         if (m.radar.value?.contains(dev) == true) return
                         m.radar.value = m.radar.value?.plus(dev)
                             ?.sortedBy { it.name }?.sortedBy { it.isMe }
-                        if (dev.isMe) startService(Intent(c, Antenna::class.java))
+                        Log.println(Log.ASSERT, "TRIJNTJE", "MSG_FOUND ${dev.isMe}")
+                        if (dev.isMe) startService(antennaIntent)
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!
@@ -59,6 +62,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
+        nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
             serviceType = SERVICE_TYPE
@@ -157,6 +161,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     override fun onDestroy() {
         super.onDestroy()
         if (registered) nsdManager.unregisterService(regListener)
+        stopService(antennaIntent)
         handler = null
     }
 

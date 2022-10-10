@@ -6,11 +6,18 @@
 
     <fragment
         android:id="@+id/page_rad"
-        android:name="ir.mahdiparastesh.homechat.page.PageRad"
-        android:label="Radar" />
+        android:name="ir.mahdiparastesh.homechat.page.PageRad">
+
+        <action
+            android:id="@+id/action_page_rad_to_page_thd"
+            app:destination="@id/page_thd" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/page_thd"
+        android:name="ir.mahdiparastesh.homechat.page.PageThd" />
 
     <fragment
         android:id="@+id/page_set"
-        android:name="ir.mahdiparastesh.homechat.page.PageSet"
-        android:label="Settings" />
+        android:name="ir.mahdiparastesh.homechat.page.PageSet" />
 </navigation>
