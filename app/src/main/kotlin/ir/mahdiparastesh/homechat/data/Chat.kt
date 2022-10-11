@@ -14,5 +14,5 @@ class Chat(
 /*
 * A chat can have multiple contacts.
 * Remember that this is a first-person database;
-* the user will be exempted from all viewing statuses.
+* the user will be exempted from all viewing statuses. TODO BUT IT'S NOT POSSIBLE
  */

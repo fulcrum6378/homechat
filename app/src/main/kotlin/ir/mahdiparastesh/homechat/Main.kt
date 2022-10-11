@@ -46,12 +46,16 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
                         if (m.radar.value?.contains(dev) == true) return
                         m.radar.value = m.radar.value?.plus(dev)
                             ?.sortedBy { it.name }?.sortedBy { it.isMe }
-                        if (dev.isMe) startService(antennaIntent)
+                        /*if (dev.isMe)*/ startService(antennaIntent)
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!
                         m.radar.value = m.radar.value?.filter { it.name != srvInfo.serviceName }
                     }
+                    3 -> Toast.makeText(
+                        c, msg.obj.toString(),
+                        if (msg.arg1 == 1) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
+                    ).show()
                 }
             }
         }

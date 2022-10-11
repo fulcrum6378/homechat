@@ -4,10 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.databinding.PageChtBinding
 import ir.mahdiparastesh.homechat.more.BasePage
+import java.io.PrintWriter
+import java.net.ConnectException
+import java.net.Socket
 
 class PageCht : BasePage<Main>() {
     private lateinit var b: PageChtBinding
@@ -17,6 +19,18 @@ class PageCht : BasePage<Main>() {
     ): View = PageChtBinding.inflate(inflater, container, false).apply { b = this }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        Toast.makeText(c, arguments?.getString("device").toString(), Toast.LENGTH_LONG).show()
+        val address = arguments?.getString("device")?.split(":")
+        if (address == null) {
+            c.nav.navigateUp(); return; }
+
+        Thread {
+            try {
+                Socket(address[0]/*"0.0.0.0"*/, address[1].toInt()).use {
+                    PrintWriter(it.getOutputStream()).println("KIROM")
+                }
+            } catch (e: ConnectException) {
+                Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
+            }
+        }.start()
     }
 }

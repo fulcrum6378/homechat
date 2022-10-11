@@ -18,8 +18,4 @@ class Message(
 ) {
     @PrimaryKey(autoGenerate = true)
     var id = 0L
-
-    enum class Type(value: Byte) {
-        TEXT(0),
-    }
 }
