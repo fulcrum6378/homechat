@@ -32,7 +32,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var mServicePort = 0
     private var registered = false
     private var discovering = false
-    private val antennaIntent: Intent by lazy { Intent(c, Antenna::class.java) }
+    private lateinit var antennaIntent: Intent
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -45,7 +45,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
                         val dev = Device(srvInfo, mServiceName)
                         if (m.radar.value?.contains(dev) == true) return
                         m.radar.value = m.radar.value?.plus(dev)
-                            ?.sortedBy { it.name }?.sortedBy { it.isMe }
+                            ?.sortedBy { it.name }?.sortedBy { !it.isMe }
                         /*if (dev.isMe)*/ startService(antennaIntent)
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
@@ -53,7 +53,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
                         m.radar.value = m.radar.value?.filter { it.name != srvInfo.serviceName }
                     }
                     3 -> Toast.makeText(
-                        c, msg.obj.toString(),
+                        c, "${msg.obj}",
                         if (msg.arg1 == 1) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
                     ).show()
                 }
@@ -63,6 +63,7 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
+        antennaIntent = Intent(c, Antenna::class.java).putExtra("port", mServicePort)
         nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
@@ -177,3 +178,8 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         var handler: Handler? = null
     }
 }
+
+/* TODO
+* Cannot work with VPN!
+* Fucks up when 2 devices open simultaneously!
+*/

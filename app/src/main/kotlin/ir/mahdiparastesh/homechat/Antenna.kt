@@ -1,22 +1,20 @@
 package ir.mahdiparastesh.homechat
 
 import android.app.Service
-import android.content.Context
 import android.content.Intent
 import android.os.IBinder
-import android.util.Log
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import ir.mahdiparastesh.homechat.data.Model
 import java.io.BufferedReader
-import java.io.IOException
 import java.io.InputStreamReader
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
 
 class Antenna : Service(), ViewModelStoreOwner {
-    private val c: Context get() = applicationContext
+    // private val c: Context get() = applicationContext
     private val mViewModelStore = ViewModelStore()
     private lateinit var m: Model
     private lateinit var server: ServerSocket
@@ -30,28 +28,26 @@ class Antenna : Service(), ViewModelStoreOwner {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         if (!::server.isInitialized) Thread { // one-time socket!!
-            server = ServerSocket(intent.getIntExtra("PORT", 0))
-            Log.println(Log.ASSERT, packageName, "Server opened at ${server.localPort}...")
-            server.accept() // listens until a connection is made (blocks the thread)
-            val input = BufferedReader(InputStreamReader(socket.getInputStream()))
-
-            val sb = StringBuilder()
-            while (input.ready()) try {
-                input.readLine()?.also { sb.appendLine(it) }
-            } catch (e: IOException) {
-                Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
-            }
-            Main.handler?.obtainMessage(3, sb.toString())?.sendToTarget()
+            server = ServerSocket(intent.getIntExtra("port", 0))
+            receive()
         }.start()
         return START_NOT_STICKY
     }
 
+    private fun receive() {
+        try {
+            socket = server.accept() // listens until a connection is made (blocks the thread)
+        } catch (e: SocketException) {
+            Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
+        } // Socket closed
+        BufferedReader(InputStreamReader(socket.getInputStream())).readText()
+            .also { Main.handler?.obtainMessage(3, it)?.sendToTarget() }
+        receive()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
-        if (::server.isInitialized) {
-            server.close()
-            Log.println(Log.ASSERT, packageName, "Server ${server.localPort} closed!")
-        }
+        if (::server.isInitialized) server.close()
     }
 
     override fun onBind(intent: Intent): IBinder? = null

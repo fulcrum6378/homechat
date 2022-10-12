@@ -25,8 +25,10 @@ class PageCht : BasePage<Main>() {
 
         Thread {
             try {
-                Socket(address[0]/*"0.0.0.0"*/, address[1].toInt()).use {
-                    PrintWriter(it.getOutputStream()).println("KIROM")
+                Socket(address[0], address[1].toInt()).use {
+                    val output = PrintWriter(it.getOutputStream())
+                    output.write("KIROM")
+                    output.flush()
                 }
             } catch (e: ConnectException) {
                 Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
