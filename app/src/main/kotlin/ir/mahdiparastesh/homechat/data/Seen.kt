@@ -2,13 +2,15 @@ package ir.mahdiparastesh.homechat.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
-import androidx.room.PrimaryKey
+import androidx.room.Index
 
 @Entity(
+    primaryKeys = ["id", "msg"],
+    indices = [Index("id"), Index("msg")],
     foreignKeys = [ForeignKey(
         entity = Message::class,
-        parentColumns = arrayOf("id"),
-        childColumns = arrayOf("msg"),
+        parentColumns = arrayOf("id", "chat"),
+        childColumns = arrayOf("msg", "chat"),
         onDelete = ForeignKey.CASCADE
     ), ForeignKey(
         entity = Contact::class,
@@ -18,9 +20,10 @@ import androidx.room.PrimaryKey
     )]
 )
 class Seen(
+    val chat: Short,
     val msg: Long,
     val contact: Short,
+    val date: Long,
 ) {
-    @PrimaryKey(autoGenerate = true)
     var id = 0L
 }

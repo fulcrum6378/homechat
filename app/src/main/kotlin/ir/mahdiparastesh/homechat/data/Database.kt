@@ -2,6 +2,7 @@ package ir.mahdiparastesh.homechat.data
 
 import android.content.Context
 import androidx.room.*
+import java.util.*
 
 @androidx.room.Database(
     entities = [
@@ -16,11 +17,14 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Contact")
         suspend fun contacts(): List<Contact>
 
+        @Query("SELECT id FROM Contact")
+        suspend fun contactIds(): List<Short>
+
         @Query("SELECT * FROM Chat")
         suspend fun chats(): List<Chat>
 
 
-        @Insert
+        @Insert // (onConflict = OnConflictStrategy.REPLACE)
         suspend fun addContact(item: Contact)
     }
 
@@ -29,5 +33,7 @@ abstract class Database : RoomDatabase() {
             .databaseBuilder(c, Database::class.java, "main.db")
             //.addMigrations()
             .build()
+
+        fun now() = Calendar.getInstance().timeInMillis
     }
 }

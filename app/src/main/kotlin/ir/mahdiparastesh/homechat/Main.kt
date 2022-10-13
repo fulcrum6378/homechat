@@ -2,6 +2,7 @@ package ir.mahdiparastesh.homechat
 
 import android.content.Context
 import android.content.Intent
+import android.database.sqlite.SQLiteConstraintException
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
@@ -24,6 +25,9 @@ import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.more.Persistent
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.net.ServerSocket
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
@@ -66,10 +70,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         // don't wrap Device around it!
                         m.radar.value = m.radar.value?.filter { it.name != srvInfo.serviceName }
                     }
-                    3 -> Toast.makeText(
-                        c, "${msg.obj}",
-                        if (msg.arg1 == 1) Toast.LENGTH_SHORT else Toast.LENGTH_LONG
-                    ).show()
+                    3 -> Toast.makeText(c, "${msg.obj}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -77,7 +78,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
-        antennaIntent = Intent(c, Antenna::class.java).putExtra(Antenna.EXTRA_PORT, mServicePort)
+        antennaIntent = Intent(c, Radio::class.java).putExtra(Radio.EXTRA_PORT, mServicePort)
         nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
@@ -103,9 +104,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         b.nav.setNavigationItemSelectedListener(this)
 
         // Test
-        /*CoroutineScope(Dispatchers.IO).launch {
-            db.dao().addContact(Contact(5, "Lashi", "192.168.1.0"))
-        }*/
+        CoroutineScope(Dispatchers.IO).launch {
+            try {
+                db.dao().addContact(Contact(5, "Koskesh", "192.168.1.0", Database.now()))
+            } catch (_: SQLiteConstraintException) {
+            }
+        }
     }
 
     override fun setContentView(root: View?) {

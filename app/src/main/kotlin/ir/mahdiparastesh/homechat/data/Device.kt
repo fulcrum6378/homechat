@@ -14,6 +14,9 @@ class Device(srvInfo: NsdServiceInfo, mServiceName: String) {
     // var lat: Double? = null
     // var lng: Double? = null
 
+    @Transient
+    var contact: Contact? = null
+
     init {
         host = srvInfo.host
         port = srvInfo.port
@@ -42,5 +45,10 @@ class Device(srvInfo: NsdServiceInfo, mServiceName: String) {
         var result = host.hashCode()
         result = 31 * result + port
         return result
+    }
+
+    companion object {
+        fun String.makeAddressPair(): Pair<String, Int> =
+            split(":").let { Pair(it[0], it[1].toInt()) }
     }
 }

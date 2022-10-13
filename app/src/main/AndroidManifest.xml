@@ -30,7 +30,7 @@
         </activity>
 
         <service
-            android:name=".Antenna"
+            android:name=".Radio"
             android:stopWithTask="false" />
     </application>
 </manifest>
