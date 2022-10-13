@@ -19,7 +19,7 @@ class PageCht : BasePage<Main>() {
     ): View = PageChtBinding.inflate(inflater, container, false).apply { b = this }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val address = arguments?.getString("device")?.split(":")
+        val address = arguments?.getString(ARG_DEVICE)?.split(":")
         if (address == null) {
             c.nav.navigateUp(); return; }
 
@@ -34,5 +34,9 @@ class PageCht : BasePage<Main>() {
                 Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
             }
         }.start()
+    }
+
+    companion object {
+        const val ARG_DEVICE = "device"
     }
 }

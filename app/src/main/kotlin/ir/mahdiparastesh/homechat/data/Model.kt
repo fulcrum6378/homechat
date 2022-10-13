@@ -6,6 +6,10 @@ import androidx.lifecycle.ViewModelProvider
 
 class Model : ViewModel() {
     val radar = MutableLiveData(listOf<Device>())
+    var aliveMain = false
+    var aliveAntenna = false
+
+    fun anyPersistentAlive() = aliveMain || aliveAntenna
 
 
     @Suppress("UNCHECKED_CAST")

@@ -19,7 +19,7 @@ import androidx.room.PrimaryKey
 )
 class Seen(
     val msg: Long,
-    val contact: Long,
+    val contact: Short,
 ) {
     @PrimaryKey(autoGenerate = true)
     var id = 0L

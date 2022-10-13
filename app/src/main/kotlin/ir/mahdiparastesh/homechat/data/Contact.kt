@@ -5,12 +5,26 @@ import androidx.room.PrimaryKey
 
 @Entity
 class Contact(
+    @PrimaryKey var id: Short, // Room does not support unsigned numbers
     var name: String,
     var lastIp: String,
-    var email: String?,
-    var phone: String?,
-    var lastActivity: Long,
+    var email: String? = null,
+    var phone: String? = null,
+    var lastOnline: Long? = null,
 ) {
-    @PrimaryKey(autoGenerate = true)
-    var id = 0L
+    constructor() : this(0, "", "")
+
+    override fun equals(other: Any?): Boolean = when (other) {
+        is Device -> name == other.name && lastIp == other.host.hostAddress &&
+                email == other.email && phone == other.phone
+        is Contact -> toString() == other.toString()
+        else -> false
+    }
+
+    override fun hashCode(): Int = id.hashCode()
+
+    companion object {
+        const val ATTR_EMAIL = "email"
+        const val ATTR_PHONE = "phone"
+    }
 }

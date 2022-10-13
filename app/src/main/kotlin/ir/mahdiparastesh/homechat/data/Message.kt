@@ -13,7 +13,7 @@ import androidx.room.PrimaryKey
     )]
 )
 class Message(
-    val chat: Long,
+    val chat: Short,
     val type: Byte,
 ) {
     @PrimaryKey(autoGenerate = true)

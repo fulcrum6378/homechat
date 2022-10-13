@@ -7,6 +7,7 @@ import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.databinding.ListDevBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
+import ir.mahdiparastesh.homechat.page.PageCht
 
 class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevBinding>>() {
     override fun onCreateViewHolder(
@@ -19,7 +20,10 @@ class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevB
         h.b.name.text = dev.name
         h.b.address.text = dev.toString() // replace with the recent chat or online status
         h.b.root.setOnClickListener {
-            c.nav.navigate(R.id.action_page_rad_to_page_thd, bundleOf("device" to dev.toString()))
+            c.nav.navigate(
+                R.id.action_page_rad_to_page_thd,
+                bundleOf(PageCht.ARG_DEVICE to dev.toString())
+            )
         }
     }
 

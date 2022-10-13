@@ -9,17 +9,24 @@ import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
 import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
+import ir.mahdiparastesh.homechat.data.Contact
+import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Device
+import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.databinding.MainBinding
-import ir.mahdiparastesh.homechat.more.BaseActivity
+import ir.mahdiparastesh.homechat.more.Persistent
 import java.net.ServerSocket
 
-class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
+class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
     private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
     lateinit var nav: NavController
     private val navMap = mapOf(
@@ -34,8 +41,15 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     private var discovering = false
     private lateinit var antennaIntent: Intent
 
+    override val c: Context get() = applicationContext
+    override lateinit var m: Model
+    override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
+    override val db: Database by dbLazy
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
+        m.aliveMain = true
         setContentView(b.root)
 
         handler = object : Handler(Looper.getMainLooper()) {
@@ -63,13 +77,14 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
-        antennaIntent = Intent(c, Antenna::class.java).putExtra("port", mServicePort)
+        antennaIntent = Intent(c, Antenna::class.java).putExtra(Antenna.EXTRA_PORT, mServicePort)
         nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
             serviceType = SERVICE_TYPE
             port = mServicePort
-            //setAttribute("location", "802,102")
+            setAttribute(Contact.ATTR_EMAIL, null) // TODO
+            setAttribute(Contact.ATTR_PHONE, null) // TODO
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
 
         // Navigation
@@ -86,6 +101,18 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
             b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
         }*/
         b.nav.setNavigationItemSelectedListener(this)
+
+        // Test
+        /*CoroutineScope(Dispatchers.IO).launch {
+            db.dao().addContact(Contact(5, "Lashi", "192.168.1.0"))
+        }*/
+    }
+
+    override fun setContentView(root: View?) {
+        super.setContentView(root)
+        root?.layoutDirection =
+            if (!resources.getBoolean(R.bool.dirRtl)) ViewGroup.LAYOUT_DIRECTION_LTR
+            else ViewGroup.LAYOUT_DIRECTION_RTL
     }
 
     private val regListener = object : NsdManager.RegistrationListener {
@@ -165,10 +192,12 @@ class Main : BaseActivity(), NavigationView.OnNavigationItemSelectedListener {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         if (registered) nsdManager.unregisterService(regListener)
         stopService(antennaIntent)
         handler = null
+        m.aliveMain = false
+        if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
+        super.onDestroy()
     }
 
     companion object {
