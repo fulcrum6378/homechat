@@ -19,7 +19,7 @@ class PageRad : BasePage<Main>() {
     ): View = PageRadBinding.inflate(inflater, container, false).apply { b = this }.root
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        c.m.radar.observe(viewLifecycleOwner) { updateList() }
+        c.m.radar.onInnerChangeListener = { updateList() }
     }
 
     @SuppressLint("NotifyDataSetChanged")

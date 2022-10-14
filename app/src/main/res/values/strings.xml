@@ -5,9 +5,15 @@
     <!-- #GLOBAL -->
     <string name="radar">Radar</string>
     <string name="settings">Settings</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="yes">Yes</string>
+    <string name="no">No</string>
 
     <!-- PageRad -->
     <string name="navOpen">Open</string>
     <string name="navClose">Close</string>
     <string name="radarEmpty">No other devices found!</string>
+    <string name="newContact">New Contact</string>
+    <string name="pair">Pair</string>
 </resources>

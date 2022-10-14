@@ -9,6 +9,7 @@ import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import ir.mahdiparastesh.homechat.data.Contact
 import ir.mahdiparastesh.homechat.data.Database
+import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.more.Persistent
 import kotlinx.coroutines.CoroutineScope
@@ -62,7 +63,8 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
 
         // Identify the Transmitter
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
-        val dev = m.radar.value?.find { it.host.hostAddress == fromIp }!! // TODO if (dev == null)
+        val dev: Device = m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device//?
+        // TODO if (dev == null)
 
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
@@ -77,12 +79,14 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
                 do {
                     chosenId = (0..Short.MAX_VALUE).random().toShort()
                 } while (chosenId in ids)
-                dao.addContact(
-                    Contact(
-                        chosenId, dev.name, fromIp, Database.now(),
-                        dev.email, dev.phone, Database.now()
-                    )
-                )
+                Contact(
+                    chosenId, dev.name, fromIp, Database.now(),
+                    dev.email, dev.phone, Database.now()
+                ).also {
+                    dao.addContact(it)
+                    m.contacts?.add(it)
+                    m.radar.onOuterChange()
+                }
                 output.write(
                     (ByteBuffer.allocate(Short.SIZE_BYTES)
                         .putShort(chosenId).rewind() as ByteBuffer).array()

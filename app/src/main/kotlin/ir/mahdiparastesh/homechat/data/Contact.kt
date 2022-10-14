@@ -6,13 +6,13 @@ import androidx.room.PrimaryKey
 @Entity
 class Contact(
     @PrimaryKey var id: Short, // Room does not support unsigned numbers!
-    var name: String,
+    override var name: String,
     var lastIp: String, // obtaining MAC address is almost impossible in the newer APIs!
     var dateCreated: Long,
     var email: String? = null,
     var phone: String? = null,
     var lastOnline: Long? = null,
-) {
+) : Radar.Item {
     override fun equals(other: Any?): Boolean = when (other) {
         is Device -> name == other.name && (email == other.email || phone == other.phone)
         is Contact -> toString() == other.toString()

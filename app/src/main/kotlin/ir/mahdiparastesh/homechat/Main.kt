@@ -27,7 +27,6 @@ import ir.mahdiparastesh.homechat.more.Persistent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.ServerSocket
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -63,15 +62,15 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 when (msg.what) {
                     MSG_FOUND -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         val dev = Device(srvInfo, mServiceName)
-                        if (m.radar.value?.contains(dev) == true) return
-                        dev.matchContact(m.contacts)
-                        m.radar.value = m.radar.value?.plus(dev)
-                            ?.sortedBy { it.name }?.sortedBy { !it.isMe }
-                        /*if (dev.isMe)*/ startService(antennaIntent)
+                        if (dev.isMe) m.self = dev
+                        else if (!m.radar.contains(dev)) {
+                            dev.matchContact(m.contacts)
+                            m.radar.insert(dev)
+                        }
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!
-                        m.radar.value = m.radar.value?.filter { it.name != srvInfo.serviceName }
+                        m.radar.delete(srvInfo.serviceName)
                     }
                     3 -> Toast.makeText(c, "${msg.obj}", Toast.LENGTH_SHORT).show()
                 }
@@ -82,6 +81,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
         antennaIntent = Intent(c, Radio::class.java).putExtra(Radio.EXTRA_PORT, mServicePort)
+        startService(antennaIntent)
         nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
@@ -91,12 +91,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             setAttribute(Contact.ATTR_PHONE, null) // TODO
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
 
-        // Load the Contacts
-        CoroutineScope(Dispatchers.IO).launch {
-            m.contacts = CopyOnWriteArrayList(dao.contacts())
-            m.chats = CopyOnWriteArrayList(dao.chats())
-            val newRadar = m.radar.value?.onEach { it.matchContact(m.contacts) }
-            withContext(Dispatchers.Main) { m.radar.value = newRadar }
+        // Load the database
+        if (m.contacts == null || m.chats == null) CoroutineScope(Dispatchers.IO).launch {
+            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
+            if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
+            m.radar.onOuterChange()
         }
 
         // Navigation
@@ -210,7 +209,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (registered) nsdManager.unregisterService(regListener)
         stopService(antennaIntent)
         handler = null
-        // m.radar.value = null // it ruins
         m.aliveMain = false
         if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
         super.onDestroy()

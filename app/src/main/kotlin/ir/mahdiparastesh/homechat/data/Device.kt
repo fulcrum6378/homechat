@@ -4,10 +4,10 @@ import android.net.nsd.NsdServiceInfo
 import java.net.InetAddress
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Device(srvInfo: NsdServiceInfo, mServiceName: String) {
+class Device(srvInfo: NsdServiceInfo, mServiceName: String) : Radar.Item {
+    override lateinit var name: String
     val host: InetAddress
     val port: Int
-    val name: String
     val isMe: Boolean
     val email: String?
     val phone: String?
@@ -16,9 +16,9 @@ class Device(srvInfo: NsdServiceInfo, mServiceName: String) {
     var contact: Contact? = null
 
     init {
+        name = srvInfo.serviceName
         host = srvInfo.host
         port = srvInfo.port
-        name = srvInfo.serviceName
         isMe = srvInfo.serviceName == mServiceName
         email = srvInfo.attr(Contact.ATTR_EMAIL)
         phone = srvInfo.attr(Contact.ATTR_PHONE)
