@@ -7,9 +7,13 @@ import android.view.ViewGroup
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.Radio
 import ir.mahdiparastesh.homechat.Transmitter
+import ir.mahdiparastesh.homechat.data.Contact
+import ir.mahdiparastesh.homechat.data.Database
+import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.PageChtBinding
 import ir.mahdiparastesh.homechat.more.BasePage
+import java.nio.ByteBuffer
 
 class PageCht : BasePage<Main>() {
     private lateinit var b: PageChtBinding
@@ -20,11 +24,25 @@ class PageCht : BasePage<Main>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val address = arguments?.getString(ARG_DEVICE)?.makeAddressPair()
-        if (address == null) {
+        val dev = c.m.radar.value?.find { it.host.hostAddress == address?.first }
+        if (address == null || dev == null) {
             c.nav.navigateUp(); return; }
 
-        Transmitter(address, Radio.Header.PAIR) {
-            c.db.dao().contactIds().joinToString(",").encodeToByteArray()
+        if (dev.contact == null) pair(address, dev)
+    }
+
+    private fun pair(address: Pair<String, Int>, dev: Device) {
+        Transmitter(address, Radio.Header.PAIR, Short.SIZE_BYTES, {
+            c.dao.contactIds().joinToString(",").encodeToByteArray()
+        }) { res ->
+            if (res == null) {
+                return@Transmitter; }
+            c.dao.addContact(
+                Contact(
+                    ByteBuffer.wrap(res).short, dev.name, address.first, Database.now(),
+                    dev.email, dev.phone, Database.now()
+                )
+            )
         }
     }
 

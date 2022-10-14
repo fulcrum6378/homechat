@@ -7,6 +7,7 @@ import android.os.IBinder
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
+import ir.mahdiparastesh.homechat.data.Contact
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.more.Persistent
@@ -17,6 +18,8 @@ import java.io.IOException
 import java.io.InputStream
 import java.net.ServerSocket
 import java.net.Socket
+import java.net.SocketException
+import java.nio.ByteBuffer
 import java.util.*
 import kotlin.math.min
 
@@ -30,10 +33,7 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
     override lateinit var m: Model
     override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
     override val db: Database by dbLazy
-
-    companion object {
-        const val EXTRA_PORT = "port"
-    }
+    override val dao: Database.DAO by lazy { db.dao() }
 
     override fun onCreate() {
         super.onCreate()
@@ -51,30 +51,46 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
     }
 
     private suspend fun receive() {
-        if (server.isClosed) return
-        //try {
-        socket = server.accept() // listens until a connection is made (blocks the thread)
-        /*} catch (e: SocketException) {
-            Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
-        }*/ // Socket closed
-        val output = socket.getInputStream()
-        val hb = output.read().toByte() // never put "output.read()" in a repeated function!!
-        val header = Header.values().find { it.value == hb }
-        var len: Int? = null
-        if (header != null) {
-            len = output.readNBytesCompat(header.indicateLenInNBytes).toInt()
+        try {
+            socket = server.accept() // listens until a connection is made (blocks the thread)
+        } catch (e: SocketException) {
+            if (e.message == "Socket closed") return // this catch is always necessary!
+            else Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
         }
+        val input = socket.getInputStream()
+        val output = socket.getOutputStream() // don't use PrintWriter even with autoFlush
+
+        // Identify the Transmitter
+        val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
+        val dev = m.radar.value?.find { it.host.hostAddress == fromIp }!! // TODO if (dev == null)
+
+        // Act based on the Header
+        val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
+        val header = Header.values().find { it.value == hb }
+        val len: Int? = header?.get(input.readNBytesCompat(header.indicateLenInNBytes))
         when (header) {
             Header.PAIR -> {
-                val ids = String(output.readNBytesCompat(len!!)).split(",")
+                val ids = String(input.readNBytesCompat(len!!)).split(",")
                     .map { it.toShort() }.toMutableSet()
-                db.dao().contactIds().forEach { ids.add(it) }
-                Main.handler?.obtainMessage(
-                    3, socket.remoteSocketAddress?.toString() + ": " + ids.joinToString(",")
-                )?.sendToTarget()
+                var chosenId: Short
+                dao.contactIds().forEach { ids.add(it) }
+                do {
+                    chosenId = (0..Short.MAX_VALUE).random().toShort()
+                } while (chosenId in ids)
+                dao.addContact(
+                    Contact(
+                        chosenId, dev.name, fromIp, Database.now(),
+                        dev.email, dev.phone, Database.now()
+                    )
+                )
+                output.write(
+                    (ByteBuffer.allocate(Short.SIZE_BYTES)
+                        .putShort(chosenId).rewind() as ByteBuffer).array()
+                )
+                output.flush()
             }
             Header.TEXT -> {
-                val msg = output.readNBytesCompat(len!!)
+                val msg = input.readNBytesCompat(len!!)
                 Main.handler?.obtainMessage(3, String(msg))?.sendToTarget()
             }
             Header.FILE -> {
@@ -82,6 +98,7 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
             else -> {
             }
         }
+        socket.close() // necessary for the output stream to send
         receive()
     }
 
@@ -95,66 +112,85 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
     override fun onBind(intent: Intent): IBinder? = null
     override fun getViewModelStore(): ViewModelStore = mViewModelStore
 
-    @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-    @Throws(IOException::class)
-    fun InputStream.readNBytesCompat(len: Int): ByteArray {
-        require(len >= 0) { "len < 0" }
-        var bufs: MutableList<ByteArray>? = null
-        var result: ByteArray? = null
-        var total = 0
-        var remaining = len
-        var n: Int
-        do {
-            val buf = ByteArray(min(remaining, DEFAULT_BUFFER_SIZE))
-            var nread = 0
-            while (read(buf, nread, min(buf.size - nread, remaining)).also { n = it } > 0) {
-                nread += n
-                remaining -= n
-            }
-            if (nread > 0) {
-                if ((Int.MAX_VALUE - 8) - total < nread)
-                    throw OutOfMemoryError("Required array size too large")
-                total += nread
-                if (result == null) result = buf
-                else {
-                    if (bufs == null) {
-                        bufs = ArrayList()
-                        bufs.add(result)
-                    }
-                    bufs.add(buf)
-                }
-            }
-        } while (n >= 0 && remaining > 0)
-        if (bufs == null) {
-            if (result == null) return ByteArray(0)
-            return if (result.size == total) result else Arrays.copyOf(result, total)
-        }
-        result = ByteArray(total)
-        var offset = 0
-        remaining = total
-        for (b in bufs) {
-            val count = min(b.size, remaining)
-            System.arraycopy(b, 0, result, offset, count)
-            offset += count
-            remaining -= count
-        }
-        return result
-    }
+    companion object {
+        const val EXTRA_PORT = "port"
 
-    private fun ByteArray.toInt(): Int {
-        var result = 0
-        var shift = 0
-        for (byte in this) {
-            result = result or (byte.toInt() shl shift)
-            shift += 8
+        @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
+        @Throws(IOException::class)
+        fun InputStream.readNBytesCompat(len: Int): ByteArray {
+            require(len >= 0) { "len < 0" }
+            var bufs: MutableList<ByteArray>? = null
+            var result: ByteArray? = null
+            var total = 0
+            var remaining = len
+            var n: Int
+            do {
+                val buf = ByteArray(min(remaining, DEFAULT_BUFFER_SIZE))
+                var nread = 0
+                while (read(buf, nread, min(buf.size - nread, remaining)).also { n = it } > 0) {
+                    nread += n
+                    remaining -= n
+                }
+                if (nread > 0) {
+                    if ((Int.MAX_VALUE - 8) - total < nread)
+                        throw OutOfMemoryError("Required array size too large")
+                    total += nread
+                    if (result == null) result = buf
+                    else {
+                        if (bufs == null) {
+                            bufs = ArrayList()
+                            bufs.add(result)
+                        }
+                        bufs.add(buf)
+                    }
+                }
+            } while (n >= 0 && remaining > 0)
+            if (bufs == null) {
+                if (result == null) return ByteArray(0)
+                return if (result.size == total) result else Arrays.copyOf(result, total)
+            }
+            result = ByteArray(total)
+            var offset = 0
+            remaining = total
+            for (b in bufs) {
+                val count = min(b.size, remaining)
+                System.arraycopy(b, 0, result, offset, count)
+                offset += count
+                remaining -= count
+            }
+            return result
         }
-        return result
     }
 
     enum class Header(val value: Byte, val indicateLenInNBytes: Int) {
-        PAIR(0x00, 1),
-        TEXT(0x0A, 1),
-        FILE(0x0B, 3),
-        COOR(0x0C, 1),
+        PAIR(0x00, Byte.SIZE_BYTES),
+        TEXT(0x0A, Byte.SIZE_BYTES),
+        FILE(0x0B, Int.SIZE_BYTES),
+        COOR(0x0C, Byte.SIZE_BYTES);
+
+        fun get(ba: ByteArray): Int {
+            if (ba.size == Byte.SIZE_BYTES) return ba[0].toInt()
+            val bb = ByteBuffer.wrap(ba)
+            bb.rewind()
+            return when (ba.size) {
+                Short.SIZE_BYTES -> bb.short.toInt()
+                Int.SIZE_BYTES -> bb.int
+                Long.SIZE_BYTES -> bb.long.toInt()
+                else -> 0
+            }
+        }
+
+        fun put(size: Int): ByteArray {
+            if (indicateLenInNBytes == 1) return byteArrayOf(size.toByte())
+            val bb = ByteBuffer.allocate(indicateLenInNBytes)
+            bb.putInt(size)
+            when (indicateLenInNBytes) {
+                Short.SIZE_BYTES -> bb.putShort(size.toShort())
+                Int.SIZE_BYTES -> bb.putInt(size)
+                Long.SIZE_BYTES -> bb.putLong(size.toLong())
+            }
+            bb.rewind()
+            return bb.array()
+        }
     }
 }

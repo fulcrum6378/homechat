@@ -18,7 +18,7 @@ class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevB
     override fun onBindViewHolder(h: AnyViewHolder<ListDevBinding>, i: Int) {
         val dev = c.m.radar.value!!.getOrNull(i) ?: return
         h.b.name.text = dev.name
-        h.b.address.text = dev.toString() // replace with the recent chat or online status
+        h.b.address.text = dev.contact?.id?.toString() ?: "-"
         h.b.root.setOnClickListener {
             c.nav.navigate(
                 R.id.action_page_rad_to_page_thd,
@@ -29,4 +29,5 @@ class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevB
 
     override fun getItemCount(): Int =
         c.m.radar.value?.size ?: 0 //?.let { if (it.size < 2) 0 else it.size - 1 } ?: 0
+        // FIXME this sucks when self is absent!
 }

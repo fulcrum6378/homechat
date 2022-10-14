@@ -9,4 +9,5 @@ interface Persistent {
     var m: Model
     val dbLazy: Lazy<Database>
     val db: Database
+    val dao: Database.DAO
 }

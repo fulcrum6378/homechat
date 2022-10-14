@@ -2,7 +2,6 @@ package ir.mahdiparastesh.homechat
 
 import android.content.Context
 import android.content.Intent
-import android.database.sqlite.SQLiteConstraintException
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
@@ -28,7 +27,9 @@ import ir.mahdiparastesh.homechat.more.Persistent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.ServerSocket
+import java.util.concurrent.CopyOnWriteArrayList
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
     private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
@@ -49,6 +50,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override lateinit var m: Model
     override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
     override val db: Database by dbLazy
+    override val dao: Database.DAO by lazy { db.dao() }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,6 +64,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                     MSG_FOUND -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         val dev = Device(srvInfo, mServiceName)
                         if (m.radar.value?.contains(dev) == true) return
+                        dev.matchContact(m.contacts)
                         m.radar.value = m.radar.value?.plus(dev)
                             ?.sortedBy { it.name }?.sortedBy { !it.isMe }
                         /*if (dev.isMe)*/ startService(antennaIntent)
@@ -88,6 +91,14 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             setAttribute(Contact.ATTR_PHONE, null) // TODO
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
 
+        // Load the Contacts
+        CoroutineScope(Dispatchers.IO).launch {
+            m.contacts = CopyOnWriteArrayList(dao.contacts())
+            m.chats = CopyOnWriteArrayList(dao.chats())
+            val newRadar = m.radar.value?.onEach { it.matchContact(m.contacts) }
+            withContext(Dispatchers.Main) { m.radar.value = newRadar }
+        }
+
         // Navigation
         ActionBarDrawerToggle(
             this, b.root, b.toolbar, R.string.navOpen, R.string.navClose
@@ -104,12 +115,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         b.nav.setNavigationItemSelectedListener(this)
 
         // Test
-        CoroutineScope(Dispatchers.IO).launch {
+        /*CoroutineScope(Dispatchers.IO).launch {
             try {
-                db.dao().addContact(Contact(5, "Koskesh", "192.168.1.0", Database.now()))
+                dao.addContact(Contact(5, "Koskesh", "192.168.1.0", Database.now()))
             } catch (_: SQLiteConstraintException) {
             }
-        }
+        }*/
     }
 
     override fun setContentView(root: View?) {
@@ -199,6 +210,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (registered) nsdManager.unregisterService(regListener)
         stopService(antennaIntent)
         handler = null
+        // m.radar.value = null // it ruins
         m.aliveMain = false
         if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
         super.onDestroy()
@@ -215,4 +227,5 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 /* TODO
 * Cannot work with VPN!
 * Fucks up when 2 devices open simultaneously!
+* Radar complications on a configuration change!
 */

@@ -5,17 +5,16 @@ import androidx.room.PrimaryKey
 
 @Entity
 class Contact(
-    @PrimaryKey var id: Short, // Room does not support unsigned numbers
+    @PrimaryKey var id: Short, // Room does not support unsigned numbers!
     var name: String,
-    var lastIp: String,
+    var lastIp: String, // obtaining MAC address is almost impossible in the newer APIs!
     var dateCreated: Long,
     var email: String? = null,
     var phone: String? = null,
     var lastOnline: Long? = null,
 ) {
     override fun equals(other: Any?): Boolean = when (other) {
-        is Device -> name == other.name && lastIp == other.host.hostAddress &&
-                email == other.email && phone == other.phone
+        is Device -> name == other.name && (email == other.email || phone == other.phone)
         is Contact -> toString() == other.toString()
         else -> false
     }
