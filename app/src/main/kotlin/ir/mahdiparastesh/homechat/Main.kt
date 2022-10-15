@@ -57,6 +57,22 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         m.aliveMain = true
         setContentView(b.root)
 
+        // Navigation
+        ActionBarDrawerToggle(
+            this, b.root, b.toolbar, R.string.navOpen, R.string.navClose
+        ).apply {
+            b.root.addDrawerListener(this)
+            isDrawerIndicatorEnabled = true
+            syncState()
+        }
+        nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
+        nav.navigate(R.id.page_rad)
+        /*nav.addOnDestinationChangedListener { _, dest, _ -> TODO
+            b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
+        }*/
+        b.nav.setNavigationItemSelectedListener(this)
+
+        // Handler
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
                 when (msg.what) {
@@ -86,36 +102,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             setAttribute(Contact.ATTR_EMAIL, null) // TODO
             setAttribute(Contact.ATTR_PHONE, null) // TODO
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
-
-        // Load the database
-        if (m.contacts == null || m.chats == null) CoroutineScope(Dispatchers.IO).launch {
-            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
-            if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
-            m.radar.update()
-        }
-
-        // Navigation
-        ActionBarDrawerToggle(
-            this, b.root, b.toolbar, R.string.navOpen, R.string.navClose
-        ).apply {
-            b.root.addDrawerListener(this)
-            isDrawerIndicatorEnabled = true
-            syncState()
-        }
-        nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
-        nav.navigate(R.id.page_rad)
-        /*nav.addOnDestinationChangedListener { _, dest, _ -> TODO
-            b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
-        }*/
-        b.nav.setNavigationItemSelectedListener(this)
-
-        // Test
-        /*CoroutineScope(Dispatchers.IO).launch {
-            try {
-                dao.addContact(Contact(5, "Koskesh", "192.168.1.0", Database.now()))
-            } catch (_: SQLiteConstraintException) {
-            }
-        }*/
     }
 
     override fun setContentView(root: View?) {
@@ -143,6 +129,13 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override fun onResume() {
         super.onResume()
         startDiscovery()
+
+        // Load the database
+        if (m.contacts == null || m.chats == null) CoroutineScope(Dispatchers.IO).launch {
+            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
+            if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
+            m.radar.update()
+        } else m.radar.update()
     }
 
     private fun startDiscovery() {
@@ -221,5 +214,4 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 /* TODO
 * Cannot work with VPN!
 * Fucks up when 2 devices open simultaneously!
-* Radar complications on a configuration change!
 */

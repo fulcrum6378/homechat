@@ -26,7 +26,7 @@ class Device(srvInfo: NsdServiceInfo, mServiceName: String) : Radar.Item {
     override fun toString(): String = "${host.hostAddress}:$port"
 
     override fun equals(other: Any?): Boolean = when (other) {
-        is Device -> toString() == other.toString()
+        is Device -> host.hostAddress == other.host.hostAddress
         is Contact -> name == other.name && (email == other.email || phone == other.phone)
         else -> false
     }

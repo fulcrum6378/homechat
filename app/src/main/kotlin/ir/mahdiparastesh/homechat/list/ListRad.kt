@@ -17,7 +17,7 @@ import ir.mahdiparastesh.homechat.more.AnyViewHolder
 import ir.mahdiparastesh.homechat.page.PageCht
 import java.nio.ByteBuffer
 
-class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevBinding>>() {
+class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevBinding>>() {
     override fun onCreateViewHolder(
         parent: ViewGroup, viewType: Int
     ): AnyViewHolder<ListDevBinding> =

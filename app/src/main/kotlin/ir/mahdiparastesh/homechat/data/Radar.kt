@@ -11,7 +11,6 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
         item.matchContact(m.contacts)
         devices.add(item)
         update()
-        onInnerChangeListener()
     }
 
     fun delete(itemName: String) {
@@ -19,10 +18,9 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
         // NEVER CAST "removeAll {}" on a CopyOnWriteArrayList/Set!!
         // removeAll {} -> filterInPlace() -> iterator() -> CopyOnWriteArrayList$COWIterator::remove()
         update()
-        onInnerChangeListener()
     }
 
-    var onInnerChangeListener: () -> Unit = {}
+    var onDataChangedListener: () -> Unit = {}
 
     //@Suppress("UNCHECKED_CAST")
     fun update() {
@@ -40,6 +38,7 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
             if (friends != null) d.filter { it.contact == null || it.contact!!.id !in friends } else d
         })
         sortBy { it is Chat }
+        onDataChangedListener()
     }
 
     interface Item
