@@ -18,7 +18,7 @@ class Message(
     val data: String,
     val chat: Short,
     val type: Byte,
-    val date: Long,
+    val date: Long = Database.now(),
     val hide: Boolean = false,
 ) {
     var id = 0L

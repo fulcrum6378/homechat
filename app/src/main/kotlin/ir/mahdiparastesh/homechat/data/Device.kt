@@ -5,24 +5,15 @@ import java.net.InetAddress
 
 @Suppress("MemberVisibilityCanBePrivate")
 class Device(srvInfo: NsdServiceInfo, mServiceName: String) : Radar.Item {
-    override lateinit var name: String
-    val host: InetAddress
-    val port: Int
-    val isMe: Boolean
-    val email: String?
-    val phone: String?
+    val name: String = srvInfo.serviceName
+    val host: InetAddress = srvInfo.host
+    val port: Int = srvInfo.port
+    val isMe: Boolean = srvInfo.serviceName == mServiceName
+    val email: String? = srvInfo.attr(Contact.ATTR_EMAIL)
+    val phone: String? = srvInfo.attr(Contact.ATTR_PHONE)
 
     @Transient
     var contact: Contact? = null
-
-    init {
-        name = srvInfo.serviceName
-        host = srvInfo.host
-        port = srvInfo.port
-        isMe = srvInfo.serviceName == mServiceName
-        email = srvInfo.attr(Contact.ATTR_EMAIL)
-        phone = srvInfo.attr(Contact.ATTR_PHONE)
-    }
 
     fun NsdServiceInfo.attr(key: String): String? = attributes[key]?.let { String(it) }
 

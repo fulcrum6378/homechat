@@ -14,7 +14,7 @@ android {
         minSdk = 21
         targetSdk = 33
         versionCode = 1
-        versionName = "0.6.5"
+        versionName = "0.7.0"
     }
 
     sourceSets.getByName("main") {
@@ -44,7 +44,7 @@ dependencies {
     implementation("androidx.navigation:navigation-fragment-ktx:2.5.2")
     implementation("androidx.preference:preference-ktx:1.2.0")
     kapt("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion") // necessary for "suspend"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("com.google.android.material:material:1.6.1")
 }

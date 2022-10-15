@@ -8,8 +8,8 @@ import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Radio
 import ir.mahdiparastesh.homechat.Transmitter
+import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Contact
-import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.ListDevBinding
@@ -24,18 +24,24 @@ class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevB
         AnyViewHolder(ListDevBinding.inflate(c.layoutInflater, parent, false))
 
     override fun onBindViewHolder(h: AnyViewHolder<ListDevBinding>, i: Int) {
-        val dev = c.m.radar.getOrNull(i) ?: return
-        h.b.name.text = dev.name
-        h.b.address.text = dev.contact?.id?.toString() ?: "-"
-        h.b.root.setOnClickListener {
-            if (dev.contact == null) MaterialAlertDialogBuilder(c).apply {
+        val item = c.m.radar.getOrNull(i) ?: return
+        val chat = if (item is Chat) item else null
+        val dev = if (item is Device) item else null
+        h.b.title.text = "${i + 1}. " +
+                (dev?.name ?: chat!!.name ?: chat!!.contacts?.firstOrNull()?.name.toString())
+        h.b.subtitle.text = dev?.toString() ?: chat?.dateInit?.toString()
+
+        if (chat != null) h.b.root.setOnClickListener {
+            c.nav.navigate(
+                R.id.action_page_rad_to_page_thd,
+                bundleOf(PageCht.ARG_CHAT_ID to chat.id.toString())
+            )
+        } else if (dev != null) h.b.root.setOnClickListener {
+            MaterialAlertDialogBuilder(c).apply {
                 setTitle(R.string.newContact)
                 setPositiveButton(R.string.pair) { _, _ -> dev.pair() }
                 setNegativeButton(R.string.cancel, null)
-            } else c.nav.navigate(
-                R.id.action_page_rad_to_page_thd,
-                bundleOf(PageCht.ARG_DEVICE to dev.toString())
-            )
+            }.show()
         }
     }
 
@@ -46,14 +52,7 @@ class ListDev(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListDevB
         }) { res ->
             if (res == null) {
                 return@Transmitter; }
-            Contact(
-                ByteBuffer.wrap(res).short, name, address.first, Database.now(),
-                email, phone, Database.now()
-            ).also {
-                c.dao.addContact(it)
-                c.m.contacts?.add(it)
-                c.m.radar.onOuterChange()
-            }
+            Contact.postPairing(c, ByteBuffer.wrap(res).short, this)
         }
     }
 

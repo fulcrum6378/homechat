@@ -6,14 +6,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 class Model : ViewModel() {
     val radar = Radar(this)
-    var self: Device? = null
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
     var aliveMain = false
     var aliveAntenna = false
 
     fun anyPersistentAlive() = aliveMain || aliveAntenna
-
 
     @Suppress("UNCHECKED_CAST")
     class Factory : ViewModelProvider.Factory {

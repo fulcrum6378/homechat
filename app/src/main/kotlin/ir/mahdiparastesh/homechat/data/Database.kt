@@ -26,6 +26,9 @@ abstract class Database : RoomDatabase() {
 
         @Insert // (onConflict = OnConflictStrategy.REPLACE)
         suspend fun addContact(item: Contact)
+
+        @Insert
+        suspend fun addChat(item: Chat)
     }
 
     companion object {

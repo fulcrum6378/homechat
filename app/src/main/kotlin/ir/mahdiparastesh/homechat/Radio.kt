@@ -63,7 +63,8 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
 
         // Identify the Transmitter
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
-        val dev: Device = m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device//?
+        val dev: Device =
+            m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device//?
         // TODO if (dev == null)
 
         // Act based on the Header
@@ -72,21 +73,15 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
         val len: Int? = header?.get(input.readNBytesCompat(header.indicateLenInNBytes))
         when (header) {
             Header.PAIR -> {
-                val ids = String(input.readNBytesCompat(len!!)).split(",")
-                    .map { it.toShort() }.toMutableSet()
+                val seq = String(input.readNBytesCompat(len!!))
+                val ids = if (seq.isNotEmpty()) seq.split(",").map { it.toShort() }
+                    .toMutableSet() else mutableSetOf()
                 var chosenId: Short
                 dao.contactIds().forEach { ids.add(it) }
                 do {
                     chosenId = (0..Short.MAX_VALUE).random().toShort()
                 } while (chosenId in ids)
-                Contact(
-                    chosenId, dev.name, fromIp, Database.now(),
-                    dev.email, dev.phone, Database.now()
-                ).also {
-                    dao.addContact(it)
-                    m.contacts?.add(it)
-                    m.radar.onOuterChange()
-                }
+                Contact.postPairing(this, chosenId, dev)
                 output.write(
                     (ByteBuffer.allocate(Short.SIZE_BYTES)
                         .putShort(chosenId).rewind() as ByteBuffer).array()

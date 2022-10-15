@@ -60,13 +60,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
                 when (msg.what) {
-                    MSG_FOUND -> (msg.obj as NsdServiceInfo).also { srvInfo ->
-                        val dev = Device(srvInfo, mServiceName)
-                        if (dev.isMe) m.self = dev
-                        else if (!m.radar.contains(dev)) {
-                            dev.matchContact(m.contacts)
-                            m.radar.insert(dev)
-                        }
+                    MSG_FOUND -> Device(msg.obj as NsdServiceInfo, mServiceName).apply {
+                        if (isMe) m.radar.self = this
+                        else m.radar.insert(this)
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!
@@ -95,7 +91,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (m.contacts == null || m.chats == null) CoroutineScope(Dispatchers.IO).launch {
             if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
             if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
-            m.radar.onOuterChange()
+            m.radar.update()
         }
 
         // Navigation
