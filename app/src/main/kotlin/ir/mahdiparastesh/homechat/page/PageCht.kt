@@ -7,7 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.databinding.PageChtBinding
-import ir.mahdiparastesh.homechat.list.ListRad
+import ir.mahdiparastesh.homechat.list.ListMsg
 import ir.mahdiparastesh.homechat.more.BasePage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -32,7 +32,7 @@ class PageCht : BasePage<Main>() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList() {
-        if (b.list.adapter == null) b.list.adapter = ListRad(c)
+        if (b.list.adapter == null) b.list.adapter = ListMsg(c)
         else b.list.adapter?.notifyDataSetChanged()
     }
 

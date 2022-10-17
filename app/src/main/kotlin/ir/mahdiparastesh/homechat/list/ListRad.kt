@@ -1,7 +1,6 @@
 package ir.mahdiparastesh.homechat.list
 
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -16,8 +15,6 @@ import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.ListRadBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
 import ir.mahdiparastesh.homechat.page.PageCht
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 
 class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadBinding>>() {
@@ -36,8 +33,8 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
 
         if (chat != null) h.b.root.setOnClickListener {
             c.nav.navigate(
-                R.id.action_page_rad_to_page_thd,
-                bundleOf(PageCht.ARG_CHAT_ID to chat.id.toString())
+                R.id.action_page_rad_to_page_cht,
+                bundleOf(PageCht.ARG_CHAT_ID to chat.id)
             )
         } else if (dev != null) h.b.root.setOnClickListener {
             MaterialAlertDialogBuilder(c).apply {

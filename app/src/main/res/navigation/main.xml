@@ -9,13 +9,18 @@
         android:name="ir.mahdiparastesh.homechat.page.PageRad">
 
         <action
-            android:id="@+id/action_page_rad_to_page_thd"
-            app:destination="@id/page_thd" />
+            android:id="@+id/action_page_rad_to_page_cht"
+            app:destination="@id/page_cht" />
     </fragment>
 
     <fragment
-        android:id="@+id/page_thd"
-        android:name="ir.mahdiparastesh.homechat.page.PageCht" />
+        android:id="@+id/page_cht"
+        android:name="ir.mahdiparastesh.homechat.page.PageCht">
+
+        <argument
+            android:name="chat_id"
+            app:argType="java.lang.Short" /><!-- This piece was not necessary though! -->
+    </fragment>
 
     <fragment
         android:id="@+id/page_set"
