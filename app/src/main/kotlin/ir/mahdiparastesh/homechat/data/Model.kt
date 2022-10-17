@@ -8,6 +8,7 @@ class Model : ViewModel() {
     val radar = Radar(this)
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
+    var messages: ArrayList<Message>? = null
     var aliveMain = false
     var aliveAntenna = false
 

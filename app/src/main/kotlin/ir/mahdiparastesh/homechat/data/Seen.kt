@@ -5,12 +5,12 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 
 @Entity(
-    primaryKeys = ["id", "msg"],
-    indices = [Index("id"), Index("msg")],
+    primaryKeys = ["msg", "chat", "contact"],
+    indices = [Index("msg"), Index("chat"), Index("contact")],
     foreignKeys = [ForeignKey(
-        entity = Message::class,
-        parentColumns = arrayOf("id", "chat"),
-        childColumns = arrayOf("msg", "chat"),
+        entity = Chat::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("chat"),
         onDelete = ForeignKey.CASCADE
     ), ForeignKey(
         entity = Contact::class,
@@ -19,11 +19,17 @@ import androidx.room.Index
         onDelete = ForeignKey.CASCADE
     )]
 )
-class Seen(
-    val chat: Short,
-    val msg: Long,
-    val contact: Short,
-    val date: Long,
-) {
-    var id = 0L
+class Seen {
+    val msg: Long // don't make a foreign key for this; 'cus it got no unique index!
+    val chat: Short
+    val contact: Short
+    val date: Long
+
+    @Suppress("ConvertSecondaryConstructorToPrimary")
+    constructor(chat: Short, msg: Long, contact: Short, date: Long) {
+        this.chat = chat
+        this.msg = msg
+        this.contact = contact
+        this.date = date
+    }
 }

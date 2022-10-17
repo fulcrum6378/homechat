@@ -25,6 +25,7 @@ class PageRad : BasePage<Main>() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList() {
+        if (b.list.isComputingLayout) return
         if (b.list.adapter == null) b.list.adapter = ListRad(c)
         else b.list.adapter?.notifyDataSetChanged()
         val isEmpty = b.list.adapter!!.itemCount == 0

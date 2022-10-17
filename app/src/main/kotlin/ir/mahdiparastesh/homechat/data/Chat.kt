@@ -3,15 +3,17 @@ package ir.mahdiparastesh.homechat.data
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import ir.mahdiparastesh.homechat.more.Persistent
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Entity
 class Chat(
+    @PrimaryKey var id: Short = 0,
     var contactIds: String, // separated by CONTACT_SEP
     var name: String? = null,
     val dateInit: Long = Database.now(),
 ) : Radar.Item {
-    @PrimaryKey(autoGenerate = true)
-    var id: Short = 0
 
     @Ignore
     @Transient
@@ -23,5 +25,13 @@ class Chat(
 
     companion object {
         const val CONTACT_SEP = ","
+
+        suspend fun postInitiation(c: Persistent, chosenId: Short, contactIds: String) {
+            Chat(chosenId, contactIds).also {
+                c.dao.addChat(it)
+                c.m.chats?.add(it)
+            }
+            withContext(Dispatchers.Main) { c.m.radar.update() }
+        }
     }
 }

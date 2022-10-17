@@ -7,10 +7,7 @@ import android.os.IBinder
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
-import ir.mahdiparastesh.homechat.data.Contact
-import ir.mahdiparastesh.homechat.data.Database
-import ir.mahdiparastesh.homechat.data.Device
-import ir.mahdiparastesh.homechat.data.Model
+import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.Persistent
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +26,7 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
     private val mViewModelStore = ViewModelStore()
     private lateinit var server: ServerSocket
     private lateinit var socket: Socket
+    private val ipToContactId = hashMapOf<String, Short>()
 
     override val c: Context get() = applicationContext
     override lateinit var m: Model
@@ -63,9 +61,8 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
 
         // Identify the Transmitter
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
-        val dev: Device =
-            m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device//?
-        // TODO if (dev == null)
+        val dev = m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device?//?
+        dev!!// TODO if (dev == null)
 
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
@@ -73,20 +70,26 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
         val len: Int? = header?.get(input.readNBytesCompat(header.indicateLenInNBytes))
         when (header) {
             Header.PAIR -> {
-                val seq = String(input.readNBytesCompat(len!!))
-                val ids = if (seq.isNotEmpty()) seq.split(",").map { it.toShort() }
-                    .toMutableSet() else mutableSetOf()
-                var chosenId: Short
-                dao.contactIds().forEach { ids.add(it) }
-                do {
-                    chosenId = (0..Short.MAX_VALUE).random().toShort()
-                } while (chosenId in ids)
+                val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.contactIds())
                 Contact.postPairing(this, chosenId, dev)
+                ipToContactId[fromIp] = chosenId
                 output.write(
                     (ByteBuffer.allocate(Short.SIZE_BYTES)
                         .putShort(chosenId).rewind() as ByteBuffer).array()
                 )
                 output.flush()
+            }
+            Header.INIT -> if (fromIp in ipToContactId) {
+                val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
+                Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
+                // FIXME not compatible with group chat
+                output.write(
+                    (ByteBuffer.allocate(Short.SIZE_BYTES)
+                        .putShort(chosenId).rewind() as ByteBuffer).array()
+                )
+                output.flush()
+            } else {
+                // TODO NULL
             }
             Header.TEXT -> {
                 val msg = input.readNBytesCompat(len!!)
@@ -99,6 +102,17 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
         }
         socket.close() // necessary for the output stream to send
         receive()
+    }
+
+    private fun findUniqueId(seq: String, ourIds: List<Short>): Short {
+        val ids = if (seq.isNotEmpty()) seq.split(",").map { it.toShort() }
+            .toMutableSet() else mutableSetOf()
+        var chosenId: Short
+        ourIds.forEach { ids.add(it) }
+        do {
+            chosenId = (0..Short.MAX_VALUE).random().toShort()
+        } while (chosenId in ids)
+        return chosenId
     }
 
     override fun onDestroy() {
@@ -162,8 +176,9 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
     }
 
     enum class Header(val value: Byte, val indicateLenInNBytes: Int) {
-        PAIR(0x00, Byte.SIZE_BYTES),
-        TEXT(0x0A, Byte.SIZE_BYTES),
+        PAIR(0x00, Short.SIZE_BYTES), // all Contact ids
+        INIT(0x01, Short.SIZE_BYTES), // all Chat ids
+        TEXT(0x0A, Short.SIZE_BYTES),
         FILE(0x0B, Int.SIZE_BYTES),
         COOR(0x0C, Byte.SIZE_BYTES);
 
@@ -182,7 +197,6 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
         fun put(size: Int): ByteArray {
             if (indicateLenInNBytes == 1) return byteArrayOf(size.toByte())
             val bb = ByteBuffer.allocate(indicateLenInNBytes)
-            bb.putInt(size)
             when (indicateLenInNBytes) {
                 Short.SIZE_BYTES -> bb.putShort(size.toShort())
                 Int.SIZE_BYTES -> bb.putInt(size)

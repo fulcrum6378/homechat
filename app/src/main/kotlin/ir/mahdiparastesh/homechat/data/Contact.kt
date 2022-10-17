@@ -26,18 +26,13 @@ class Contact(
         const val ATTR_EMAIL = "email"
         const val ATTR_PHONE = "phone"
 
-        suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device) {
-            Contact(
+        suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device): Contact {
+            return Contact(
                 chosenId, dev.name, dev.host.hostAddress!!, dev.email, dev.phone, Database.now()
             ).also {
                 c.dao.addContact(it)
                 c.m.contacts?.add(it)
             }
-            Chat(chosenId.toString()).also {
-                c.dao.addChat(it)
-                c.m.chats?.add(it)
-            }
-            c.m.radar.update()
         }
     }
 }

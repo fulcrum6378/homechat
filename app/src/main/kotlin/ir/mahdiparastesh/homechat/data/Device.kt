@@ -4,11 +4,10 @@ import android.net.nsd.NsdServiceInfo
 import java.net.InetAddress
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Device(srvInfo: NsdServiceInfo, mServiceName: String) : Radar.Item {
+class Device(srvInfo: NsdServiceInfo) : Radar.Item {
     val name: String = srvInfo.serviceName
     val host: InetAddress = srvInfo.host
     val port: Int = srvInfo.port
-    val isMe: Boolean = srvInfo.serviceName == mServiceName
     val email: String? = srvInfo.attr(Contact.ATTR_EMAIL)
     val phone: String? = srvInfo.attr(Contact.ATTR_PHONE)
 

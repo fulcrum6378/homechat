@@ -76,8 +76,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
                 when (msg.what) {
-                    MSG_FOUND -> Device(msg.obj as NsdServiceInfo, mServiceName).apply {
-                        if (isMe) m.radar.self = this
+                    MSG_FOUND -> Device(msg.obj as NsdServiceInfo).apply {
+                        if (name == mServiceName) m.radar.self = this
                         else m.radar.insert(this)
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->

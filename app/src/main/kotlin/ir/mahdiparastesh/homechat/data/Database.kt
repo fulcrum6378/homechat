@@ -23,6 +23,12 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Chat")
         suspend fun chats(): List<Chat>
 
+        @Query("SELECT id FROM Chat")
+        suspend fun chatIds(): List<Short>
+
+        @Query("SELECT * FROM Message WHERE chat LIKE :chat")
+        suspend fun messages(chat: Short): List<Message>
+
 
         @Insert // (onConflict = OnConflictStrategy.REPLACE)
         suspend fun addContact(item: Contact)

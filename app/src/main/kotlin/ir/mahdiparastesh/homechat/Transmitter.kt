@@ -11,7 +11,7 @@ import java.net.Socket
 class Transmitter(
     private val address: Pair<String, Int>,
     private val header: Radio.Header,
-    private val responseLength: Int = 0,
+    private val responseBytes: Int = 0,
     private val data: suspend () -> ByteArray,
     private val response: (suspend (response: ByteArray?) -> Unit)? = null
 ) {
@@ -25,8 +25,8 @@ class Transmitter(
                         write(byteArrayOf(header.value).plus(header.put(d.size)).plus(d))
                         flush()
                     }
-                    if (responseLength > 0)
-                        it.getInputStream().apply { res = readNBytesCompat(responseLength) }
+                    if (responseBytes > 0)
+                        it.getInputStream().apply { res = readNBytesCompat(responseBytes) }
                 }
             } catch (_: ConnectException) {
             }

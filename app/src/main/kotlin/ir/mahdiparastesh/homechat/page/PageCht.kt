@@ -1,12 +1,17 @@
 package ir.mahdiparastesh.homechat.page
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.databinding.PageChtBinding
+import ir.mahdiparastesh.homechat.list.ListRad
 import ir.mahdiparastesh.homechat.more.BasePage
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class PageCht : BasePage<Main>() {
     private lateinit var b: PageChtBinding
@@ -19,6 +24,16 @@ class PageCht : BasePage<Main>() {
         val chat = arguments?.getShort(ARG_CHAT_ID)?.let { id -> c.m.chats?.find { it.id == id } }
         if (chat == null) {
             c.nav.navigateUp(); return; }
+
+        CoroutineScope(Dispatchers.IO)
+            .launch { c.m.messages = ArrayList(c.dao.messages(chat.id)) }
+            .invokeOnCompletion { updateList() }
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun updateList() {
+        if (b.list.adapter == null) b.list.adapter = ListRad(c)
+        else b.list.adapter?.notifyDataSetChanged()
     }
 
     companion object {
