@@ -3,14 +3,17 @@ package ir.mahdiparastesh.homechat.list
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.shape.CornerFamily
 import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
+import ir.mahdiparastesh.homechat.data.Database.Companion.calendar
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
+import java.util.*
 
 class ListMsg(private val c: Main/*, private val f: PageCht*/) :
     RecyclerView.Adapter<AnyViewHolder<ListMsgBinding>>() {
@@ -39,7 +42,7 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         ).apply {
             fillColor = ContextCompat.getColorStateList(c, R.color.msg_them)
             strokeColor = ContextCompat.getColorStateList(c, R.color.msg_them_stroke)
-            strokeWidth = .5f
+            strokeWidth = 1f
         }
     }
 
@@ -52,9 +55,19 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         val msg = c.m.messages?.getOrNull(i) ?: return
 
         // Date
-        h.b.date.text = c.dateFormat.format(msg.date)
+        val cal = msg.date.calendar()
+        var showDate = true
+        if (i > 0) {
+            val prev = c.m.messages!![i - 1].date.calendar()
+            if (cal[Calendar.YEAR] == prev[Calendar.YEAR] &&
+                cal[Calendar.MONTH] == prev[Calendar.MONTH] &&
+                cal[Calendar.DAY_OF_MONTH] == prev[Calendar.DAY_OF_MONTH]
+            ) showDate = false
+        }
+        h.b.date.isVisible = showDate
+        if (showDate) h.b.date.text = c.dateFormat.format(msg.date)
 
-        // Me or Them?
+        // Layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams).apply {
             horizontalBias = if (msg.me()) 1f else 0f
         }
@@ -70,4 +83,6 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
     }
 
     override fun getItemCount(): Int = c.m.messages?.size ?: 0
+
+    // Don't put onBindView in a companion object for exporting, make a dynamic class
 }

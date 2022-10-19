@@ -5,16 +5,16 @@
     <dimen name="largeText">22sp</dimen>
     <dimen name="normalText">19sp</dimen>
     <dimen name="smallText">15sp</dimen>
-    <dimen name="smallCornerSize">8dp</dimen>
-    <dimen name="mediumCornerSize">14dp</dimen>
-    <dimen name="largeCornerSize">18dp</dimen>
+    <dimen name="smallCornerSize">10dp</dimen>
+    <dimen name="mediumCornerSize">18dp</dimen>
+    <dimen name="largeCornerSize">26dp</dimen>
+    <dimen name="pageAbovePad">10dp</dimen>
+    <dimen name="pageBeneathPad">15dp</dimen>
+    <dimen name="pagePadH">22dp</dimen>
     <dimen name="listTitle">18sp</dimen>
     <dimen name="listSubtitle">15sp</dimen>
     <dimen name="listBtwTitle">4dp</dimen>
-    <dimen name="listPadH">22dp</dimen>
     <dimen name="listPadV">14dp</dimen>
-    <dimen name="pageAbovePad">10dp</dimen>
-    <dimen name="pageBeneathPad">15dp</dimen>
 
     <!-- PageCht -->
     <dimen name="fieldTextSize">18sp</dimen>

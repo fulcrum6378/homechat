@@ -40,7 +40,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         R.id.navSettings to R.id.page_set,
     )
     val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
-    val timeFormat = SimpleDateFormat("HH.mm.ss", Locale.US)
+    val timeFormat = SimpleDateFormat("HH:mm"/*:ss*/, Locale.US)
 
     private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String

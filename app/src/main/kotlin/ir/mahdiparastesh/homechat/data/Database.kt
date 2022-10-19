@@ -46,5 +46,8 @@ abstract class Database : RoomDatabase() {
         // Although you can make other kinds of editions.
 
         fun now() = Calendar.getInstance().timeInMillis
+
+        fun Long.calendar(): Calendar = // from milliseconds
+            Calendar.getInstance().apply { timeInMillis = this@calendar }
     }
 }

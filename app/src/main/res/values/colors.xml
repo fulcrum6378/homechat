@@ -4,5 +4,6 @@
     <color name="background">#FFFBFF</color>
 
     <!-- PageCht -->
-    <color name="msgMe">#22900081</color>
+    <color name="msgMe">#15900081</color>
+    <color name="msgThemStroke">#AAA</color>
 </resources>

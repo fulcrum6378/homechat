@@ -4,9 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/button_rectangle"
-    android:paddingStart="@dimen/listPadH"
+    android:paddingStart="@dimen/pagePadH"
     android:paddingTop="@dimen/listPadV"
-    android:paddingEnd="@dimen/listPadH"
+    android:paddingEnd="@dimen/pagePadH"
     android:paddingBottom="@dimen/listPadV">
 
     <com.google.android.material.textview.MaterialTextView
