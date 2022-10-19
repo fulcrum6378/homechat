@@ -7,7 +7,7 @@ import java.util.*
 @androidx.room.Database(
     entities = [
         Contact::class, Chat::class, Message::class, Seen::class
-    ], version = 1, exportSchema = false
+    ], version = 2, exportSchema = false
 )
 abstract class Database : RoomDatabase() {
     abstract fun dao(): DAO
@@ -40,8 +40,10 @@ abstract class Database : RoomDatabase() {
     companion object {
         fun build(c: Context) = Room
             .databaseBuilder(c, Database::class.java, "main.db")
-            //.addMigrations()
+            // .addMigrations()
             .build()
+        // You cannot use DB Browser for SQLite in order to manually "MODIFY TABLES"!!
+        // Although you can make other kinds of editions.
 
         fun now() = Calendar.getInstance().timeInMillis
     }

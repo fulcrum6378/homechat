@@ -176,8 +176,9 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
     }
 
     enum class Header(val value: Byte, val indicateLenInNBytes: Int) {
-        PAIR(0x00, Short.SIZE_BYTES), // all Contact ids
-        INIT(0x01, Short.SIZE_BYTES), // all Chat ids
+        PAIR(0x00, Short.SIZE_BYTES), // <all Contact ids>
+        INIT(0x01, Short.SIZE_BYTES), // <all Chat ids>
+        // Message
         TEXT(0x0A, Short.SIZE_BYTES),
         FILE(0x0B, Int.SIZE_BYTES),
         COOR(0x0C, Byte.SIZE_BYTES);

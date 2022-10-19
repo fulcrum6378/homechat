@@ -28,6 +28,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.net.ServerSocket
+import java.text.SimpleDateFormat
+import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
@@ -37,6 +39,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         R.id.navRadar to R.id.page_rad,
         R.id.navSettings to R.id.page_set,
     )
+    val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
+    val timeFormat = SimpleDateFormat("HH.mm.ss", Locale.US)
 
     private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String

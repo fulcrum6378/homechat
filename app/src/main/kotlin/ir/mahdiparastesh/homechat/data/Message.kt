@@ -17,25 +17,28 @@ import androidx.room.Index
 class Message {
     val id: Long
     val chat: Short
+    val from: Short
     val type: Byte
-    val data: String
-    var seen: Boolean // only for second person, first person always "false"
-    val hide: Boolean
+    var data: String
+    var relp: Long? // TODO make it changeable
+    // var seen: Boolean // only for second person, first person always "false"
+    var hide: Boolean
     val date: Long
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(
-        id: Long, chat: Short, type: Byte, data: String,
-        seen: Boolean = false, hide: Boolean = false, date: Long = Database.now()
+        id: Long, chat: Short, from: Short, type: Byte, data: String, relp: Long? = null,
+        hide: Boolean = false, date: Long = Database.now()
     ) {
         this.id = id
         this.chat = chat
+        this.from = from
         this.type = type
         this.data = data
-        this.seen = seen
+        this.relp = relp
         this.hide = hide
         this.date = date
     }
 
-    enum class Type
+    fun me() = from == Chat.ME
 }

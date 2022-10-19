@@ -29,7 +29,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val dev = if (item is Device) item else null
         h.b.title.text = "${i + 1}. " +
                 (dev?.name ?: chat!!.name ?: chat!!.contacts?.firstOrNull()?.name.toString())
-        h.b.subtitle.text = dev?.toString() ?: chat?.dateInit?.toString()
+        h.b.subtitle.text = dev?.toString() ?: chat?.dateInit?.let { c.dateFormat.format(it) }
 
         if (chat != null) h.b.root.setOnClickListener {
             c.nav.navigate(

@@ -25,6 +25,8 @@ class Chat(
 
     companion object {
         const val CONTACT_SEP = ","
+        const val ME = (-1).toShort()
+        const val YOU = (-2).toShort()
 
         suspend fun postInitiation(c: Persistent, chosenId: Short, contactIds: String) {
             Chat(chosenId, contactIds).also {
