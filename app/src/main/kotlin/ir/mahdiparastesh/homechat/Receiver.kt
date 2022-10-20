@@ -1,14 +1,8 @@
 package ir.mahdiparastesh.homechat
 
-import android.app.Service
-import android.content.Context
 import android.content.Intent
-import android.os.IBinder
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelStore
-import androidx.lifecycle.ViewModelStoreOwner
 import ir.mahdiparastesh.homechat.data.*
-import ir.mahdiparastesh.homechat.more.Persistent
+import ir.mahdiparastesh.homechat.more.WiseService
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -22,22 +16,14 @@ import java.util.*
 import kotlin.math.min
 
 @Suppress("BlockingMethodInNonBlockingContext")
-class Radio : Service(), Persistent, ViewModelStoreOwner {
-    private val mViewModelStore = ViewModelStore()
+class Receiver : WiseService() {
     private lateinit var server: ServerSocket
     private lateinit var socket: Socket
     private val ipToContactId = hashMapOf<String, Short>()
 
-    override val c: Context get() = applicationContext
-    override lateinit var m: Model
-    override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
-    override val db: Database by dbLazy
-    override val dao: Database.DAO by lazy { db.dao() }
-
     override fun onCreate() {
         super.onCreate()
-        m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
-        m.aliveAntenna = true
+        m.aliveReceiver = true
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -117,13 +103,9 @@ class Radio : Service(), Persistent, ViewModelStoreOwner {
 
     override fun onDestroy() {
         if (::server.isInitialized) server.close()
-        m.aliveAntenna = false
-        if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
+        m.aliveReceiver = false
         super.onDestroy()
     }
-
-    override fun onBind(intent: Intent): IBinder? = null
-    override fun getViewModelStore(): ViewModelStore = mViewModelStore
 
     companion object {
         const val EXTRA_PORT = "port"

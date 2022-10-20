@@ -96,7 +96,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         mServicePort = ServerSocket(0).use { it.localPort }
-        antennaIntent = Intent(c, Radio::class.java).putExtra(Radio.EXTRA_PORT, mServicePort)
+        antennaIntent = Intent(c, Receiver::class.java).putExtra(Receiver.EXTRA_PORT, mServicePort)
         startService(antennaIntent)
         nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {

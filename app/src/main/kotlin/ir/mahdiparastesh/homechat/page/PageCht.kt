@@ -6,6 +6,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import ir.mahdiparastesh.homechat.Main
+import ir.mahdiparastesh.homechat.Receiver
+import ir.mahdiparastesh.homechat.data.Chat
+import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.databinding.PageChtBinding
 import ir.mahdiparastesh.homechat.list.ListMsg
 import ir.mahdiparastesh.homechat.more.BasePage
@@ -28,6 +31,14 @@ class PageCht : BasePage<Main>() {
         CoroutineScope(Dispatchers.IO)
             .launch { c.m.messages = ArrayList(c.dao.messages(chat.id)) }
             .invokeOnCompletion { updateList() }
+
+        b.send.setOnClickListener {
+            val text = b.field.text.toString()
+            val repl: Long? = null
+            Message(0L/*RANDOM*/, chat.id, Chat.ME, Receiver.Header.TEXT.value, text, repl).apply {
+            }
+            b.field.setText("")
+        }
     }
 
     @SuppressLint("NotifyDataSetChanged")

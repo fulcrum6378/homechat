@@ -6,7 +6,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
-import ir.mahdiparastesh.homechat.Radio
+import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Transmitter
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Contact
@@ -33,8 +33,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
 
         if (chat != null) h.b.root.setOnClickListener {
             c.nav.navigate(
-                R.id.action_page_rad_to_page_cht,
-                bundleOf(PageCht.ARG_CHAT_ID to chat.id)
+                R.id.action_page_rad_to_page_cht, bundleOf(PageCht.ARG_CHAT_ID to chat.id)
             )
         } else if (dev != null) h.b.root.setOnClickListener {
             MaterialAlertDialogBuilder(c).apply {
@@ -48,7 +47,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
     private fun Device.pair() {
         Main.handler?.obtainMessage(3, "Device.pair")?.sendToTarget()
         val address = toString().makeAddressPair()
-        Transmitter(address, Radio.Header.PAIR, Short.SIZE_BYTES, {
+        Transmitter(address, Receiver.Header.PAIR, Short.SIZE_BYTES, {
             c.dao.contactIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
@@ -61,7 +60,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
 
     private fun List<Contact>.init(address: Pair<String, Int>) {
         Main.handler?.obtainMessage(3, "List<Contact>.init")?.sendToTarget()
-        Transmitter(address, Radio.Header.INIT, Short.SIZE_BYTES, {
+        Transmitter(address, Receiver.Header.INIT, Short.SIZE_BYTES, {
             c.dao.chatIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {

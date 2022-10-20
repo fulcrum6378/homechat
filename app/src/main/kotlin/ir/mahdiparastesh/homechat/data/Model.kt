@@ -10,9 +10,10 @@ class Model : ViewModel() {
     var chats: CopyOnWriteArrayList<Chat>? = null
     var messages: ArrayList<Message>? = null
     var aliveMain = false
-    var aliveAntenna = false
+    var aliveSender = false
+    var aliveReceiver = false
 
-    fun anyPersistentAlive() = aliveMain || aliveAntenna
+    fun anyPersistentAlive() = aliveMain || aliveReceiver || aliveSender
 
     @Suppress("UNCHECKED_CAST")
     class Factory : ViewModelProvider.Factory {

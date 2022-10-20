@@ -1,6 +1,6 @@
 package ir.mahdiparastesh.homechat
 
-import ir.mahdiparastesh.homechat.Radio.Companion.readNBytesCompat
+import ir.mahdiparastesh.homechat.Receiver.Companion.readNBytesCompat
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -10,7 +10,7 @@ import java.net.Socket
 @Suppress("BlockingMethodInNonBlockingContext")
 class Transmitter(
     private val address: Pair<String, Int>,
-    private val header: Radio.Header,
+    private val header: Receiver.Header,
     private val responseBytes: Int = 0,
     private val data: suspend () -> ByteArray,
     private val response: (suspend (response: ByteArray?) -> Unit)? = null

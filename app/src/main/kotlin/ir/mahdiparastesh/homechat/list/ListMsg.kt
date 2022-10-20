@@ -68,12 +68,10 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         if (showDate) h.b.date.text = c.dateFormat.format(msg.date)
 
         // Layout
-        h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams).apply {
-            horizontalBias = if (msg.me()) 1f else 0f
-        }
-        h.b.body.layoutParams = (h.b.body.layoutParams as ConstraintLayout.LayoutParams).apply {
-            horizontalBias = if (msg.me()) 1f else 0f
-        }
+        h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
+            .apply { horizontalBias = if (msg.me()) 1f else 0f }
+        h.b.body.layoutParams = (h.b.body.layoutParams as ConstraintLayout.LayoutParams)
+            .apply { horizontalBias = if (msg.me()) 1f else 0f }
         h.b.body.background = if (msg.me()) meStyle else themStyle
 
         // Data
