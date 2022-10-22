@@ -49,6 +49,7 @@ class Receiver : WiseService() {
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
         val dev = m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device?//?
         dev!!// TODO if (dev == null)
+        val contact = m.contacts?.find { it.equals(dev) }
 
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
@@ -71,18 +72,25 @@ class Receiver : WiseService() {
             } else {
                 // TODO NULL
             }
-            Header.TEXT -> {
-                val msg = input.readNBytesCompat(len!!)
-                Main.handler?.obtainMessage(3, String(msg))?.sendToTarget()
-            }
-            Header.FILE -> {
-            }
-            Header.COOR -> {
-            }
-            Header.SEEN -> {
-            }
-            else -> {
-            }
+            Header.TEXT, Header.FILE, Header.COOR -> if (contact != null)
+                decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
+                    dao.addMessage(this)
+                    /////
+                }
+            else TODO()
+            Header.SEEN -> if (contact != null) {
+                val raw = input.readNBytesCompat(len!!).toList()
+                Seen(
+                    contact = contact.id,
+                    msg = raw.subList(0, 4).toNumber(),
+                    chat = raw.subList(4, 6).toNumber(),
+                    date = raw.subList(6, 10).toNumber(),
+                ).apply {
+                    dao.addSeen(this)
+                    /////
+                }
+            } else TODO()
+            else -> TODO()
         }
         socket.close() // necessary for the output stream to send
         receive()
@@ -98,6 +106,16 @@ class Receiver : WiseService() {
         } while (chosenId in ids)
         return chosenId
     }
+
+    private fun decodeMessage(raw: List<Byte>, header: Header, contact: Contact): Message = Message(
+        type = header.value,
+        from = contact.id,
+        id = raw.subList(0, 4).toNumber(),
+        chat = raw.subList(4, 6).toNumber(),
+        date = raw.subList(6, 10).toNumber(),
+        repl = raw.subList(10, 14).toNumber<Long>().let { if (it == -1L) null else it },
+        data = String(raw.subList(14, raw.size).toByteArray()),
+    )
 
     override fun onDestroy() {
         if (::server.isInitialized) server.close()
@@ -164,6 +182,19 @@ class Receiver : WiseService() {
             }
             bb.rewind()
             return bb.array()
+        }
+
+        @Suppress("UNCHECKED_CAST")
+        fun <N> List<Byte>.toNumber(): N {
+            if (size == Byte.SIZE_BYTES) return this[0] as N
+            val bb = ByteBuffer.wrap(toByteArray())
+            bb.rewind()
+            return when (size) {
+                Short.SIZE_BYTES -> bb.short.toInt() as N
+                Int.SIZE_BYTES -> bb.int as N
+                Long.SIZE_BYTES -> bb.long.toInt() as N
+                else -> 0 as N
+            }
         }
     }
 

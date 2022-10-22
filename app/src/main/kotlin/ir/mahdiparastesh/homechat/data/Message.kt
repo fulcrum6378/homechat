@@ -22,7 +22,6 @@ class Message : Sender.Queuable {
     val type: Byte
     var data: String
     var repl: Long? // TODO make it changeable in UI
-    // var seen: Boolean // only for second person, first person always "false"
     var hide: Boolean
     val date: Long
 

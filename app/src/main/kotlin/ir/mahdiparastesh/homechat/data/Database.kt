@@ -40,9 +40,15 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Message WHERE id LIKE :id AND chat LIKE :chat LIMIT 1")
         suspend fun message(id: Long, chat: Short): Message?
 
+        @Insert
+        suspend fun addMessage(item: Message)
+
 
         @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
         suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?
+
+        @Insert
+        suspend fun addSeen(item: Seen)
     }
 
     companion object {

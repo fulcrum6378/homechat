@@ -27,7 +27,7 @@ class Seen : Sender.Queuable {
     val date: Long
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor(chat: Short, msg: Long, contact: Short, date: Long) {
+    constructor(msg: Long, chat: Short, contact: Short, date: Long) {
         this.chat = chat
         this.msg = msg
         this.contact = contact
