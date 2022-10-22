@@ -82,7 +82,10 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 when (msg.what) {
                     MSG_FOUND -> Device(msg.obj as NsdServiceInfo).apply {
                         if (name == mServiceName) m.radar.self = this
-                        else m.radar.insert(this)
+                        else {
+                            m.radar.insert(this)
+                            Sender.init(c)
+                        }
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!

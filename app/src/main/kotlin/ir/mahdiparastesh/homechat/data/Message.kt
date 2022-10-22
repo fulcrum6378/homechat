@@ -21,14 +21,14 @@ class Message : Sender.Queuable {
     val from: Short
     val type: Byte
     var data: String
-    var relp: Long? // TODO make it changeable
+    var repl: Long? // TODO make it changeable in UI
     // var seen: Boolean // only for second person, first person always "false"
     var hide: Boolean
     val date: Long
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(
-        id: Long, chat: Short, from: Short, type: Byte, data: String, relp: Long? = null,
+        id: Long, chat: Short, from: Short, type: Byte, data: String, repl: Long? = null,
         hide: Boolean = false, date: Long = Database.now()
     ) {
         this.id = id
@@ -36,7 +36,7 @@ class Message : Sender.Queuable {
         this.from = from
         this.type = type
         this.data = data
-        this.relp = relp
+        this.repl = repl
         this.hide = hide
         this.date = date
     }

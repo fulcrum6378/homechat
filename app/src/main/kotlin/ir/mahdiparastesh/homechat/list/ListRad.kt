@@ -15,6 +15,9 @@ import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.ListRadBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
 import ir.mahdiparastesh.homechat.page.PageCht
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.nio.ByteBuffer
 
 class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadBinding>>() {
@@ -38,13 +41,15 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         } else if (dev != null) h.b.root.setOnClickListener {
             MaterialAlertDialogBuilder(c).apply {
                 setTitle(R.string.newContact)
-                setPositiveButton(R.string.pair) { _, _ -> dev.pair() }
+                setPositiveButton(R.string.pair) { _, _ ->
+                    CoroutineScope(Dispatchers.IO).launch { dev.pair() }
+                }
                 setNegativeButton(R.string.cancel, null)
             }.show()
         }
     }
 
-    private fun Device.pair() {
+    private suspend fun Device.pair() {
         val address = toString().makeAddressPair()
         Transmitter(address, Receiver.Header.PAIR, {
             c.dao.contactIds().joinToString(",").encodeToByteArray()
@@ -56,7 +61,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         }
     }
 
-    private fun List<Contact>.init(address: Pair<String, Int>) {
+    private suspend fun List<Contact>.init(address: Pair<String, Int>) {
         Transmitter(address, Receiver.Header.INIT, {
             c.dao.chatIds().joinToString(",").encodeToByteArray()
         }) { res ->

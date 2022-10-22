@@ -53,26 +53,20 @@ class Receiver : WiseService() {
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
         val header = Header.values().find { it.value == hb }
-        val len: Int? = header?.get(input.readNBytesCompat(header.indicateLenInNBytes))
+        val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
         when (header) {
             Header.PAIR -> {
                 val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.contactIds())
                 Contact.postPairing(this, chosenId, dev)
                 ipToContactId[fromIp] = chosenId
-                output.write(
-                    (ByteBuffer.allocate(Short.SIZE_BYTES)
-                        .putShort(chosenId).rewind() as ByteBuffer).array()
-                )
+                output.write(chosenId.toByteArray())
                 output.flush()
             }
             Header.INIT -> if (fromIp in ipToContactId) {
                 val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
                 Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
                 // FIXME not compatible with group chat
-                output.write(
-                    (ByteBuffer.allocate(Short.SIZE_BYTES)
-                        .putShort(chosenId).rewind() as ByteBuffer).array()
-                )
+                output.write(chosenId.toByteArray())
                 output.flush()
             } else {
                 // TODO NULL
@@ -82,6 +76,10 @@ class Receiver : WiseService() {
                 Main.handler?.obtainMessage(3, String(msg))?.sendToTarget()
             }
             Header.FILE -> {
+            }
+            Header.COOR -> {
+            }
+            Header.SEEN -> {
             }
             else -> {
             }
@@ -155,6 +153,18 @@ class Receiver : WiseService() {
             }
             return result
         }
+
+        fun Number.toByteArray(): ByteArray {
+            if (this is Byte) return byteArrayOf(this)
+            val bb = when (this) {
+                is Short -> ByteBuffer.allocate(2).putShort(this)
+                is Int -> ByteBuffer.allocate(3).putInt(this)
+                is Long -> ByteBuffer.allocate(4).putLong(this)
+                else -> throw IllegalArgumentException()
+            }
+            bb.rewind()
+            return bb.array()
+        }
     }
 
     enum class Header(val value: Byte, val indicateLenInNBytes: Int, val responseBytes: Int) {
@@ -169,7 +179,7 @@ class Receiver : WiseService() {
         FILE(0x11, Int.SIZE_BYTES, Byte.SIZE_BYTES),
         COOR(0x12, Byte.SIZE_BYTES, Byte.SIZE_BYTES);
 
-        fun get(ba: ByteArray): Int {
+        fun getLength(ba: ByteArray): Int {
             if (ba.size == Byte.SIZE_BYTES) return ba[0].toInt()
             val bb = ByteBuffer.wrap(ba)
             bb.rewind()
@@ -181,7 +191,7 @@ class Receiver : WiseService() {
             }
         }
 
-        fun put(size: Int): ByteArray {
+        fun putLength(size: Int): ByteArray {
             if (indicateLenInNBytes == 1) return byteArrayOf(size.toByte())
             val bb = ByteBuffer.allocate(indicateLenInNBytes)
             when (indicateLenInNBytes) {
