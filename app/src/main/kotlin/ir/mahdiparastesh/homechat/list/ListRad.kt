@@ -45,27 +45,23 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
     }
 
     private fun Device.pair() {
-        Main.handler?.obtainMessage(3, "Device.pair")?.sendToTarget()
         val address = toString().makeAddressPair()
-        Transmitter(address, Receiver.Header.PAIR, Short.SIZE_BYTES, {
+        Transmitter(address, Receiver.Header.PAIR, {
             c.dao.contactIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
                 return@Transmitter; }
-            Main.handler?.obtainMessage(3, "contact id chosen")?.sendToTarget()
             Contact.postPairing(c, ByteBuffer.wrap(res).short, this)
                 .apply { listOf(this).init(address) }
         }
     }
 
     private fun List<Contact>.init(address: Pair<String, Int>) {
-        Main.handler?.obtainMessage(3, "List<Contact>.init")?.sendToTarget()
-        Transmitter(address, Receiver.Header.INIT, Short.SIZE_BYTES, {
+        Transmitter(address, Receiver.Header.INIT, {
             c.dao.chatIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
                 return@Transmitter; }
-            Main.handler?.obtainMessage(3, "chat id chosen")?.sendToTarget()
             Chat.postInitiation(
                 c, ByteBuffer.wrap(res).short, joinToString(Chat.CONTACT_SEP) { it.id.toString() })
         }

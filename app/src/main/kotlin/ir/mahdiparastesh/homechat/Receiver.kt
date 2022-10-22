@@ -157,13 +157,17 @@ class Receiver : WiseService() {
         }
     }
 
-    enum class Header(val value: Byte, val indicateLenInNBytes: Int) {
-        PAIR(0x00, Short.SIZE_BYTES), // <all Contact ids>
-        INIT(0x01, Short.SIZE_BYTES), // <all Chat ids>
+    enum class Header(val value: Byte, val indicateLenInNBytes: Int, val responseBytes: Int) {
+        PAIR(0x00, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Contact ids>
+        INIT(0x01, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Chat ids>
+
+        // Seen
+        SEEN(0x0F, Byte.SIZE_BYTES, Byte.SIZE_BYTES),
+
         // Message
-        TEXT(0x0A, Short.SIZE_BYTES),
-        FILE(0x0B, Int.SIZE_BYTES),
-        COOR(0x0C, Byte.SIZE_BYTES);
+        TEXT(0x10, Short.SIZE_BYTES, Byte.SIZE_BYTES),
+        FILE(0x11, Int.SIZE_BYTES, Byte.SIZE_BYTES),
+        COOR(0x12, Byte.SIZE_BYTES, Byte.SIZE_BYTES);
 
         fun get(ba: ByteArray): Int {
             if (ba.size == Byte.SIZE_BYTES) return ba[0].toInt()

@@ -11,7 +11,6 @@ import java.net.Socket
 class Transmitter(
     private val address: Pair<String, Int>,
     private val header: Receiver.Header,
-    private val responseBytes: Int = 0,
     private val data: suspend () -> ByteArray,
     private val response: (suspend (response: ByteArray?) -> Unit)? = null
 ) {
@@ -25,8 +24,8 @@ class Transmitter(
                         write(byteArrayOf(header.value).plus(header.put(d.size)).plus(d))
                         flush()
                     }
-                    if (responseBytes > 0)
-                        it.getInputStream().apply { res = readNBytesCompat(responseBytes) }
+                    if (header.responseBytes > 0)
+                        it.getInputStream().apply { res = readNBytesCompat(header.responseBytes) }
                 }
             } catch (_: ConnectException) {
             }

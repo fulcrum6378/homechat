@@ -20,21 +20,29 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT id FROM Contact")
         suspend fun contactIds(): List<Short>
 
+        @Insert // (onConflict = OnConflictStrategy.REPLACE)
+        suspend fun addContact(item: Contact)
+
+
         @Query("SELECT * FROM Chat")
         suspend fun chats(): List<Chat>
 
         @Query("SELECT id FROM Chat")
         suspend fun chatIds(): List<Short>
 
+        @Insert
+        suspend fun addChat(item: Chat)
+
+
         @Query("SELECT * FROM Message WHERE chat LIKE :chat")
         suspend fun messages(chat: Short): List<Message>
 
+        @Query("SELECT * FROM Message WHERE id LIKE :id AND chat LIKE :chat LIMIT 1")
+        suspend fun message(id: Long, chat: Short): Message?
 
-        @Insert // (onConflict = OnConflictStrategy.REPLACE)
-        suspend fun addContact(item: Contact)
 
-        @Insert
-        suspend fun addChat(item: Chat)
+        @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
+        suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?
     }
 
     companion object {

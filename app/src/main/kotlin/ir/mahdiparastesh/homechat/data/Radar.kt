@@ -4,7 +4,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.CopyOnWriteArraySet
 
 class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
-    private val devices = CopyOnWriteArraySet<Device>()
+    val devices = CopyOnWriteArraySet<Device>()
     var self: Device? = null
 
     fun insert(item: Device) {

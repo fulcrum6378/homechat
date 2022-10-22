@@ -3,6 +3,7 @@ package ir.mahdiparastesh.homechat.data
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
+import ir.mahdiparastesh.homechat.Sender
 
 @Entity(
     primaryKeys = ["msg", "chat", "contact"],
@@ -19,7 +20,7 @@ import androidx.room.Index
         onDelete = ForeignKey.CASCADE
     )]
 )
-class Seen {
+class Seen : Sender.Queuable {
     val msg: Long // don't make a foreign key for this; 'cus it got no unique index!
     val chat: Short
     val contact: Short

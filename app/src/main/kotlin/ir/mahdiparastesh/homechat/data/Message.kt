@@ -3,6 +3,7 @@ package ir.mahdiparastesh.homechat.data
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
+import ir.mahdiparastesh.homechat.Sender
 
 @Entity(
     primaryKeys = ["id", "chat"], // It is not possible with a composite primary key to add auto-increment.
@@ -14,7 +15,7 @@ import androidx.room.Index
         onDelete = ForeignKey.CASCADE
     )]
 )
-class Message {
+class Message : Sender.Queuable {
     val id: Long
     val chat: Short
     val from: Short
