@@ -21,16 +21,21 @@ import ir.mahdiparastesh.homechat.Sender
     )]
 )
 class Seen : Sender.Queuable {
-    val msg: Long // don't make a foreign key for this; 'cus it got no unique index!
+    // don't make a foreign key for "msg"; 'cus it got no unique index!
+    val msg: Long // can be the sender's and the receiver's message
     val chat: Short
-    val contact: Short
-    val date: Long
+    val contact: Short // the sender and the receiver have the same contactId
+    var dateSent: Long?
+    var dateSeen: Long?
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
-    constructor(msg: Long, chat: Short, contact: Short, date: Long) {
+    constructor(
+        msg: Long, chat: Short, contact: Short, dateSent: Long? = null, dateSeen: Long? = null
+    ) {
         this.chat = chat
         this.msg = msg
         this.contact = contact
-        this.date = date
+        this.dateSent = dateSent
+        this.dateSeen = dateSeen
     }
 }

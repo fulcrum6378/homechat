@@ -17,7 +17,7 @@ class Chat(
 
     @Ignore
     @Transient
-    var contacts: List<Contact?>? = null
+    var contacts: List<Contact>? = null
 
     fun size() = contacts?.size ?: contactIds.split(CONTACT_SEP).size
 

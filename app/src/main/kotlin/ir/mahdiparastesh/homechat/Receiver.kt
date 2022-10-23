@@ -75,19 +75,17 @@ class Receiver : WiseService() {
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null)
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
                     dao.addMessage(this)
-                    /////
                 }
             else TODO()
             Header.SEEN -> if (contact != null) {
                 val raw = input.readNBytesCompat(len!!).toList()
-                Seen(
+                dao.seen(
                     contact = contact.id,
                     msg = raw.subList(0, 4).toNumber(),
                     chat = raw.subList(4, 6).toNumber(),
-                    date = raw.subList(6, 10).toNumber(),
-                ).apply {
-                    dao.addSeen(this)
-                    /////
+                )!!.apply {
+                    dateSeen = raw.subList(6, 10).toNumber()
+                    dao.updateSeen(this)
                 }
             } else TODO()
             else -> TODO()

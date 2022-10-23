@@ -3,6 +3,7 @@ package ir.mahdiparastesh.homechat
 import android.content.Context
 import android.content.Intent
 import ir.mahdiparastesh.homechat.Receiver.Companion.toByteArray
+import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
@@ -46,7 +47,7 @@ class Sender : WiseService() {
                 queue.removeAt(i); continue; }
             val o: Queuable? = when (spl[1]) {
                 Q_MESSAGE -> dao.message(spl[2].toLong(), spl[3].toShort())
-                Q_SEEN -> dao.seen(spl[2].toLong(), spl[3].toShort(), spl[4].toShort())
+                Q_SEEN -> dao.seen(spl[2].toLong(), spl[3].toShort(), contact.id)
                 else -> throw IllegalStateException()
             }
             if (o == null) {
@@ -55,6 +56,10 @@ class Sender : WiseService() {
             if (target == null) {
                 i++; continue; }
 
+            if (o is Message) dao.seen(o.id, o.chat, contact.id)!!.apply {
+                dateSent = Database.now()
+                dao.updateSeen(this)
+            }
             Transmitter(target.toString().makeAddressPair(), o.header(), {
                 when (o) {
                     is Message -> o.id.toByteArray() // <id*4><chat*2><date*4><repl*4><data*n>
@@ -62,9 +67,9 @@ class Sender : WiseService() {
                         .plus(o.date.toByteArray())
                         .plus((o.repl ?: -1L).toByteArray())
                         .plus(o.data.encodeToByteArray())
-                    is Seen -> o.msg.toByteArray() // <msg*4><chat*2><date*4>
+                    is Seen -> o.msg.toByteArray() // <msg*4><chat*2><dateSeen*4>
                         .plus(o.chat.toByteArray())
-                        .plus(o.date.toByteArray())
+                        .plus(o.dateSeen!!.toByteArray())
                     else -> throw IllegalStateException()
                 }
             }) { res ->
@@ -100,17 +105,18 @@ class Sender : WiseService() {
         val charset = Charsets.US_ASCII
 
 
-        fun init(c: Context, onIntent: Intent.() -> Intent = { this }) {
-            c.startService(Intent(c, Sender::class.java).onIntent())
+        fun init(c: Context, onIntent: (Intent.() -> Unit)? = null) {
+            val func: Intent.() -> Intent = { onIntent?.also { it() }; this }
+            c.startService(Intent(c, Sender::class.java).func())
         }
     }
 
     interface Queuable { // "<receiver>-<type>-<indices**>"
-        fun toQueue(m: Model): List<String> = when (this) {
+        fun toQueue(m: Model): Array<String> = when (this) {
             is Message -> m.chats!!.find { it.id == chat }!!.contacts!!
-                .map { "${it!!.id}-$Q_MESSAGE-$id-$chat" }
-            is Seen -> m.chats!!.find { it.id == chat }!!.contacts!!
-                .map { "${it!!.id}-$Q_SEEN-$msg-$chat-$contact" }
+                .map { "${it.id}-$Q_MESSAGE-$id-$chat" }.toTypedArray()
+            is Seen -> arrayOf("$contact-$Q_SEEN-$msg-$chat")
+            // m.chats!!.find { it.id == chat }!!.contacts!!.map { }
             else -> throw IllegalArgumentException()
         }
 

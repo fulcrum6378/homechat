@@ -10,12 +10,19 @@ import com.google.android.material.shape.MaterialShapeDrawable
 import com.google.android.material.shape.ShapeAppearanceModel
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
+import ir.mahdiparastesh.homechat.Sender
+import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Database.Companion.calendar
+import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
+import ir.mahdiparastesh.homechat.page.PageCht
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import java.util.*
 
-class ListMsg(private val c: Main/*, private val f: PageCht*/) :
+class ListMsg(private val c: Main, private val f: PageCht) :
     RecyclerView.Adapter<AnyViewHolder<ListMsgBinding>>() {
 
     private val rtl = c.resources.getBoolean(R.bool.dirRtl)
@@ -77,10 +84,23 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         // Data
         h.b.text.text = msg.data
 
+        // Time
         h.b.time.text = c.timeFormat.format(msg.date)
-    }
+
+        // Seen if not
+        var notSeen: List<Seen>? = null
+        if (!msg.me() && msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }
+                .isNotEmpty()
+        ) CoroutineScope(Dispatchers.IO).launch {
+            var queue = arrayOf<String>()
+            notSeen!!.forEach {
+                it.dateSeen = Database.now()
+                c.dao.addSeen(it)
+                queue = queue.plus(it.toQueue(c.m))
+            }
+            Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, queue) }
+        }
+    } // Don't put onBindView in a companion object for exporting, make a dynamic class
 
     override fun getItemCount(): Int = c.m.messages?.size ?: 0
-
-    // Don't put onBindView in a companion object for exporting, make a dynamic class
 }

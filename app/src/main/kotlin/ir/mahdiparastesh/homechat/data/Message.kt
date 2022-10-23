@@ -2,6 +2,7 @@ package ir.mahdiparastesh.homechat.data
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Ignore
 import androidx.room.Index
 import ir.mahdiparastesh.homechat.Sender
 
@@ -39,6 +40,10 @@ class Message : Sender.Queuable {
         this.hide = hide
         this.date = date
     }
+
+    @Ignore
+    @Transient
+    var status: ArrayList<Seen>? = null
 
     fun me() = from == Chat.ME
 }

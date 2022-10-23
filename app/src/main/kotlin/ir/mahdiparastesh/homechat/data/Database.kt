@@ -7,7 +7,7 @@ import java.util.*
 @androidx.room.Database(
     entities = [
         Contact::class, Chat::class, Message::class, Seen::class
-    ], version = 2, exportSchema = false
+    ], version = 1, exportSchema = false
 )
 abstract class Database : RoomDatabase() {
     abstract fun dao(): DAO
@@ -49,6 +49,9 @@ abstract class Database : RoomDatabase() {
 
         @Insert
         suspend fun addSeen(item: Seen)
+
+        @Update
+        suspend fun updateSeen(item: Seen)
     }
 
     companion object {
