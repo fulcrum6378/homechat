@@ -4,8 +4,6 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import ir.mahdiparastesh.homechat.more.Persistent
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Entity
 class Chat(
@@ -33,7 +31,7 @@ class Chat(
                 c.dao.addChat(it)
                 c.m.chats?.add(it)
             }
-            withContext(Dispatchers.Main) { c.m.radar.update() }
+            c.m.radar.update()
         }
     }
 }

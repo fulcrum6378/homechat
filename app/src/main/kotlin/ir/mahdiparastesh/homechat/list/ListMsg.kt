@@ -16,13 +16,12 @@ import ir.mahdiparastesh.homechat.data.Database.Companion.calendar
 import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
-import ir.mahdiparastesh.homechat.page.PageCht
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class ListMsg(private val c: Main, private val f: PageCht) :
+class ListMsg(private val c: Main/*, private val f: PageCht*/) :
     RecyclerView.Adapter<AnyViewHolder<ListMsgBinding>>() {
 
     private val rtl = c.resources.getBoolean(R.bool.dirRtl)
@@ -89,7 +88,10 @@ class ListMsg(private val c: Main, private val f: PageCht) :
 
         // Seen if not
         var notSeen: List<Seen>? = null
-        if (!msg.me() && msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }
+        if (!msg.me()
+            && msg.status!!
+                .filter { it.dateSeen == null }
+                .apply { notSeen = this }
                 .isNotEmpty()
         ) CoroutineScope(Dispatchers.IO).launch {
             var queue = arrayOf<String>()

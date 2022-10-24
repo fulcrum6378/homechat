@@ -16,10 +16,25 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item {
 
     fun NsdServiceInfo.attr(key: String): String? = attributes[key]?.let { String(it) }
 
-    fun matchContact(list: List<Contact>?) {
-        if (list == null) return
-        val matches = list.filter { it.equals(this) }
+    suspend fun matchContact(m: Model, dao: Database.DAO) {
+        val matches = m.contacts?.filter { it.equals(this) }
+        if (matches == null) {
+            contact = null
+            return; }
         contact = if (matches.size == 1) matches[0] else null
+        contact?.apply {
+            if (lastIp != host.hostAddress) {
+                lastIp = host.hostAddress
+                dao.updateContact(this)
+            }
+        }
+        m.contacts?.forEach {
+            if (it.id == contact?.id) return@forEach
+            if (it.lastIp == contact?.lastIp) {
+                it.lastIp = null
+                dao.updateContact(it)
+            }
+        }
     }
 
     override fun toString(): String = "${host.hostAddress}:$port"

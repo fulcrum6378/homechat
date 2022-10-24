@@ -23,6 +23,9 @@ abstract class Database : RoomDatabase() {
         @Insert // (onConflict = OnConflictStrategy.REPLACE)
         suspend fun addContact(item: Contact)
 
+        @Update
+        suspend fun updateContact(item: Contact)
+
 
         @Query("SELECT * FROM Chat")
         suspend fun chats(): List<Chat>

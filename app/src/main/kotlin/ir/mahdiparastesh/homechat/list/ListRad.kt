@@ -1,6 +1,7 @@
 package ir.mahdiparastesh.homechat.list
 
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -18,6 +19,7 @@ import ir.mahdiparastesh.homechat.page.PageCht
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.nio.ByteBuffer
 
 class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadBinding>>() {
@@ -55,8 +57,13 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
             c.dao.contactIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
+                withContext(Dispatchers.Main) { error() }
                 return@Transmitter; }
-            Contact.postPairing(c, ByteBuffer.wrap(res).short, this)
+            val chosenId = ByteBuffer.wrap(res).short
+            if (chosenId == (-1).toShort()) {
+                withContext(Dispatchers.Main) { error() }
+                return@Transmitter; }
+            Contact.postPairing(c, chosenId, this)
                 .apply { listOf(this).init(address) }
         }
     }
@@ -66,10 +73,15 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
             c.dao.chatIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
+                withContext(Dispatchers.Main) { error() }
                 return@Transmitter; }
             Chat.postInitiation(
                 c, ByteBuffer.wrap(res).short, joinToString(Chat.CONTACT_SEP) { it.id.toString() })
         }
+    }
+
+    private fun error() {
+        Toast.makeText(c, "Pairing failed!", Toast.LENGTH_LONG).show()
     }
 
     override fun getItemCount(): Int = c.m.radar.size

@@ -30,6 +30,10 @@
         </activity>
 
         <service
+            android:name=".Sender"
+            android:stopWithTask="false" />
+
+        <service
             android:name=".Receiver"
             android:stopWithTask="false" />
     </application>

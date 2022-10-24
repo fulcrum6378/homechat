@@ -1,6 +1,7 @@
 package ir.mahdiparastesh.homechat
 
 import android.content.Context
+import android.content.ContextWrapper
 import android.content.Intent
 import ir.mahdiparastesh.homechat.Receiver.Companion.toByteArray
 import ir.mahdiparastesh.homechat.data.Database
@@ -28,11 +29,14 @@ class Sender : WiseService() {
     // The system first calls onCreate(), and then it calls onStartCommand().
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
-        if (intent.extras?.containsKey(EXTRA_NEW_QUEUE) == true) {
-            queue.add(intent.getStringExtra(EXTRA_NEW_QUEUE)!!)
-            write()
+        if (!working || intent.extras?.containsKey(EXTRA_NEW_QUEUE) == true
+        ) CoroutineScope(Dispatchers.IO).launch {
+            if (intent.extras?.containsKey(EXTRA_NEW_QUEUE) == true) {
+                queue.addAll(intent.getStringArrayExtra(EXTRA_NEW_QUEUE)!!)
+                write()
+            }
+            if (!working) start()
         }
-        if (!working) CoroutineScope(Dispatchers.IO).launch { start() }
         return START_NOT_STICKY
     }
 
@@ -62,31 +66,31 @@ class Sender : WiseService() {
             }
             Transmitter(target.toString().makeAddressPair(), o.header(), {
                 when (o) {
-                    is Message -> o.id.toByteArray() // <id*4><chat*2><date*4><repl*4><data*n>
+                    is Message -> o.id.toByteArray()
                         .plus(o.chat.toByteArray())
                         .plus(o.date.toByteArray())
                         .plus((o.repl ?: -1L).toByteArray())
                         .plus(o.data.encodeToByteArray())
-                    is Seen -> o.msg.toByteArray() // <msg*4><chat*2><dateSeen*4>
+                    is Seen -> o.msg.toByteArray()
                         .plus(o.chat.toByteArray())
                         .plus(o.dateSeen!!.toByteArray())
                     else -> throw IllegalStateException()
                 }
-            }) { res ->
-                if (res?.first() == 0.toByte()) queue.removeAt(i)
-            }
+            }) { res -> if (res?.firstOrNull() == 0.toByte()) queue.removeAt(i) }
             write()
         }
         working = false
     }
 
-    private fun read() {
+    @Suppress("RedundantSuspendModifier")
+    private suspend fun read() {
         if (File(c.filesDir, QUEUE_FILE).exists()) c.openFileInput(QUEUE_FILE).use {
             queue = ArrayList(InputStreamReader(it, charset).readLines())
         } else queue = arrayListOf()
     }
 
-    private fun write() {
+    @Suppress("RedundantSuspendModifier")
+    private suspend fun write() {
         c.openFileOutput(QUEUE_FILE, Context.MODE_PRIVATE).use {
             it.write(queue.joinToString("\n").toByteArray(charset))
         }
@@ -105,7 +109,7 @@ class Sender : WiseService() {
         val charset = Charsets.US_ASCII
 
 
-        fun init(c: Context, onIntent: (Intent.() -> Unit)? = null) {
+        fun init(c: ContextWrapper, onIntent: (Intent.() -> Unit)? = null) {
             val func: Intent.() -> Intent = { onIntent?.also { it() }; this }
             c.startService(Intent(c, Sender::class.java).func())
         }

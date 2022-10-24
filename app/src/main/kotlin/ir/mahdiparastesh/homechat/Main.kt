@@ -83,13 +83,15 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                     MSG_FOUND -> Device(msg.obj as NsdServiceInfo).apply {
                         if (name == mServiceName) m.radar.self = this
                         else {
-                            m.radar.insert(this)
-                            Sender.init(c)
+                            CoroutineScope(Dispatchers.IO)
+                                .launch { m.radar.insert(this@apply, dao) }
+                            Sender.init(this@Main)
                         }
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
                         // don't wrap Device around it!
-                        m.radar.delete(srvInfo.serviceName)
+                        CoroutineScope(Dispatchers.IO)
+                            .launch { m.radar.delete(srvInfo.serviceName, dao) }
                     }
                     3 -> Toast.makeText(c, "${msg.obj}", Toast.LENGTH_SHORT).show()
                 }
@@ -138,11 +140,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         startDiscovery()
 
         // Load the database
-        if (m.contacts == null || m.chats == null) CoroutineScope(Dispatchers.IO).launch {
+        /*if (m.contacts == null || m.chats == null)*/ CoroutineScope(Dispatchers.IO).launch {
             if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
             if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
-            m.radar.update()
-        } else m.radar.update()
+            m.radar.update(dao)
+        }
     }
 
     private fun startDiscovery() {

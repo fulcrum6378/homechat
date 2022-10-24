@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import androidx.navigation.NavController
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.Receiver
+import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Seen
@@ -17,6 +18,7 @@ import ir.mahdiparastesh.homechat.more.BasePage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PageCht : BasePage<Main>() {
     private lateinit var b: PageChtBinding
@@ -48,22 +50,25 @@ class PageCht : BasePage<Main>() {
             b.field.setText("")
             CoroutineScope(Dispatchers.IO).launch {
                 val ids = c.m.messages!!.map { it.id }
-                var chosenId: Long
-                do {
-                    chosenId = (0L..Long.MAX_VALUE).random().toLong()
-                } while (chosenId in ids)
-                Message(
+                var chosenId = 0L
+                do chosenId++ while (chosenId in ids)
+                val msg = Message(
                     chosenId, chat.id, Chat.ME, Receiver.Header.TEXT.value, text, repl
-                ).apply {
-                    c.dao.addMessage(this)
-                    this@PageCht.chat.contacts!!.forEach { contact ->
-                        Seen(chosenId, this@PageCht.chat.id, contact.id).apply {
-                            c.dao.addSeen(this)
-                            if (status == null) status = arrayListOf()
-                            status!!.add(this)
-                        }
+                )
+                c.dao.addMessage(msg)
+                var sq = arrayOf<String>()
+                chat.contacts!!.forEach { contact ->
+                    Seen(chosenId, chat.id, contact.id).apply {
+                        c.dao.addSeen(this)
+                        if (msg.status == null) msg.status = arrayListOf()
+                        msg.status!!.add(this)
+                        sq = sq.plus(toQueue(c.m))
                     }
-                    c.m.messages?.add(this)
+                }
+                c.m.messages?.add(msg)
+                withContext(Dispatchers.Main) {
+                    updateList() // FIXME use notifyAdded
+                    Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, msg.toQueue(c.m).plus(sq)) }
                 }
             }
         }

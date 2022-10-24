@@ -47,49 +47,58 @@ class Receiver : WiseService() {
 
         // Identify the Transmitter
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
-        val dev = m.radar.find { it is Device && it.host.hostAddress == fromIp } as Device?//?
-        dev!!// TODO if (dev == null)
-        val contact = m.contacts?.find { it.equals(dev) }
+        val dev = m.radar.devices.find { it.host.hostAddress == fromIp }
+        val contact =
+            if (dev != null) m.contacts?.find { it.equals(dev) }
+            else m.contacts?.find { it.lastIp == fromIp }
 
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
         val header = Header.values().find { it.value == hb }
         val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
-        when (header) {
-            Header.PAIR -> {
-                val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.contactIds())
-                Contact.postPairing(this, chosenId, dev)
-                ipToContactId[fromIp] = chosenId
-                output.write(chosenId.toByteArray())
-                output.flush()
-            }
-            Header.INIT -> if (fromIp in ipToContactId) {
+        val out: ByteArray = when (header) {
+            Header.PAIR ->
+                (if (dev != null) findUniqueId(
+                    String(input.readNBytesCompat(len!!)),
+                    dao.contactIds()
+                ).also { chosenId ->
+                    Contact.postPairing(this, chosenId, dev)
+                    ipToContactId[fromIp] = chosenId
+                } else (-1).toShort()).toByteArray()
+            Header.INIT -> (if (fromIp in ipToContactId) {
                 val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
                 Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
                 // FIXME not compatible with group chat
-                output.write(chosenId.toByteArray())
-                output.flush()
-            } else {
-                // TODO NULL
-            }
-            Header.TEXT, Header.FILE, Header.COOR -> if (contact != null)
+                chosenId
+            } else (-1).toShort()).toByteArray()
+            Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
                     dao.addMessage(this)
                 }
-            else TODO()
+                0.toByte().toByteArray()
+            } else {
+                // TODO
+                1.toByte().toByteArray()
+            }
             Header.SEEN -> if (contact != null) {
                 val raw = input.readNBytesCompat(len!!).toList()
                 dao.seen(
                     contact = contact.id,
-                    msg = raw.subList(0, 4).toNumber(),
-                    chat = raw.subList(4, 6).toNumber(),
+                    msg = raw.subList(0, 8).toNumber(),
+                    chat = raw.subList(8, 10).toNumber(),
                 )!!.apply {
-                    dateSeen = raw.subList(6, 10).toNumber()
+                    dateSeen = raw.subList(10, 18).toNumber()
                     dao.updateSeen(this)
                 }
-            } else TODO()
+                0.toByte().toByteArray()
+            } else {
+                // TODO
+                1.toByte().toByteArray()
+            }
             else -> TODO()
         }
+        output.write(out)
+        output.flush()
         socket.close() // necessary for the output stream to send
         receive()
     }
@@ -100,7 +109,7 @@ class Receiver : WiseService() {
         var chosenId: Short
         ourIds.forEach { ids.add(it) }
         do {
-            chosenId = (0..Short.MAX_VALUE).random().toShort()
+            chosenId = (0.toShort()..Short.MAX_VALUE).random().toShort()
         } while (chosenId in ids)
         return chosenId
     }
@@ -108,11 +117,11 @@ class Receiver : WiseService() {
     private fun decodeMessage(raw: List<Byte>, header: Header, contact: Contact): Message = Message(
         type = header.value,
         from = contact.id,
-        id = raw.subList(0, 4).toNumber(),
-        chat = raw.subList(4, 6).toNumber(),
-        date = raw.subList(6, 10).toNumber(),
-        repl = raw.subList(10, 14).toNumber<Long>().let { if (it == -1L) null else it },
-        data = String(raw.subList(14, raw.size).toByteArray()),
+        id = raw.subList(0, 8).toNumber(),
+        chat = raw.subList(8, 10).toNumber(),
+        date = raw.subList(10, 18).toNumber(),
+        repl = raw.subList(18, 26).toNumber<Long>().let { if (it == -1L) null else it },
+        data = String(raw.subList(26, raw.size).toByteArray()),
     )
 
     override fun onDestroy() {
@@ -173,9 +182,9 @@ class Receiver : WiseService() {
         fun Number.toByteArray(): ByteArray {
             if (this is Byte) return byteArrayOf(this)
             val bb = when (this) {
-                is Short -> ByteBuffer.allocate(2).putShort(this)
-                is Int -> ByteBuffer.allocate(3).putInt(this)
-                is Long -> ByteBuffer.allocate(4).putLong(this)
+                is Short -> ByteBuffer.allocate(Short.SIZE_BYTES).putShort(this)
+                is Int -> ByteBuffer.allocate(Int.SIZE_BYTES).putInt(this)
+                is Long -> ByteBuffer.allocate(Long.SIZE_BYTES).putLong(this)
                 else -> throw IllegalArgumentException()
             }
             bb.rewind()
@@ -200,10 +209,10 @@ class Receiver : WiseService() {
         PAIR(0x00, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Contact ids>
         INIT(0x01, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Chat ids>
 
-        // Seen
+        // Seen: <id*4><chat*2><date*4><repl*4><data*n>
         SEEN(0x0F, Byte.SIZE_BYTES, Byte.SIZE_BYTES),
 
-        // Message
+        // Message: <msg*4><chat*2><dateSeen*4>
         TEXT(0x10, Short.SIZE_BYTES, Byte.SIZE_BYTES),
         FILE(0x11, Int.SIZE_BYTES, Byte.SIZE_BYTES),
         COOR(0x12, Byte.SIZE_BYTES, Byte.SIZE_BYTES);
