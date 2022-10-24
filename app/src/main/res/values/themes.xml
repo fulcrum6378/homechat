@@ -23,7 +23,7 @@
         <item name="itemRippleColor">?rippleColor</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.HomeChat.Dialogue</item>
         <item name="navigationViewStyle">@style/Widget.HomeChat.Nav</item>
-        <item name="rippleColor">#33900081</item>
+        <item name="rippleColor">#20900081</item>
         <item name="titleTextColor">?android:textColor</item><!--toolbar-->
     </style>
 

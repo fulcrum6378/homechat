@@ -32,6 +32,7 @@ class Sender : WiseService() {
         if (!working || intent.extras?.containsKey(EXTRA_NEW_QUEUE) == true
         ) CoroutineScope(Dispatchers.IO).launch {
             if (intent.extras?.containsKey(EXTRA_NEW_QUEUE) == true) {
+                read()
                 queue.addAll(intent.getStringArrayExtra(EXTRA_NEW_QUEUE)!!)
                 write()
             }
@@ -84,6 +85,7 @@ class Sender : WiseService() {
 
     @Suppress("RedundantSuspendModifier")
     private suspend fun read() {
+        if (::queue.isInitialized) return
         if (File(c.filesDir, QUEUE_FILE).exists()) c.openFileInput(QUEUE_FILE).use {
             queue = ArrayList(InputStreamReader(it, charset).readLines())
         } else queue = arrayListOf()

@@ -33,7 +33,7 @@ import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
-    private val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
+    val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
     lateinit var nav: NavController
     private val navMap = mapOf(
         R.id.navRadar to R.id.page_rad,

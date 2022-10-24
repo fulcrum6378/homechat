@@ -4,6 +4,7 @@
     <color name="background">#FFFBFF</color>
 
     <!-- PageCht -->
-    <color name="msgMe">#15900081</color>
+    <color name="msgMe">#F5F5F5</color><!--#15900081-->
     <color name="msgThemStroke">#AAA</color>
+    <color name="chatText">#555</color>
 </resources>

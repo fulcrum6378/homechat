@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    tools:ignore="MissingConstraints">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -17,31 +19,50 @@
         app:layout_constraintBottom_toTopOf="@id/panel"
         app:layout_constraintTop_toTopOf="parent" />
 
+    <View
+        android:id="@+id/bottomShadow"
+        style="@style/shadow"
+        android:layout_height="2.5dp"
+        android:alpha="0.4"
+        android:rotationX="180"
+        app:layout_constraintBottom_toTopOf="@id/panel" />
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/panel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:minHeight="30sp"
         android:paddingLeft="@dimen/pagePadH"
+        android:paddingTop="8dp"
         android:paddingRight="@dimen/pagePadH"
+        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/field"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginEnd="10dp"
+            android:background="@null"
+            android:hint="@string/newMessage"
             android:importantForAutofill="no"
-            android:inputType="textLongMessage"
+            android:inputType="textMultiLine|textLongMessage"
+            android:maxLines="7"
+            android:textIsSelectable="true"
             android:textSize="@dimen/fieldTextSize"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/send"
-            app:layout_constraintStart_toStartOf="parent" />
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Send"
+            android:text="@string/send"
+            android:textColor="@android:color/white"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -31,7 +31,7 @@ class Chat(
                 c.dao.addChat(it)
                 c.m.chats?.add(it)
             }
-            c.m.radar.update()
+            c.m.radar.update(c.dao)
         }
     }
 }

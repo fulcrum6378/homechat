@@ -88,16 +88,14 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
 
         // Seen if not
         var notSeen: List<Seen>? = null
-        if (!msg.me()
-            && msg.status!!
-                .filter { it.dateSeen == null }
-                .apply { notSeen = this }
-                .isNotEmpty()
+        if (!msg.me() &&
+            msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }.isNotEmpty()
         ) CoroutineScope(Dispatchers.IO).launch {
             var queue = arrayOf<String>()
             notSeen!!.forEach {
                 it.dateSeen = Database.now()
-                c.dao.addSeen(it)
+                c.dao.updateSeen(it)
+                msg.status!!.add(it)
                 queue = queue.plus(it.toQueue(c.m))
             }
             Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, queue) }

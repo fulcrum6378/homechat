@@ -2,4 +2,8 @@
 <resources>
 
     <color name="background">#1C1B20</color>
+
+    <!-- PageCht -->
+    <color name="msgMe">#444</color>
+    <color name="chatText">#FFF</color>
 </resources>

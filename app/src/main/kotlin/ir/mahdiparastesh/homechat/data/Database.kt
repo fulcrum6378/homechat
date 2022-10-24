@@ -20,7 +20,7 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT id FROM Contact")
         suspend fun contactIds(): List<Short>
 
-        @Insert // (onConflict = OnConflictStrategy.REPLACE)
+        @Insert
         suspend fun addContact(item: Contact)
 
         @Update
@@ -43,9 +43,15 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Message WHERE id LIKE :id AND chat LIKE :chat LIMIT 1")
         suspend fun message(id: Long, chat: Short): Message?
 
-        @Insert
+        @Insert(onConflict = OnConflictStrategy.ABORT)
         suspend fun addMessage(item: Message)
 
+        @Update
+        suspend fun updateMessage(item: Message)
+
+
+        @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat")
+        suspend fun seenForMessage(msg: Long, chat: Short): List<Seen>
 
         @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
         suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?

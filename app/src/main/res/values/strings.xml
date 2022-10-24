@@ -9,6 +9,7 @@
     <string name="cancel">Cancel</string>
     <string name="yes">Yes</string>
     <string name="no">No</string>
+    <string name="send">Send</string>
 
     <!-- PageRad -->
     <string name="navOpen">Open</string>
@@ -16,4 +17,7 @@
     <string name="radarEmpty">No other devices found!</string>
     <string name="newContact">New Contact</string>
     <string name="pair">Pair</string>
+
+    <!-- PageCht -->
+    <string name="newMessage">Message&#8230;</string>
 </resources>

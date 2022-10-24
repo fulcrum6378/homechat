@@ -1,8 +1,10 @@
 package ir.mahdiparastesh.homechat
 
 import android.content.Intent
+import android.database.sqlite.SQLiteConstraintException
 import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.WiseService
+import ir.mahdiparastesh.homechat.page.PageCht
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -73,7 +75,18 @@ class Receiver : WiseService() {
             } else (-1).toShort()).toByteArray()
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
-                    dao.addMessage(this)
+                    val w = try {
+                        dao.addMessage(this)
+                        val seen = Seen(id, chat, contact.id)
+                        dao.addSeen(seen)
+                        status = arrayListOf(seen)
+                        PageCht.MSG_INSERTED
+                    } catch (_: SQLiteConstraintException) {
+                        dao.updateMessage(this)
+                        matchSeen(dao)
+                        PageCht.MSG_UPDATED
+                    }
+                    PageCht.handler?.obtainMessage(w, chat.toInt(), 0, this)?.sendToTarget()
                 }
                 0.toByte().toByteArray()
             } else {
@@ -95,7 +108,7 @@ class Receiver : WiseService() {
                 // TODO
                 1.toByte().toByteArray()
             }
-            else -> TODO()
+            else -> throw IllegalArgumentException("${header?.name}: ${hb.toInt()}")
         }
         output.write(out)
         output.flush()
@@ -197,9 +210,9 @@ class Receiver : WiseService() {
             val bb = ByteBuffer.wrap(toByteArray())
             bb.rewind()
             return when (size) {
-                Short.SIZE_BYTES -> bb.short.toInt() as N
+                Short.SIZE_BYTES -> bb.short as N
                 Int.SIZE_BYTES -> bb.int as N
-                Long.SIZE_BYTES -> bb.long.toInt() as N
+                Long.SIZE_BYTES -> bb.long as N
                 else -> 0 as N
             }
         }

@@ -22,9 +22,9 @@ import ir.mahdiparastesh.homechat.Sender
 )
 class Seen : Sender.Queuable {
     // don't make a foreign key for "msg"; 'cus it got no unique index!
-    val msg: Long // can be the sender's and the receiver's message
+    val msg: Long
     val chat: Short
-    val contact: Short // the sender and the receiver have the same contactId
+    val contact: Short
     var dateSent: Long?
     var dateSeen: Long?
 

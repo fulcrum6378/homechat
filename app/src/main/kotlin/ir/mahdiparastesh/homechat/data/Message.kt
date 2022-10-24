@@ -46,4 +46,8 @@ class Message : Sender.Queuable {
     var status: ArrayList<Seen>? = null
 
     fun me() = from == Chat.ME
+
+    suspend fun matchSeen(dao: Database.DAO) {
+        status = ArrayList(dao.seenForMessage(id, chat))
+    }
 }
