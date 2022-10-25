@@ -22,6 +22,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 
 class PageCht : BasePage<Main>() {
     private lateinit var b: PageChtBinding
@@ -46,7 +47,8 @@ class PageCht : BasePage<Main>() {
         // Load data
         if (c.m.messages == null) CoroutineScope(Dispatchers.IO).launch {
             c.m.messages = ArrayList(c.dao.messages(chat.id)).onEach { it.matchSeen(c.dao) }
-        }.invokeOnCompletion { updateList() }
+            withContext(Dispatchers.Main) { updateList() }
+        }
 
         // Handler
         handler = object : Handler(Looper.getMainLooper()) {
@@ -58,7 +60,8 @@ class PageCht : BasePage<Main>() {
                     MSG_INSERTED -> (msg.obj as Message).apply {
                         c.m.messages?.also { list ->
                             list.add(this)
-                            b.list.adapter?.notifyItemInserted(list.size)
+                            b.list.adapter?.notifyItemInserted(list.size - 1)
+                            b.list.scrollToPosition(list.size - 1)
                         }
                     }
                     MSG_UPDATED -> (msg.obj as Message).apply {
@@ -95,10 +98,20 @@ class PageCht : BasePage<Main>() {
                 } // Do not queue the Seen now! It'll be created automatically on the target device!
                 c.m.messages?.add(msg)
                 withContext(Dispatchers.Main) {
-                    updateList() // FIXME use notifyAdded
                     Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, msg.toQueue(c.m)) }
+                    c.m.messages?.size?.also { size ->
+                        b.list.adapter?.notifyItemInserted(size - 1)
+                        b.list.scrollToPosition(size - 1)
+                    }
                 }
             }
+        }
+
+        // Optimizations
+        KeyboardVisibilityEvent.setEventListener(c, this) {
+            // b.list.addOnLayoutChangeListener
+            if (!b.list.canScrollVertically(1))
+                c.m.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
         }
     }
 
@@ -106,6 +119,7 @@ class PageCht : BasePage<Main>() {
     private fun updateList() {
         if (b.list.adapter == null) b.list.adapter = ListMsg(c/*, this*/)
         else b.list.adapter?.notifyDataSetChanged()
+        c.m.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
     }
 
     /*override fun onListScrolled() {

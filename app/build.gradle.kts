@@ -14,7 +14,7 @@ android {
         minSdk = 21
         targetSdk = 33
         versionCode = 1
-        versionName = "1.0.0"
+        versionName = "1.0.5"
     }
 
     sourceSets.getByName("main") {
@@ -47,4 +47,5 @@ dependencies {
     implementation("androidx.room:room-ktx:$roomVersion") // necessary for "suspend"
     implementation("androidx.room:room-runtime:$roomVersion")
     implementation("com.google.android.material:material:1.7.0")
+    implementation("net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3")
 }

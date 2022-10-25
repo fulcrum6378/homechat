@@ -17,7 +17,8 @@
         android:paddingBottom="8dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/panel"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:stackFromEnd="true" />
 
     <View
         android:id="@+id/bottomShadow"
@@ -33,9 +34,7 @@
         android:layout_height="wrap_content"
         android:minHeight="30sp"
         android:paddingLeft="@dimen/pagePadH"
-        android:paddingTop="8dp"
         android:paddingRight="@dimen/pagePadH"
-        android:paddingBottom="8dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <androidx.appcompat.widget.AppCompatEditText
@@ -48,6 +47,9 @@
             android:importantForAutofill="no"
             android:inputType="textMultiLine|textLongMessage"
             android:maxLines="7"
+            android:paddingTop="18dp"
+            android:paddingBottom="18dp"
+            android:textColor="@color/chatText"
             android:textIsSelectable="true"
             android:textSize="@dimen/fieldTextSize"
             app:layout_constraintBottom_toBottomOf="parent"

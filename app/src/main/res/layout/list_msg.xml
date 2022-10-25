@@ -21,6 +21,7 @@
         android:layout_height="wrap_content"
         android:paddingTop="4dp"
         android:paddingBottom="4dp"
+        app:layout_constrainedWidth="true"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/date"
@@ -40,12 +41,12 @@
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/text"
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:paddingBottom="10dp"
                 android:textColor="@color/chatText"
                 android:textSize="18sp"
-                app:layout_constraintBottom_toTopOf="@id/time"
+                app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
             <androidx.appcompat.widget.AppCompatImageView
@@ -61,10 +62,10 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:textColor="@color/chatText"
+                android:textColor="@color/chatTime"
                 android:textSize="12.5sp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toEndOf="@id/seen" />
+                app:layout_constraintStart_toEndOf="@id/seen"
+                app:layout_constraintTop_toBottomOf="@id/text" />
         </androidx.constraintlayout.widget.ConstraintLayout>
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

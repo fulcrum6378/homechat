@@ -17,9 +17,7 @@ class Chat(
     @Transient
     var contacts: List<Contact>? = null
 
-    fun size() = contacts?.size ?: contactIds.split(CONTACT_SEP).size
-
-    fun isDirect() = size() == 1
+    fun isDirect() = (contacts?.size ?: contactIds.split(CONTACT_SEP).size) == 1
 
     companion object {
         const val CONTACT_SEP = ","

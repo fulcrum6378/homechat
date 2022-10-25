@@ -27,30 +27,6 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
     private val rtl = c.resources.getBoolean(R.bool.dirRtl)
     private val cornerFamily = CornerFamily.ROUNDED
     private val cornerSize = c.resources.getDimension(R.dimen.mediumCornerSize)
-    private val meStyle: MaterialShapeDrawable by lazy {
-        MaterialShapeDrawable(
-            ShapeAppearanceModel.Builder().apply {
-                setTopLeftCorner(cornerFamily, cornerSize)
-                setTopRightCorner(cornerFamily, cornerSize)
-                if (rtl) setBottomRightCorner(cornerFamily, cornerSize)
-                else setBottomLeftCorner(cornerFamily, cornerSize)
-            }.build()
-        ).apply { fillColor = ContextCompat.getColorStateList(c, R.color.msg_me) }
-    }
-    private val themStyle: MaterialShapeDrawable by lazy {
-        MaterialShapeDrawable(
-            ShapeAppearanceModel.Builder().apply {
-                setTopLeftCorner(cornerFamily, cornerSize)
-                setTopRightCorner(cornerFamily, cornerSize)
-                if (rtl) setBottomLeftCorner(cornerFamily, cornerSize)
-                else setBottomRightCorner(cornerFamily, cornerSize)
-            }.build()
-        ).apply {
-            fillColor = ContextCompat.getColorStateList(c, R.color.msg_them)
-            strokeColor = ContextCompat.getColorStateList(c, R.color.msg_them_stroke)
-            strokeWidth = 1f
-        }
-    }
 
     override fun onCreateViewHolder(
         parent: ViewGroup, viewType: Int
@@ -59,6 +35,7 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
 
     override fun onBindViewHolder(h: AnyViewHolder<ListMsgBinding>, i: Int) {
         val msg = c.m.messages?.getOrNull(i) ?: return
+        val isMe = msg.me()
 
         // Date
         val cal = msg.date.calendar()
@@ -75,10 +52,26 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
 
         // Layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
-            .apply { horizontalBias = if (msg.me()) 1f else 0f }
+            .apply { horizontalBias = if (isMe) 1f else 0f }
         h.b.body.layoutParams = (h.b.body.layoutParams as ConstraintLayout.LayoutParams)
-            .apply { horizontalBias = if (msg.me()) 1f else 0f }
-        h.b.body.background = if (msg.me()) meStyle else themStyle
+            .apply { horizontalBias = if (isMe) 1f else 0f }
+        h.b.body.background = MaterialShapeDrawable(
+            ShapeAppearanceModel.Builder().apply {
+                setTopLeftCorner(cornerFamily, cornerSize)
+                setTopRightCorner(cornerFamily, cornerSize)
+                if ((isMe && rtl) || (!isMe && !rtl))
+                    setBottomRightCorner(cornerFamily, cornerSize)
+                if ((isMe && !rtl) || (!isMe && rtl))
+                    setBottomLeftCorner(cornerFamily, cornerSize)
+            }.build()
+        ).apply {
+            fillColor =
+                ContextCompat.getColorStateList(c, if (isMe) R.color.msg_me else R.color.msg_them)
+            if (!isMe) {
+                strokeColor = ContextCompat.getColorStateList(c, R.color.msg_them_stroke)
+                strokeWidth = 1f
+            }
+        }
 
         // Data
         h.b.text.text = msg.data
@@ -88,7 +81,7 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
 
         // Seen if not
         var notSeen: List<Seen>? = null
-        if (!msg.me() &&
+        if (!isMe &&
             msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }.isNotEmpty()
         ) CoroutineScope(Dispatchers.IO).launch {
             var queue = arrayOf<String>()

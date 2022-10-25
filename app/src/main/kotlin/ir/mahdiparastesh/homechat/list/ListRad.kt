@@ -34,7 +34,13 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val dev = if (item is Device) item else null
         h.b.title.text = "${i + 1}. " +
                 (dev?.name ?: chat!!.name ?: chat!!.contacts?.firstOrNull()?.name.toString())
-        h.b.subtitle.text = dev?.toString() ?: chat?.dateInit?.let { c.dateFormat.format(it) }
+        h.b.subtitle.text = dev?.toString() ?: (chat!!.dateInit
+            .let { c.dateFormat.format(it) + " " + c.timeFormat.format(it) } + " - " + when {
+            chat.isDirect() -> if (chat.contacts?.firstOrNull()?.lastIp
+                    ?.let { ip -> ip in c.m.radar.devices.map { it.host.hostAddress } } == true
+            ) "online" else "offline"
+            else -> "${chat.contacts?.size ?: 0} people"
+        })
 
         if (chat != null) h.b.root.setOnClickListener {
             c.nav.navigate(
