@@ -2,6 +2,7 @@ package ir.mahdiparastesh.homechat
 
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
+import android.util.Log
 import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.WiseService
 import ir.mahdiparastesh.homechat.page.PageCht
@@ -26,6 +27,13 @@ class Receiver : WiseService() {
     override fun onCreate() {
         super.onCreate()
         m.aliveReceiver = true
+        Thread {
+            while (!isDestroyed) {
+                Log.println(Log.ASSERT, packageName, "RECEIVER: working...")
+                Thread.sleep(2500)
+            }
+            Log.println(Log.ASSERT, packageName, "RECEIVER: DESTROYED!!!")
+        }.start()
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
@@ -121,6 +129,7 @@ class Receiver : WiseService() {
             .toMutableSet() else mutableSetOf()
         var chosenId: Short
         ourIds.forEach { ids.add(it) }
+        onDestroy()
         do {
             chosenId = (0.toShort()..Short.MAX_VALUE).random().toShort()
         } while (chosenId in ids)
@@ -137,9 +146,14 @@ class Receiver : WiseService() {
         data = String(raw.subList(26, raw.size).toByteArray()),
     )
 
+    private var isDestroyed = false
+    /** A background service is destroyed even if you add Firebase intent filters
+     * and POST_NOTIFICATION permission, and disable battery usage optimisation!
+     * Moreover there are no permissions to keep it alive! */
     override fun onDestroy() {
         if (::server.isInitialized) server.close()
         m.aliveReceiver = false
+        isDestroyed = true
         super.onDestroy()
     }
 
