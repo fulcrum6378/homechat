@@ -1,18 +1,13 @@
 package ir.mahdiparastesh.homechat
 
-import android.app.AlarmManager
-import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
-import android.net.ConnectivityManager
 import android.net.IpSecManager.*
-import android.os.Build
-import android.os.SystemClock
 import android.util.Log
 import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.WiseService
 import ir.mahdiparastesh.homechat.page.PageCht
+import ir.mahdiparastesh.homechat.page.PageSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,27 +29,20 @@ class Receiver : WiseService() {
     override fun onCreate() {
         super.onCreate()
         m.aliveReceiver = true
-        Log.println(Log.ASSERT, packageName, "RECEIVER: onCreate...")
         Thread {
-            while (true/*!isDestroyed*/) {
+            while (m.aliveReceiver) {
                 Log.println(Log.ASSERT, packageName, "RECEIVER: working...")
-                Thread.sleep(2500)
+                Thread.sleep(3000)
             }
-            Log.println(Log.ASSERT, packageName, "RECEIVER: DESTROYED!!!")
         }.start()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            val con = (getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
-            con.bindProcessToNetwork(con.activeNetwork!!)
-        }
     }
 
-    override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        Log.println(Log.ASSERT, packageName, "RECEIVER: onStartCommand...")
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
-            server = ServerSocket(intent.getIntExtra(EXTRA_PORT, 0))
+            server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
             receive()
         }.start()
-        return START_REDELIVER_INTENT // don't try START_REDELIVER_INTENT or START_STICKY_COMPATIBILITY
+        return super.onStartCommand(intent, flags, startId)
     }
 
     private suspend fun receive() {
@@ -62,8 +50,9 @@ class Receiver : WiseService() {
             socket = server.accept() // listens until a connection is made (blocks the thread)
         } catch (e: SocketException) {
             if (e.message == "Socket closed") return // this catch is always necessary!
-            else Main.handler?.obtainMessage(3, e.message.toString())?.sendToTarget()
+            else throw e
         }
+        // TODO See if you can put the rest in a resolve() method in a sep thread and give the socket to it.
         val input = socket.getInputStream()
         val output = socket.getOutputStream() // don't use PrintWriter even with autoFlush
 
@@ -72,7 +61,7 @@ class Receiver : WiseService() {
         val dev = m.radar.devices.find { it.host.hostAddress == fromIp }
         val contact =
             if (dev != null) m.contacts?.find { it.equals(dev) }
-            else m.contacts?.find { it.lastIp == fromIp }
+            else m.contacts?.find { it.ip == fromIp }
 
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
@@ -158,33 +147,13 @@ class Receiver : WiseService() {
         data = String(raw.subList(26, raw.size).toByteArray()),
     )
 
-    private var isDestroyed = false
-
-    /** A background service is destroyed even if you add Firebase intent filters,
-     * disable battery usage optimisation or setup a wave lock!
-     * Moreover there are no permissions to keep it alive!
-     * WorkManager also does the same shit we used to do: foreground services!!
-     * ConnectivityManager.bindProcessToNetwork also didn't work!
-     * But we succeeded using continuous AlarmManager calls! */
     override fun onDestroy() {
-        /*(getSystemService(Context.ALARM_SERVICE) as? AlarmManager)?.set(
-            AlarmManager.ELAPSED_REALTIME, 1000L,
-            PendingIntent.getService(
-                c, 0,
-                Intent(c, Receiver::class.java).putExtra(EXTRA_PORT, server.localPort),
-                PendingIntent.FLAG_IMMUTABLE
-            )
-        )*/
-
         if (::server.isInitialized) server.close()
         m.aliveReceiver = false
-        isDestroyed = true
         super.onDestroy()
     }
 
     companion object {
-        const val EXTRA_PORT = "port"
-
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
         @Throws(IOException::class)
         fun InputStream.readNBytesCompat(len: Int): ByteArray {

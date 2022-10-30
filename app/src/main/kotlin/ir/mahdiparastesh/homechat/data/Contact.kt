@@ -8,7 +8,8 @@ import ir.mahdiparastesh.homechat.more.Persistent
 class Contact(
     @PrimaryKey var id: Short, // Room does not support unsigned numbers!
     var name: String,
-    var lastIp: String?, // obtaining MAC address is almost impossible in the newer APIs!
+    var ip: String?,
+    var port: Int,
     var email: String? = null,
     var phone: String? = null,
     var lastOnline: Long? = null,
@@ -23,16 +24,16 @@ class Contact(
     override fun hashCode(): Int = id.hashCode()
 
     companion object {
+        // obtaining MAC address is almost impossible in the newer APIs!
         const val ATTR_EMAIL = "email"
         const val ATTR_PHONE = "phone"
 
-        suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device): Contact {
-            return Contact(
-                chosenId, dev.name, dev.host.hostAddress!!, dev.email, dev.phone, Database.now()
-            ).also {
-                c.dao.addContact(it)
-                c.m.contacts?.add(it)
-            }
+        suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device): Contact = Contact(
+            chosenId, dev.name, dev.host.hostAddress!!, dev.port,
+            dev.email, dev.phone, Database.now()
+        ).also {
+            c.dao.addContact(it)
+            c.m.contacts?.add(it)
         }
     }
 }

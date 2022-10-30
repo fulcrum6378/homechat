@@ -5,7 +5,6 @@ import android.content.ContextWrapper
 import android.content.Intent
 import ir.mahdiparastesh.homechat.Receiver.Companion.toByteArray
 import ir.mahdiparastesh.homechat.data.Database
-import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.data.Seen
@@ -57,15 +56,16 @@ class Sender : WiseService() {
             }
             if (o == null) {
                 queue.removeAt(i); continue; }
-            val target = m.radar.devices.find { it.equals(contact) }
-            if (target == null) {
-                i++; continue; } // FIXME THIS SUCKS, CHECK FOR THE SERVER SOCKET NOT NSD...
+            if (contact.ip == null)
+                contact.ip = m.radar.devices.find { it.equals(contact) }?.host?.hostAddress
+            if (contact.ip == null) {
+                i++; continue; }
 
             if (o is Message) dao.seen(o.id, o.chat, contact.id)!!.apply {
                 dateSent = Database.now()
                 dao.updateSeen(this)
             }
-            Transmitter(target.toString().makeAddressPair(), o.header(), {
+            Transmitter(Pair(contact.ip!!, contact.port), o.header(), {
                 when (o) {
                     is Message -> o.id.toByteArray()
                         .plus(o.chat.toByteArray())

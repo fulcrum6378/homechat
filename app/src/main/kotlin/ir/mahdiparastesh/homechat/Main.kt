@@ -1,13 +1,13 @@
 package ir.mahdiparastesh.homechat
 
+import android.annotation.SuppressLint
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
-import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
+import android.os.*
 import android.provider.Settings
 import android.view.MenuItem
 import android.view.View
@@ -25,6 +25,7 @@ import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.more.Persistent
+import ir.mahdiparastesh.homechat.page.PageSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -45,10 +46,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String
-    private var mServicePort = 0
     private var registered = false
     private var discovering = false
-    private lateinit var antennaIntent: Intent
 
     override val c: Context get() = applicationContext
     override lateinit var m: Model
@@ -57,6 +56,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override val dao: Database.DAO by lazy { db.dao() }
     override lateinit var sp: SharedPreferences
 
+    @SuppressLint("BatteryLife")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
@@ -81,7 +81,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         // Handler
         handler = object : Handler(Looper.getMainLooper()) {
-            override fun handleMessage(msg: android.os.Message) {
+            override fun handleMessage(msg: Message) {
                 when (msg.what) {
                     MSG_FOUND -> Device(msg.obj as NsdServiceInfo).apply {
                         if (name == mServiceName) m.radar.self = this
@@ -96,24 +96,32 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         CoroutineScope(Dispatchers.IO)
                             .launch { m.radar.delete(srvInfo.serviceName, dao) }
                     }
-                    3 -> Toast.makeText(c, "${msg.obj}", Toast.LENGTH_SHORT).show()
                 }
             }
         }
 
         // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
-        mServicePort = ServerSocket(0).use { it.localPort }
-        antennaIntent = Intent(c, Receiver::class.java).putExtra(Receiver.EXTRA_PORT, mServicePort)
-        startService(antennaIntent)
+        if (!sp.contains(PageSet.PRF_PORT))
+            sp.edit().putInt(PageSet.PRF_PORT, ServerSocket(0).use { it.localPort }).apply()
+        if (!m.aliveReceiver) startService(Intent(c, Receiver::class.java))
         nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
             serviceType = SERVICE_TYPE
-            port = mServicePort
+            port = sp.getInt(PageSet.PRF_PORT, -1)
             setAttribute(Contact.ATTR_EMAIL, null) // TODO
             setAttribute(Contact.ATTR_PHONE, null) // TODO
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
+
+        // Request ignore battery optimizations
+        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
+            pm.isIgnoringBatteryOptimizations(packageName)
+        ) try {
+            startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS))
+        } catch (_: ActivityNotFoundException) {
+        }
     }
 
     override fun setContentView(root: View?) {
@@ -208,7 +216,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     override fun onDestroy() {
         if (registered) nsdManager.unregisterService(regListener)
-        //stopService(antennaIntent) // TODO: FUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUCCCCKKKKK
         handler = null
         m.aliveMain = false
         if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
@@ -226,4 +233,5 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 /* TODO
 * Cannot work with VPN!
 * Fucks up when 2 devices open simultaneously!
+* It doesn't store the self's message on a simultaneous send.
 */

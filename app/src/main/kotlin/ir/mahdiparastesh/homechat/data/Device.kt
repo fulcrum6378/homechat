@@ -23,15 +23,15 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item {
             return; }
         contact = if (matches.size == 1) matches[0] else null
         contact?.apply {
-            if (lastIp != host.hostAddress) {
-                lastIp = host.hostAddress
+            if (ip != host.hostAddress) {
+                ip = host.hostAddress
                 dao.updateContact(this)
             }
         }
         m.contacts?.forEach {
             if (it.id == contact?.id) return@forEach
-            if (it.lastIp == contact?.lastIp) {
-                it.lastIp = null
+            if (it.ip == contact?.ip) {
+                it.ip = null
                 dao.updateContact(it)
             }
         }
