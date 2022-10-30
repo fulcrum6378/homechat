@@ -3,6 +3,7 @@ package ir.mahdiparastesh.homechat.more
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.IBinder
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
@@ -18,10 +19,12 @@ abstract class WiseService : Service(), Persistent, ViewModelStoreOwner {
     final override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
     override val db: Database by dbLazy
     override val dao: Database.DAO by lazy { db.dao() }
+    override lateinit var sp: SharedPreferences
 
     override fun onCreate() {
         super.onCreate()
         m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
+        sp = sp()
     }
 
     override fun onDestroy() {

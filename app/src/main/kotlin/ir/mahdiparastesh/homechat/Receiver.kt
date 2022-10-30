@@ -1,10 +1,14 @@
 package ir.mahdiparastesh.homechat
 
+import android.app.AlarmManager
+import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
 import android.net.ConnectivityManager
 import android.net.IpSecManager.*
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.WiseService
@@ -38,7 +42,6 @@ class Receiver : WiseService() {
             }
             Log.println(Log.ASSERT, packageName, "RECEIVER: DESTROYED!!!")
         }.start()
-        //(getSystemService(Context.POWER_SERVICE) as PowerManager)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val con = (getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
             con.bindProcessToNetwork(con.activeNetwork!!)
@@ -51,7 +54,7 @@ class Receiver : WiseService() {
             server = ServerSocket(intent.getIntExtra(EXTRA_PORT, 0))
             receive()
         }.start()
-        return START_STICKY // don't try START_REDELIVER_INTENT or START_STICKY_COMPATIBILITY
+        return START_REDELIVER_INTENT // don't try START_REDELIVER_INTENT or START_STICKY_COMPATIBILITY
     }
 
     private suspend fun receive() {
@@ -161,9 +164,18 @@ class Receiver : WiseService() {
      * disable battery usage optimisation or setup a wave lock!
      * Moreover there are no permissions to keep it alive!
      * WorkManager also does the same shit we used to do: foreground services!!
-     * Although we may be able to run the server on the system and then use a BroadcastReceiver
-     * to handle the signals! */
+     * ConnectivityManager.bindProcessToNetwork also didn't work!
+     * But we succeeded using continuous AlarmManager calls! */
     override fun onDestroy() {
+        /*(getSystemService(Context.ALARM_SERVICE) as? AlarmManager)?.set(
+            AlarmManager.ELAPSED_REALTIME, 1000L,
+            PendingIntent.getService(
+                c, 0,
+                Intent(c, Receiver::class.java).putExtra(EXTRA_PORT, server.localPort),
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        )*/
+
         if (::server.isInitialized) server.close()
         m.aliveReceiver = false
         isDestroyed = true

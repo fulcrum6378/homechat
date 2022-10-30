@@ -2,6 +2,7 @@ package ir.mahdiparastesh.homechat
 
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.Bundle
@@ -54,12 +55,14 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
     override val db: Database by dbLazy
     override val dao: Database.DAO by lazy { db.dao() }
+    override lateinit var sp: SharedPreferences
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
         m.aliveMain = true
         setContentView(b.root)
+        sp = sp()
 
         // Navigation
         ActionBarDrawerToggle(
@@ -205,7 +208,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     override fun onDestroy() {
         if (registered) nsdManager.unregisterService(regListener)
-        stopService(antennaIntent)
+        //stopService(antennaIntent) // TODO: FUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUUCCCCKKKKK
         handler = null
         m.aliveMain = false
         if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
