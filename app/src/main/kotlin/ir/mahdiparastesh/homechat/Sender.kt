@@ -59,7 +59,7 @@ class Sender : WiseService() {
                 queue.removeAt(i); continue; }
             val target = m.radar.devices.find { it.equals(contact) }
             if (target == null) {
-                i++; continue; }
+                i++; continue; } // FIXME THIS SUCKS, CHECK FOR THE SERVER SOCKET NOT NSD...
 
             if (o is Message) dao.seen(o.id, o.chat, contact.id)!!.apply {
                 dateSent = Database.now()

@@ -2,6 +2,9 @@ package ir.mahdiparastesh.homechat
 
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
+import android.net.ConnectivityManager
+import android.net.IpSecManager.*
+import android.os.Build
 import android.util.Log
 import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.WiseService
@@ -27,22 +30,28 @@ class Receiver : WiseService() {
     override fun onCreate() {
         super.onCreate()
         m.aliveReceiver = true
+        Log.println(Log.ASSERT, packageName, "RECEIVER: onCreate...")
         Thread {
-            while (!isDestroyed) {
+            while (true/*!isDestroyed*/) {
                 Log.println(Log.ASSERT, packageName, "RECEIVER: working...")
                 Thread.sleep(2500)
             }
             Log.println(Log.ASSERT, packageName, "RECEIVER: DESTROYED!!!")
         }.start()
+        //(getSystemService(Context.POWER_SERVICE) as PowerManager)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val con = (getSystemService(CONNECTIVITY_SERVICE) as ConnectivityManager)
+            con.bindProcessToNetwork(con.activeNetwork!!)
+        }
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
-        super.onStartCommand(intent, flags, startId)
-        if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch { // one-time socket!!
+        Log.println(Log.ASSERT, packageName, "RECEIVER: onStartCommand...")
+        if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
             server = ServerSocket(intent.getIntExtra(EXTRA_PORT, 0))
             receive()
         }.start()
-        return START_NOT_STICKY
+        return START_STICKY // don't try START_REDELIVER_INTENT or START_STICKY_COMPATIBILITY
     }
 
     private suspend fun receive() {
@@ -147,9 +156,13 @@ class Receiver : WiseService() {
     )
 
     private var isDestroyed = false
-    /** A background service is destroyed even if you add Firebase intent filters
-     * and POST_NOTIFICATION permission, and disable battery usage optimisation!
-     * Moreover there are no permissions to keep it alive! */
+
+    /** A background service is destroyed even if you add Firebase intent filters,
+     * disable battery usage optimisation or setup a wave lock!
+     * Moreover there are no permissions to keep it alive!
+     * WorkManager also does the same shit we used to do: foreground services!!
+     * Although we may be able to run the server on the system and then use a BroadcastReceiver
+     * to handle the signals! */
     override fun onDestroy() {
         if (::server.isInitialized) server.close()
         m.aliveReceiver = false
