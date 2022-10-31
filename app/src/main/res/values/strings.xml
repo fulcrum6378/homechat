@@ -20,4 +20,10 @@
 
     <!-- PageCht -->
     <string name="newMessage">Message&#8230;</string>
+
+    <!-- Receiver -->
+    <string name="ntfGrpChat">Chat</string>
+    <string name="ntfGrpChatDesc">Anything related to chats.</string>
+    <string name="ntfNewMessage">New messages</string>
+    <string name="ntfNewMessageDesc">Someone sent you (a) message(s).</string>
 </resources>

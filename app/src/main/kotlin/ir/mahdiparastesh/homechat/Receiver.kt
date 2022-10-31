@@ -1,10 +1,14 @@
 package ir.mahdiparastesh.homechat
 
+import android.app.Notification
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
 import android.net.IpSecManager.*
 import android.util.Log
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import ir.mahdiparastesh.homechat.data.*
+import ir.mahdiparastesh.homechat.more.Notify
 import ir.mahdiparastesh.homechat.more.WiseService
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageSet
@@ -23,7 +27,6 @@ import kotlin.math.min
 @Suppress("BlockingMethodInNonBlockingContext")
 class Receiver : WiseService() {
     private lateinit var server: ServerSocket
-    private lateinit var socket: Socket
     private val ipToContactId = hashMapOf<String, Short>()
 
     override fun onCreate() {
@@ -35,24 +38,32 @@ class Receiver : WiseService() {
                 Thread.sleep(3000)
             }
         }.start()
+        NotificationManagerCompat.from(c).apply {
+            createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
+            createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
+        }
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
             server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
-            receive()
+            listen()
         }.start()
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private suspend fun receive() {
+    private suspend fun listen() {
         try {
-            socket = server.accept() // listens until a connection is made (blocks the thread)
+            server.accept() // listens until a connection is made (blocks the thread)
+                .apply { CoroutineScope(Dispatchers.IO).launch { resolve(this@apply) } }
         } catch (e: SocketException) {
             if (e.message == "Socket closed") return // this catch is always necessary!
             else throw e
         }
-        // TODO See if you can put the rest in a resolve() method in a sep thread and give the socket to it.
+        listen()
+    }
+
+    private suspend fun resolve(socket: Socket) {
         val input = socket.getInputStream()
         val output = socket.getOutputStream() // don't use PrintWriter even with autoFlush
 
@@ -73,12 +84,12 @@ class Receiver : WiseService() {
                     String(input.readNBytesCompat(len!!)),
                     dao.contactIds()
                 ).also { chosenId ->
-                    Contact.postPairing(this, chosenId, dev)
+                    Contact.postPairing(this@Receiver, chosenId, dev)
                     ipToContactId[fromIp] = chosenId
                 } else (-1).toShort()).toByteArray()
             Header.INIT -> (if (fromIp in ipToContactId) {
                 val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
-                Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
+                Chat.postInitiation(this@Receiver, chosenId, ipToContactId[fromIp].toString())
                 // FIXME not compatible with group chat
                 chosenId
             } else (-1).toShort()).toByteArray()
@@ -97,7 +108,13 @@ class Receiver : WiseService() {
                     }
                     PageCht.handler?.obtainMessage(w, chat.toInt(), 0, this)?.sendToTarget()
                     if (PageCht.handler == null && w == PageCht.MSG_INSERTED && !contact.muted)
-                        TODO()
+                        NotificationManagerCompat.from(c).notify(
+                            contact.id.toInt(),
+                            NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id)
+
+                                .setAutoCancel(true)
+                                .build()
+                        )
                 }
                 0.toByte().toByteArray()
             } else {
@@ -124,7 +141,6 @@ class Receiver : WiseService() {
         output.write(out)
         output.flush()
         socket.close() // necessary for the output stream to send
-        receive()
     }
 
     private fun findUniqueId(seq: String, ourIds: List<Short>): Short {
