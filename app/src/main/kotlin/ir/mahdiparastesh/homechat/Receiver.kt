@@ -96,6 +96,8 @@ class Receiver : WiseService() {
                         PageCht.MSG_UPDATED
                     }
                     PageCht.handler?.obtainMessage(w, chat.toInt(), 0, this)?.sendToTarget()
+                    if (PageCht.handler == null && w == PageCht.MSG_INSERTED && !contact.muted)
+                        TODO()
                 }
                 0.toByte().toByteArray()
             } else {

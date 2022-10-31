@@ -54,7 +54,7 @@ class PageCht : BasePage<Main>() {
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
                 if (msg.arg1 != chat.id.toInt()) {
-                    // TODO
+                    // TODO in-app notification
                     return; }
                 when (msg.what) {
                     MSG_INSERTED -> (msg.obj as Message).apply {

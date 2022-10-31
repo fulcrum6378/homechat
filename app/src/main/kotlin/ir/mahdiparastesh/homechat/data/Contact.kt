@@ -14,6 +14,7 @@ class Contact(
     var phone: String? = null,
     var lastOnline: Long? = null,
     val dateCreated: Long = Database.now(),
+    var muted: Boolean = false,
 ) {
     override fun equals(other: Any?): Boolean = when (other) {
         is Device -> name == other.name && (email == other.email || phone == other.phone)
