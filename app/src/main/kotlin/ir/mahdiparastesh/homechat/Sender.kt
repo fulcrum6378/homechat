@@ -25,7 +25,7 @@ class Sender : WiseService() {
         m.aliveSender = true
     }
 
-    // The system first calls onCreate(), and then it calls onStartCommand().
+    /** The system first calls onCreate(), and then it calls onStartCommand(). */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         super.onStartCommand(intent, flags, startId)
         if (!working || intent.extras?.containsKey(EXTRA_NEW_QUEUE) == true
@@ -44,18 +44,18 @@ class Sender : WiseService() {
         working = true
         read()
         i = 0
-        if (queue.isNotEmpty()) while (i < queue.size) {
+        while (i < queue.size) {
             val spl = queue[i].split("-")
             val contact = m.contacts?.find { it.id == spl[0].toShort() }
             if (contact == null) {
-                queue.removeAt(i); continue; }
+                queue.safeRemoveAt(i); continue; }
             val o: Queuable? = when (spl[1]) {
                 Q_MESSAGE -> dao.message(spl[2].toLong(), spl[3].toShort())
                 Q_SEEN -> dao.seen(spl[2].toLong(), spl[3].toShort(), contact.id)
                 else -> throw IllegalStateException()
             }
             if (o == null) {
-                queue.removeAt(i); continue; }
+                queue.safeRemoveAt(i); continue; }
             if (contact.ip == null)
                 contact.ip = m.radar.devices.find { it.equals(contact) }?.host?.hostAddress
             if (contact.ip == null) {
@@ -77,7 +77,7 @@ class Sender : WiseService() {
                         .plus(o.dateSeen!!.toByteArray())
                     else -> throw IllegalStateException()
                 }
-            }) { res -> if (res?.firstOrNull() == 0.toByte()) queue.removeAt(i) }
+            }) { res -> if (res?.firstOrNull() == 0.toByte()) queue.safeRemoveAt(i) else i++ }
             write()
         }
         working = false
@@ -95,6 +95,13 @@ class Sender : WiseService() {
     private suspend fun write() {
         c.openFileOutput(QUEUE_FILE, Context.MODE_PRIVATE).use {
             it.write(queue.joinToString("\n").toByteArray(charset))
+        }
+    }
+
+    private fun ArrayList<String>.safeRemoveAt(index: Int) {
+        try {
+            removeAt(index)
+        } catch (_: IndexOutOfBoundsException) {
         }
     }
 

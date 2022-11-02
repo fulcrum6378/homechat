@@ -21,6 +21,7 @@ import java.net.Socket
 import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.*
+import java.util.concurrent.CopyOnWriteArrayList
 import kotlin.math.min
 
 @Suppress("BlockingMethodInNonBlockingContext")
@@ -32,47 +33,29 @@ class Receiver : WiseService() {
     override fun onCreate() {
         super.onCreate()
         m.aliveReceiver = true
-        /*Thread {
-            while (m.aliveReceiver) {
-                Log.println(Log.ASSERT, packageName, "RECEIVER: working...")
-                Thread.sleep(3000)
-            }
-        }.start()*/
         nm = NotificationManagerCompat.from(c)
         nm.createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
         nm.createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
     }
 
+    /** A new instance of Receiver is created on the sticky resurrection.
+     * START_STICKY_COMPATIBILITY does not guarantee onStartCommand! */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
             server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
             // close it only on user command and also make it null
+            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
             listen()
         }
         return START_STICKY
-        // START_STICKY_COMPATIBILITY does not guarantee onStartCommand!
-        // a new instance of Receiver is created on the sticky resurrection
     }
 
-    //private var closedSocketStack = 0
     private suspend fun listen() {
-        try {
-            server.accept() // listens until a connection is made (blocks the thread)
-                .apply { CoroutineScope(Dispatchers.IO).launch { resolve(this@apply) } }
-        } catch (e: SocketException) {
-            /*if (e.message == "Socket is closed") { // this catch is always necessary!
-                closedSocketStack++
-                if (closedSocketStack == 5) throw e
-                Thread.sleep(500)
-                listen(); return
-            } else*/ throw e
-        }
-        //closedSocketStack = 0
+        server.accept() // listens until a connection is made (blocks the thread)
+            .apply { CoroutineScope(Dispatchers.IO).launch { resolve(this@apply) } }
         listen()
     }
 
-    // FIXME FUCKS UP with hundreds of unstoppable GOT TEXT when it's in the background
-    // and it's got nothing to do with the Notification
     @Throws(IOException::class, SocketException::class)
     private suspend fun resolve(socket: Socket) {
         val input = socket.getInputStream()
@@ -99,12 +82,14 @@ class Receiver : WiseService() {
                     Contact.postPairing(this, chosenId, dev)
                     ipToContactId[fromIp] = chosenId
                 } else (-1).toShort()).toByteArray()
+
             Header.INIT -> (if (fromIp in ipToContactId) {
                 val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
                 Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
                 // FIXME not compatible with group chat
                 chosenId
             } else (-1).toShort()).toByteArray()
+
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
                     val theChat = dao.chat(chat)
@@ -130,16 +115,15 @@ class Receiver : WiseService() {
                                     // FIXME it removes the previous ones
                                 )
                             ).setSmallIcon(R.mipmap.launcher_round)
+                                //.setContentIntent(TODO())
                                 .setAutoCancel(true)
                                 .build()
                         )
                     }
                 }
                 0.toByte().toByteArray()
-            } else {
-                // TODO
-                1.toByte().toByteArray()
-            }
+            } else 1.toByte().toByteArray()
+
             Header.SEEN -> if (contact != null) {
                 val raw = input.readNBytesCompat(len!!).toList()
                 dao.seen(
@@ -151,10 +135,8 @@ class Receiver : WiseService() {
                     dao.updateSeen(this)
                 }
                 0.toByte().toByteArray()
-            } else {
-                // TODO
-                1.toByte().toByteArray()
-            }
+            } else 1.toByte().toByteArray()
+
             else -> throw IllegalArgumentException("${header?.name}: ${hb.toInt()}")
         }
         output.write(out)
