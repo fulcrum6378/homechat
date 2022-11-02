@@ -33,6 +33,9 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT id FROM Chat")
         suspend fun chatIds(): List<Short>
 
+        @Query("SELECT * FROM Chat WHERE id LIKE :id LIMIT 1")
+        suspend fun chat(id: Short): Chat
+
         @Insert
         suspend fun addChat(item: Chat)
 

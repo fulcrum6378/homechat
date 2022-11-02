@@ -11,6 +11,7 @@ class Chat(
     var contactIds: String, // separated by CONTACT_SEP
     var name: String? = null,
     val dateInit: Long = Database.now(),
+    var muted: Boolean = false,
 ) : Radar.Item {
 
     @Ignore

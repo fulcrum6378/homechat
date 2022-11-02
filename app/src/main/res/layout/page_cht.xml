@@ -15,7 +15,7 @@
         android:paddingTop="@dimen/pageAbovePad"
         android:paddingRight="@dimen/pagePadH"
         android:paddingBottom="8dp"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layoutManager=".more.SafeLinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/panel"
         app:layout_constraintTop_toTopOf="parent"
         app:stackFromEnd="true" />

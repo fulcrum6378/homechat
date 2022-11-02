@@ -27,10 +27,10 @@ abstract class WiseService : Service(), Persistent, ViewModelStoreOwner {
         sp = sp()
     }
 
-    override fun onDestroy() {
-        if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
+    /*override fun onDestroy() {
+        // if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
         super.onDestroy()
-    }
+    }*/
 
     override fun onBind(intent: Intent): IBinder? = null
     override fun getViewModelStore(): ViewModelStore = mViewModelStore

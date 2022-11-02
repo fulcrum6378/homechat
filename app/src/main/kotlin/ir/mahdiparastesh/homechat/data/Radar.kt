@@ -44,4 +44,8 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
     }
 
     interface Item
+
+    interface Named {
+        fun name(): String
+    }
 }

@@ -4,12 +4,11 @@ import android.net.nsd.NsdServiceInfo
 import java.net.InetAddress
 
 @Suppress("MemberVisibilityCanBePrivate")
-class Device(srvInfo: NsdServiceInfo) : Radar.Item {
+class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
     val name: String = srvInfo.serviceName
     val host: InetAddress = srvInfo.host
     val port: Int = srvInfo.port
-    val email: String? = srvInfo.attr(Contact.ATTR_EMAIL)
-    val phone: String? = srvInfo.attr(Contact.ATTR_PHONE)
+    val unique: String? = srvInfo.attr(Contact.ATTR_UNIQUE)
 
     @Transient
     var contact: Contact? = null
@@ -23,8 +22,9 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item {
             return; }
         contact = if (matches.size == 1) matches[0] else null
         contact?.apply {
-            if (ip != host.hostAddress) {
+            if (ip != host.hostAddress || this@apply.port != this@Device.port) {
                 ip = host.hostAddress
+                port = this@Device.port
                 dao.updateContact(this)
             }
         }
@@ -37,17 +37,20 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item {
         }
     }
 
+    override fun name(): String = unique ?: name
+
     override fun toString(): String = "${host.hostAddress}:$port"
 
     override fun equals(other: Any?): Boolean = when (other) {
         is Device -> host.hostAddress == other.host.hostAddress
-        is Contact -> name == other.name && (email == other.email || phone == other.phone)
+        is Contact -> if (unique != null) unique == other.unique else name == other.device
         else -> false
     }
 
     override fun hashCode(): Int {
-        var result = host.hashCode()
-        result = 31 * result + port
+        var result = name.hashCode()
+        result = 31 * result + host.hashCode()
+        result = 31 * result + (unique?.hashCode() ?: 0)
         return result
     }
 

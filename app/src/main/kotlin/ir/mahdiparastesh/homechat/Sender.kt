@@ -44,7 +44,7 @@ class Sender : WiseService() {
         working = true
         read()
         i = 0
-        while (i < queue.size) {
+        if (queue.isNotEmpty()) while (i < queue.size) {
             val spl = queue[i].split("-")
             val contact = m.contacts?.find { it.id == spl[0].toShort() }
             if (contact == null) {

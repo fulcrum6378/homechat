@@ -5,6 +5,7 @@ import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.net.Uri
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
 import android.os.*
@@ -110,16 +111,21 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             serviceName = mServiceName
             serviceType = SERVICE_TYPE
             port = sp.getInt(PageSet.PRF_PORT, -1)
-            setAttribute(Contact.ATTR_EMAIL, null) // TODO
-            setAttribute(Contact.ATTR_PHONE, null) // TODO
+            setAttribute(Contact.ATTR_UNIQUE, null) // TODO
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
 
         // Request ignore battery optimizations
+        // It must check for the ability of working in the background and also data in bg
         val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            pm.isIgnoringBatteryOptimizations(packageName)
+            !pm.isIgnoringBatteryOptimizations(packageName)
         ) try {
-            startActivity(Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS))
+            startActivity(
+                Intent(
+                    Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                    Uri.parse("package:${BuildConfig.APPLICATION_ID}")
+                )
+            )
         } catch (_: ActivityNotFoundException) {
         }
     }
@@ -151,7 +157,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         startDiscovery()
 
         // Load the database
-        /*if (m.contacts == null || m.chats == null)*/ CoroutineScope(Dispatchers.IO).launch {
+        CoroutineScope(Dispatchers.IO).launch {
             if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
             if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
             m.radar.update(dao)
@@ -218,7 +224,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (registered) nsdManager.unregisterService(regListener)
         handler = null
         m.aliveMain = false
-        if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
+        // if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close() TODO ONLY ON USER COMMAND
         super.onDestroy()
     }
 

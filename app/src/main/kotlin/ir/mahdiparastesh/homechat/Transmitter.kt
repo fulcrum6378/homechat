@@ -3,13 +3,14 @@ package ir.mahdiparastesh.homechat
 import ir.mahdiparastesh.homechat.Receiver.Companion.readNBytesCompat
 import java.net.ConnectException
 import java.net.Socket
+import java.net.SocketException
 
 @Suppress("BlockingMethodInNonBlockingContext", "FunctionName")
 suspend fun Transmitter(
     address: Pair<String, Int>,
     header: Receiver.Header,
     data: suspend () -> ByteArray,
-    response: (suspend (response: ByteArray?) -> Unit)? = null
+    response: suspend (response: ByteArray?) -> Unit
 ) {
     var res: ByteArray? = null
     try {
@@ -23,6 +24,7 @@ suspend fun Transmitter(
                 it.getInputStream().apply { res = readNBytesCompat(header.responseBytes) }
         }
     } catch (_: ConnectException) {
+    } catch (_: SocketException) { // "Connection reset"
     }
-    response?.also { it(res) }
+    response(res)
 }

@@ -1,6 +1,5 @@
 package ir.mahdiparastesh.homechat
 
-import android.app.Notification
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
 import android.net.IpSecManager.*
@@ -28,41 +27,53 @@ import kotlin.math.min
 class Receiver : WiseService() {
     private lateinit var server: ServerSocket
     private val ipToContactId = hashMapOf<String, Short>()
+    private lateinit var nm: NotificationManagerCompat
 
     override fun onCreate() {
         super.onCreate()
         m.aliveReceiver = true
-        Thread {
+        /*Thread {
             while (m.aliveReceiver) {
                 Log.println(Log.ASSERT, packageName, "RECEIVER: working...")
                 Thread.sleep(3000)
             }
-        }.start()
-        NotificationManagerCompat.from(c).apply {
-            createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
-            createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
-        }
+        }.start()*/
+        nm = NotificationManagerCompat.from(c)
+        nm.createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
+        nm.createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
             server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
+            // close it only on user command and also make it null
             listen()
-        }.start()
-        return super.onStartCommand(intent, flags, startId)
+        }
+        return START_STICKY
+        // START_STICKY_COMPATIBILITY does not guarantee onStartCommand!
+        // a new instance of Receiver is created on the sticky resurrection
     }
 
+    //private var closedSocketStack = 0
     private suspend fun listen() {
         try {
             server.accept() // listens until a connection is made (blocks the thread)
                 .apply { CoroutineScope(Dispatchers.IO).launch { resolve(this@apply) } }
         } catch (e: SocketException) {
-            if (e.message == "Socket closed") return // this catch is always necessary!
-            else throw e
+            /*if (e.message == "Socket is closed") { // this catch is always necessary!
+                closedSocketStack++
+                if (closedSocketStack == 5) throw e
+                Thread.sleep(500)
+                listen(); return
+            } else*/ throw e
         }
+        //closedSocketStack = 0
         listen()
     }
 
+    // FIXME FUCKS UP with hundreds of unstoppable GOT TEXT when it's in the background
+    // and it's got nothing to do with the Notification
+    @Throws(IOException::class, SocketException::class)
     private suspend fun resolve(socket: Socket) {
         val input = socket.getInputStream()
         val output = socket.getOutputStream() // don't use PrintWriter even with autoFlush
@@ -77,6 +88,7 @@ class Receiver : WiseService() {
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
         val header = Header.values().find { it.value == hb }
+        Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
         val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
         val out: ByteArray = when (header) {
             Header.PAIR ->
@@ -84,17 +96,18 @@ class Receiver : WiseService() {
                     String(input.readNBytesCompat(len!!)),
                     dao.contactIds()
                 ).also { chosenId ->
-                    Contact.postPairing(this@Receiver, chosenId, dev)
+                    Contact.postPairing(this, chosenId, dev)
                     ipToContactId[fromIp] = chosenId
                 } else (-1).toShort()).toByteArray()
             Header.INIT -> (if (fromIp in ipToContactId) {
                 val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
-                Chat.postInitiation(this@Receiver, chosenId, ipToContactId[fromIp].toString())
+                Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
                 // FIXME not compatible with group chat
                 chosenId
             } else (-1).toShort()).toByteArray()
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
+                    val theChat = dao.chat(chat)
                     val w = try {
                         dao.addMessage(this)
                         val seen = Seen(id, chat, contact.id)
@@ -107,14 +120,20 @@ class Receiver : WiseService() {
                         PageCht.MSG_UPDATED
                     }
                     PageCht.handler?.obtainMessage(w, chat.toInt(), 0, this)?.sendToTarget()
-                    if (PageCht.handler == null && w == PageCht.MSG_INSERTED && !contact.muted)
+                    if (PageCht.handler == null && w == PageCht.MSG_INSERTED && !theChat.muted) {
+                        val person = contact.person()
                         NotificationManagerCompat.from(c).notify(
                             contact.id.toInt(),
-                            NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id)
-
+                            NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).setStyle(
+                                NotificationCompat.MessagingStyle(person).addMessage(
+                                    NotificationCompat.MessagingStyle.Message(data, date, person)
+                                    // FIXME it removes the previous ones
+                                )
+                            ).setSmallIcon(R.mipmap.launcher_round)
                                 .setAutoCancel(true)
                                 .build()
                         )
+                    }
                 }
                 0.toByte().toByteArray()
             } else {
@@ -166,14 +185,13 @@ class Receiver : WiseService() {
     )
 
     override fun onDestroy() {
-        if (::server.isInitialized) server.close()
         m.aliveReceiver = false
         super.onDestroy()
     }
 
     companion object {
         @Suppress("EXTENSION_SHADOWED_BY_MEMBER")
-        @Throws(IOException::class)
+        @Throws(IOException::class, SocketException::class)
         fun InputStream.readNBytesCompat(len: Int): ByteArray {
             require(len >= 0) { "len < 0" }
             var bufs: MutableList<ByteArray>? = null

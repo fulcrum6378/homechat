@@ -33,7 +33,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val chat = if (item is Chat) item else null
         val dev = if (item is Device) item else null
         h.b.title.text = "${i + 1}. " +
-                (dev?.name ?: chat!!.name ?: chat!!.contacts?.firstOrNull()?.name.toString())
+                (dev?.name ?: chat!!.name ?: chat!!.contacts?.firstOrNull()?.device.toString())
         h.b.subtitle.text = dev?.toString() ?: (chat!!.dateInit
             .let { c.dateFormat.format(it) + " " + c.timeFormat.format(it) } + " - " + when {
             chat.isDirect() -> if (chat.contacts?.firstOrNull()?.ip
@@ -63,11 +63,11 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
             c.dao.contactIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
-                withContext(Dispatchers.Main) { error() }
+                withContext(Dispatchers.Main) { error("pair() returned null") }
                 return@Transmitter; }
             val chosenId = ByteBuffer.wrap(res).short
             if (chosenId == (-1).toShort()) {
-                withContext(Dispatchers.Main) { error() }
+                withContext(Dispatchers.Main) { error("chosenId == -1") }
                 return@Transmitter; }
             Contact.postPairing(c, chosenId, this)
                 .apply { listOf(this).init(address) }
@@ -79,15 +79,15 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
             c.dao.chatIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
-                withContext(Dispatchers.Main) { error() }
+                withContext(Dispatchers.Main) { error("init() returned null") }
                 return@Transmitter; }
             Chat.postInitiation(
                 c, ByteBuffer.wrap(res).short, joinToString(Chat.CONTACT_SEP) { it.id.toString() })
         }
     }
 
-    private fun error() {
-        Toast.makeText(c, "Pairing failed!", Toast.LENGTH_LONG).show()
+    private fun error(why: String) {
+        Toast.makeText(c, "Pairing failed: $why", Toast.LENGTH_LONG).show()
     }
 
     override fun getItemCount(): Int = c.m.radar.size
