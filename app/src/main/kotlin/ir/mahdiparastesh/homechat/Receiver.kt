@@ -133,6 +133,8 @@ class Receiver : WiseService() {
                 )!!.apply {
                     dateSeen = raw.subList(10, 18).toNumber()
                     dao.updateSeen(this)
+                    PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, chat.toInt(), 0, this)
+                        ?.sendToTarget()
                 }
                 0.toByte().toByteArray()
             } else 1.toByte().toByteArray()

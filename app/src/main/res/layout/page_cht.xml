@@ -14,7 +14,7 @@
         android:paddingLeft="@dimen/pagePadH"
         android:paddingTop="@dimen/pageAbovePad"
         android:paddingRight="@dimen/pagePadH"
-        android:paddingBottom="8dp"
+        android:paddingBottom="10dp"
         app:layoutManager=".more.SafeLinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/panel"
         app:layout_constraintTop_toTopOf="parent"

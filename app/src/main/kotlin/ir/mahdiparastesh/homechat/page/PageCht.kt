@@ -53,7 +53,7 @@ class PageCht : BasePage<Main>() {
         // Handler
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
-                if (msg.arg1 != chat.id.toInt()) {
+                if (msg.arg1 != chat.id.toInt() && msg.obj is Message) {
                     // TODO in-app notification
                     return; }
                 when (msg.what) {
@@ -70,6 +70,19 @@ class PageCht : BasePage<Main>() {
                             if (index != -1) {
                                 list[index] = this
                                 b.list.adapter?.notifyItemChanged(index)
+                                b.list.scrollToPosition(list.size - 1)
+                            }
+                        }
+                    }
+                    MSG_SEEN -> (msg.obj as Seen).apply {
+                        c.m.messages?.also { list ->
+                            val index = list.indexOfFirst { it.id == this@apply.msg }
+                            if (index != -1) {
+                                if (list[index].status == null) list[index].status = arrayListOf()
+                                else list[index].status?.removeAll { it.contact == this@apply.contact }
+                                list[index].status?.add(this@apply)
+                                b.list.adapter?.notifyItemChanged(index)
+                                b.list.scrollToPosition(list.size - 1)
                             }
                         }
                     }
@@ -135,6 +148,7 @@ class PageCht : BasePage<Main>() {
         const val ARG_CHAT_ID = "chat_id"
         const val MSG_INSERTED = 0
         const val MSG_UPDATED = 1
+        const val MSG_SEEN = 2
         var handler: Handler? = null
     }
 }

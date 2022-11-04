@@ -9,6 +9,7 @@ import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.more.WiseService
+import ir.mahdiparastesh.homechat.page.PageCht
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,10 +62,6 @@ class Sender : WiseService() {
             if (contact.ip == null) {
                 i++; continue; }
 
-            if (o is Message) dao.seen(o.id, o.chat, contact.id)!!.apply {
-                dateSent = Database.now()
-                dao.updateSeen(this)
-            }
             Transmitter(Pair(contact.ip!!, contact.port), o.header(), {
                 when (o) {
                     is Message -> o.id.toByteArray()
@@ -77,7 +74,17 @@ class Sender : WiseService() {
                         .plus(o.dateSeen!!.toByteArray())
                     else -> throw IllegalStateException()
                 }
-            }) { res -> if (res?.firstOrNull() == 0.toByte()) queue.safeRemoveAt(i) else i++ }
+            }) { res ->
+                if (res?.firstOrNull() == 0.toByte()) {
+                    queue.safeRemoveAt(i)
+                    if (o is Message) dao.seen(o.id, o.chat, contact.id)!!.apply {
+                        dateSent = Database.now()
+                        dao.updateSeen(this)
+                        PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, o.chat.toInt(), 0, this)
+                            ?.sendToTarget()
+                    }
+                } else i++
+            }
             write()
         }
         working = false

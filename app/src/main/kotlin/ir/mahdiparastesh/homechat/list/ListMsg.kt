@@ -79,7 +79,15 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         // Time
         h.b.time.text = c.timeFormat.format(msg.date)
 
-        // Seen if not
+        // Seen status of mine
+        h.b.seen.isVisible = isMe
+        if (isMe) h.b.seen.setImageResource(when {
+            msg.status?.any { it.dateSeen != null } == true -> R.drawable.seen
+            msg.status?.any { it.dateSent != null } == true -> R.drawable.sent
+            else -> R.drawable.no_signal
+        })
+
+        // Seen theirs if not
         var notSeen: List<Seen>? = null
         if (!isMe &&
             msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }.isNotEmpty()
