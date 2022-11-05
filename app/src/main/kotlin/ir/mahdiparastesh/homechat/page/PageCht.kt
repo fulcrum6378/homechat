@@ -7,6 +7,7 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.app.NotificationManagerCompat
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import ir.mahdiparastesh.homechat.Main
@@ -54,8 +55,8 @@ class PageCht : BasePage<Main>() {
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
                 if (msg.arg1 != chat.id.toInt() && msg.obj is Message) {
-                    // TODO in-app notification
-                    return; }
+                    Main.handler?.obtainMessage(Main.MSG_NEW_MESSAGE, msg.arg1, msg.arg2, msg.obj)
+                        ?.sendToTarget(); return; }
                 when (msg.what) {
                     MSG_INSERTED -> (msg.obj as Message).apply {
                         c.m.messages?.also { list ->
@@ -94,6 +95,7 @@ class PageCht : BasePage<Main>() {
         b.send.setOnClickListener {
             if (chat.contacts == null) return@setOnClickListener
             val text = b.field.text.toString()
+            if (text.isBlank()) return@setOnClickListener
             val repl: Long? = null
             b.field.setText("")
             CoroutineScope(Dispatchers.IO).launch {
@@ -120,12 +122,13 @@ class PageCht : BasePage<Main>() {
             }
         }
 
-        // Optimizations
+        // Miscellaneous
         KeyboardVisibilityEvent.setEventListener(c, this) {
             // b.list.addOnLayoutChangeListener
             if (!b.list.canScrollVertically(1))
                 c.m.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
         }
+        NotificationManagerCompat.from(c.c).cancel(chat.id.toInt())
     }
 
     @SuppressLint("NotifyDataSetChanged")

@@ -16,6 +16,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.os.bundleOf
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -26,10 +27,12 @@ import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.more.Persistent
+import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageSet
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.net.ServerSocket
 import java.text.SimpleDateFormat
 import java.util.*
@@ -74,10 +77,10 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             syncState()
         }
         nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
-        nav.navigate(R.id.page_rad)
         /*nav.addOnDestinationChangedListener { _, dest, _ -> TODO
             b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
         }*/
+        nav.navigate(R.id.page_rad)
         b.nav.setNavigationItemSelectedListener(this)
 
         // Handler
@@ -96,6 +99,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         // don't wrap Device around it!
                         CoroutineScope(Dispatchers.IO)
                             .launch { m.radar.delete(srvInfo.serviceName, dao) }
+                    }
+                    MSG_NEW_MESSAGE -> {
+                        // TODO in-app notifications
                     }
                 }
             }
@@ -152,16 +158,26 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
     }
 
+    private var firstResume = true
     override fun onResume() {
         super.onResume()
         startDiscovery()
 
         // Load the database
+        val mFirstResume = firstResume
         CoroutineScope(Dispatchers.IO).launch {
             if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
             if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
             m.radar.update(dao)
+            if (mFirstResume && intent.hasExtra(EXTRA_OPEN_CHAT)) withContext(Dispatchers.Main) {
+                nav.navigate(
+                    R.id.action_page_rad_to_page_cht,
+                    bundleOf(PageCht.ARG_CHAT_ID to intent.getShortExtra(EXTRA_OPEN_CHAT, 0))
+                )
+            }
         }
+
+        firstResume = false
     }
 
     private fun startDiscovery() {
@@ -232,6 +248,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         const val SERVICE_TYPE = "_homechat._tcp."
         const val MSG_FOUND = 1
         const val MSG_LOST = 2
+        const val MSG_NEW_MESSAGE = 3
+        const val EXTRA_OPEN_CHAT = "open_chat"
         var handler: Handler? = null
     }
 }

@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
 import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
 import androidx.annotation.StringRes
@@ -42,5 +43,15 @@ class Notify {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)
                     description = c.resources.getString(rDesc)
             }
+    }
+
+    companion object {
+        fun mutability(bb: Boolean = false): Int = when {
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+                if (bb) PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_IMMUTABLE
+            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
+                if (bb) PendingIntent.FLAG_UPDATE_CURRENT else PendingIntent.FLAG_IMMUTABLE
+            else -> PendingIntent.FLAG_UPDATE_CURRENT
+        }
     }
 }

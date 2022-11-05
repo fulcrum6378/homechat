@@ -1,9 +1,10 @@
 package ir.mahdiparastesh.homechat
 
+import android.app.Notification
+import android.app.PendingIntent
 import android.content.Intent
 import android.database.sqlite.SQLiteConstraintException
 import android.net.IpSecManager.*
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import ir.mahdiparastesh.homechat.data.*
@@ -16,6 +17,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.io.InputStream
+import java.net.BindException
 import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
@@ -42,10 +44,14 @@ class Receiver : WiseService() {
      * START_STICKY_COMPATIBILITY does not guarantee onStartCommand! */
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
-            server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
-            // close it only on user command and also make it null
-            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
-            listen()
+            try {
+                server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
+                // close it only on user command and also make it null
+                if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
+                listen()
+            } catch (_: BindException) {
+                // "bind failed: EADDRINUSE (Address already in use)"
+            }
         }
         return START_STICKY
     }
@@ -71,7 +77,7 @@ class Receiver : WiseService() {
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
         val header = Header.values().find { it.value == hb }
-        Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
+        // Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
         val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
         val out: ByteArray = when (header) {
             Header.PAIR ->
@@ -104,21 +110,14 @@ class Receiver : WiseService() {
                         matchSeen(dao)
                         PageCht.MSG_UPDATED
                     }
-                    PageCht.handler?.obtainMessage(w, chat.toInt(), 0, this)?.sendToTarget()
-                    if (PageCht.handler == null && w == PageCht.MSG_INSERTED && !theChat.muted) {
-                        val person = contact.person()
-                        NotificationManagerCompat.from(c).notify(
-                            contact.id.toInt(),
-                            NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).setStyle(
-                                NotificationCompat.MessagingStyle(person).addMessage(
-                                    NotificationCompat.MessagingStyle.Message(data, date, person)
-                                    // FIXME it removes the previous ones
-                                )
-                            ).setSmallIcon(R.mipmap.launcher_round)
-                                //.setContentIntent(TODO())
-                                .setAutoCancel(true)
-                                .build()
-                        )
+                    when {
+                        PageCht.handler != null -> PageCht.handler?.obtainMessage(
+                            w, chat.toInt(), if (theChat.muted) 0 else 1, this
+                        )?.sendToTarget()
+                        Main.handler != null -> Main.handler?.obtainMessage(
+                            Main.MSG_NEW_MESSAGE, chat.toInt(), if (theChat.muted) 0 else 1, this
+                        )?.sendToTarget()
+                        w == PageCht.MSG_INSERTED && !theChat.muted -> notify(contact)
                     }
                 }
                 0.toByte().toByteArray()
@@ -167,6 +166,30 @@ class Receiver : WiseService() {
         repl = raw.subList(18, 26).toNumber<Long>().let { if (it == -1L) null else it },
         data = String(raw.subList(26, raw.size).toByteArray()),
     )
+
+    private fun Message.notify(contact: Contact) {
+        val person = contact.person()
+        NotificationManagerCompat.from(c).notify(
+            chat.toInt(),
+            NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).apply {
+                setStyle(
+                    NotificationCompat.MessagingStyle(person).addMessage(
+                        NotificationCompat.MessagingStyle.Message(data, date, person)
+                        // FIXME it removes the previous ones
+                    )
+                )
+                setCategory(Notification.CATEGORY_MESSAGE)
+                setSmallIcon(R.mipmap.launcher_round)
+                setContentIntent(
+                    PendingIntent.getActivity(
+                        c, 1, Intent(c, Main::class.java)
+                            .putExtra(Main.EXTRA_OPEN_CHAT, chat), Notify.mutability(true)
+                    )
+                )
+                setAutoCancel(true)
+            }.build()
+        )
+    }
 
     override fun onDestroy() {
         m.aliveReceiver = false
@@ -246,17 +269,22 @@ class Receiver : WiseService() {
         }
     }
 
-    enum class Header(val value: Byte, val indicateLenInNBytes: Int, val responseBytes: Int) {
+    enum class Header(
+        val value: Byte, val indicateLenInNBytes: Int, val responseBytes: Int = Byte.SIZE_BYTES
+    ) {
         PAIR(0x00, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Contact ids>
         INIT(0x01, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Chat ids>
 
+        // Profile picture
+        PROF(0x0E, Int.SIZE_BYTES),
+
         // Seen: <id*4><chat*2><date*4><repl*4><data*n>
-        SEEN(0x0F, Byte.SIZE_BYTES, Byte.SIZE_BYTES),
+        SEEN(0x0F, Byte.SIZE_BYTES),
 
         // Message: <msg*4><chat*2><dateSeen*4>
-        TEXT(0x10, Short.SIZE_BYTES, Byte.SIZE_BYTES),
-        FILE(0x11, Int.SIZE_BYTES, Byte.SIZE_BYTES),
-        COOR(0x12, Byte.SIZE_BYTES, Byte.SIZE_BYTES);
+        TEXT(0x10, Short.SIZE_BYTES),
+        FILE(0x11, Int.SIZE_BYTES),
+        COOR(0x12, Byte.SIZE_BYTES);
 
         fun getLength(ba: ByteArray): Int {
             if (ba.size == Byte.SIZE_BYTES) return ba[0].toInt()

@@ -11,7 +11,7 @@ class Contact(
     var device: String,
     var unique: String?,
     var ip: String?,
-    var port: Int,
+    var port: Int?,
     var lastOnline: Long? = null,
     val dateCreated: Long = Database.now(),
     var isFav: Boolean = false,

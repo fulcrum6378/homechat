@@ -63,7 +63,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
             c.dao.contactIds().joinToString(",").encodeToByteArray()
         }) { res ->
             if (res == null) {
-                withContext(Dispatchers.Main) { error("pair() returned null") }
+                withContext(Dispatchers.Main) { error("pair() returned null; using VPN?") }
                 return@Transmitter; }
             val chosenId = ByteBuffer.wrap(res).short
             if (chosenId == (-1).toShort()) {

@@ -21,6 +21,8 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
             contact = null
             return; }
         contact = if (matches.size == 1) matches[0] else null
+
+        // Update IP and port
         contact?.apply {
             if (ip != host.hostAddress || this@apply.port != this@Device.port) {
                 ip = host.hostAddress
@@ -28,10 +30,13 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
                 dao.updateContact(this)
             }
         }
+
+        // Remove this IP address from any other Contact
         m.contacts?.forEach {
             if (it.id == contact?.id) return@forEach
             if (it.ip == contact?.ip) {
                 it.ip = null
+                it.port = null
                 dao.updateContact(it)
             }
         }

@@ -57,12 +57,15 @@ class Sender : WiseService() {
             }
             if (o == null) {
                 queue.safeRemoveAt(i); continue; }
-            if (contact.ip == null)
-                contact.ip = m.radar.devices.find { it.equals(contact) }?.host?.hostAddress
+            if (contact.ip == null || contact.port == null) {
+                val dev = m.radar.devices.find { it.equals(contact) }
+                contact.ip = dev?.host?.hostAddress
+                contact.port = dev?.port
+            }
             if (contact.ip == null) {
                 i++; continue; }
 
-            Transmitter(Pair(contact.ip!!, contact.port), o.header(), {
+            Transmitter(Pair(contact.ip!!, contact.port!!), o.header(), {
                 when (o) {
                     is Message -> o.id.toByteArray()
                         .plus(o.chat.toByteArray())
