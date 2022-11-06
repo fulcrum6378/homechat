@@ -3,7 +3,6 @@ package ir.mahdiparastesh.homechat
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
-import ir.mahdiparastesh.homechat.Receiver.Companion.toByteArray
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
