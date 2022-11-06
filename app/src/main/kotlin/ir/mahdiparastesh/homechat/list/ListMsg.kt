@@ -1,5 +1,9 @@
 package ir.mahdiparastesh.homechat.list
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
+import android.graphics.drawable.RippleDrawable
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -16,6 +20,7 @@ import ir.mahdiparastesh.homechat.data.Database.Companion.calendar
 import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
+import ir.mahdiparastesh.homechat.more.EasyMenu
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -64,13 +69,15 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
                 if ((isMe && !rtl) || (!isMe && rtl))
                     setBottomLeftCorner(cornerFamily, cornerSize)
             }.build()
-        ).apply {
-            fillColor =
+        ).let {
+            it.fillColor =
                 ContextCompat.getColorStateList(c, if (isMe) R.color.msg_me else R.color.msg_them)
             if (!isMe) {
-                strokeColor = ContextCompat.getColorStateList(c, R.color.msg_them_stroke)
-                strokeWidth = 1f
+                it.strokeColor = ContextCompat.getColorStateList(c, R.color.msg_them_stroke)
+                it.strokeWidth = 1f
             }
+            // c.themeColor(com.google.android.material.R.attr.rippleColor)
+            RippleDrawable(ContextCompat.getColorStateList(c, R.color.msg_ripple)!!, it, null)
         }
 
         // Data
@@ -100,6 +107,18 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
                 queue = queue.plus(it.toQueue(c.m))
             }
             Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, queue) }
+        }
+
+        // Clicks
+        h.b.body.setOnClickListener {
+            EasyMenu(
+                c, it, R.menu.list_msg, hashMapOf(
+                    R.id.msg_copy to {
+                        (c.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
+                            ?.setPrimaryClip(ClipData.newPlainText(msg.data, msg.data))
+                    },
+                )
+            ).show()
         }
     } // Don't put onBindView in a companion object for exporting, make a dynamic class
 

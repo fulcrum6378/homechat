@@ -10,6 +10,7 @@
     <string name="yes">Yes</string>
     <string name="no">No</string>
     <string name="send">Send</string>
+    <string name="mCopy">Copy</string>
 
     <!-- PageRad -->
     <string name="navOpen">Open</string>

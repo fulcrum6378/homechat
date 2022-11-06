@@ -80,7 +80,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         /*nav.addOnDestinationChangedListener { _, dest, _ -> TODO
             b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
         }*/
-        nav.navigate(R.id.page_rad)
+        //nav.navigate(R.id.page_rad)
         b.nav.setNavigationItemSelectedListener(this)
 
         // Handler
@@ -243,6 +243,10 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         // if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close() TODO ONLY ON USER COMMAND
         super.onDestroy()
     }
+
+    /*@ColorInt
+    fun themeColor(@AttrRes attr: Int) =
+        TypedValue().apply { theme.resolveAttribute(attr, this, true) }.data*/
 
     companion object {
         const val SERVICE_TYPE = "_homechat._tcp."
