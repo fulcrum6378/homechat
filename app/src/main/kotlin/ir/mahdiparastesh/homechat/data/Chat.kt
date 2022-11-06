@@ -20,6 +20,11 @@ class Chat(
 
     fun isDirect() = (contacts?.size ?: contactIds.split(CONTACT_SEP).size) == 1
 
+    fun matchContacts(allContacts: List<Contact>) {
+        contacts = contactIds.split(CONTACT_SEP)
+            .map { id -> allContacts.find { it.id == id.toShort() }!! }
+    }
+
     companion object {
         const val CONTACT_SEP = ","
         const val ME = (-1).toShort()

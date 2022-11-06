@@ -27,10 +27,7 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
     @Suppress(/*"UNCHECKED_CAST",*/ "RedundantSuspendModifier")
     suspend fun update(dao: Database.DAO) {
         devices.forEach { it.matchContact(m, dao) }
-        m.chats?.forEach { chat ->
-            chat.contacts = chat.contactIds.split(Chat.CONTACT_SEP)
-                .map { id -> m.contacts!!.find { it.id == id.toShort() }!! }
-        }
+        m.chats?.forEach { chat -> chat.matchContacts(m.contacts!!) }
 
         // val prev = clone() as CopyOnWriteArrayList<Item>
         clear()

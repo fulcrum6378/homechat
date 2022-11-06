@@ -49,6 +49,8 @@ class Receiver : WiseService() {
                 listen()
             } catch (_: BindException) {
                 // "bind failed: EADDRINUSE (Address already in use)"
+            } catch (_: SocketException) {
+                // "listen failed: EADDRINUSE (Address already in use)"
             }
         }
         return START_STICKY
@@ -115,7 +117,7 @@ class Receiver : WiseService() {
                         Main.handler != null -> Main.handler?.obtainMessage(
                             Main.MSG_NEW_MESSAGE, chat.toInt(), if (theChat.muted) 0 else 1, this
                         )?.sendToTarget()
-                        w == PageCht.MSG_INSERTED && !theChat.muted -> notify(contact)
+                        w == PageCht.MSG_INSERTED && !theChat.muted -> notify(theChat, contact)
                     }
                 }
                 0.toByte().toByteArray()
@@ -165,17 +167,19 @@ class Receiver : WiseService() {
         data = String(raw.subList(26, raw.size).toByteArray()),
     )
 
-    private fun Message.notify(contact: Contact) {
-        val person = contact.person()
+    private suspend fun Message.notify(theChat: Chat, sendingContact: Contact) {
+        theChat.matchContacts(m.contacts!!)
         NotificationManagerCompat.from(c).notify(
             chat.toInt(),
             NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).apply {
-                setStyle(
-                    NotificationCompat.MessagingStyle(person).addMessage(
-                        NotificationCompat.MessagingStyle.Message(data, date, person)
-                        // FIXME it removes the previous ones
+                val style = NotificationCompat.MessagingStyle(sendingContact.person())
+                for (unread in dao.theseMessage(dao.unseenInChat(chat), chat)) style.addMessage(
+                    NotificationCompat.MessagingStyle.Message(
+                        unread.data, unread.date,
+                        theChat.contacts!!.find { it.id == unread.from }?.person()
                     )
                 )
+                setStyle(style)
                 setCategory(Notification.CATEGORY_MESSAGE)
                 setSmallIcon(R.mipmap.launcher_round)
                 setContentIntent(

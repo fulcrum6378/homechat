@@ -162,8 +162,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override fun onResume() {
         super.onResume()
         startDiscovery()
-
-        // Load the database
         val mFirstResume = firstResume
         CoroutineScope(Dispatchers.IO).launch {
             if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
@@ -176,7 +174,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 )
             }
         }
-
         firstResume = false
     }
 
@@ -262,4 +259,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 * Cannot work with VPN!
 * Fucks up when 2 devices open simultaneously!
 * It doesn't store the self's message on a simultaneous send.
+* Regularly init the Queuer
+* Replying
+* Typing status
 */

@@ -6,8 +6,11 @@ import androidx.room.Ignore
 import androidx.room.Index
 import ir.mahdiparastesh.homechat.Sender
 
+/**
+ * It is not possible with a composite primary key to add auto-increment.
+ */
 @Entity(
-    primaryKeys = ["id", "chat"], // It is not possible with a composite primary key to add auto-increment.
+    primaryKeys = ["id", "chat"], //
     indices = [Index("id"), Index("chat")],
     foreignKeys = [ForeignKey(
         entity = Chat::class,

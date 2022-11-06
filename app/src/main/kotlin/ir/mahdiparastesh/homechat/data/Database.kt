@@ -46,6 +46,12 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Message WHERE id LIKE :id AND chat LIKE :chat LIMIT 1")
         suspend fun message(id: Long, chat: Short): Message?
 
+        @Query("SELECT * FROM Message WHERE id IN (:ids) AND chat LIKE :chat")
+        suspend fun theseMessage(ids: List<Long>, chat: Short): List<Message>
+
+        /*@Query("SELECT id FROM Message WHERE chat LIKE :chat")
+        suspend fun messageIds(chat: Short): List<Long>*/
+
         @Insert(onConflict = OnConflictStrategy.ABORT)
         suspend fun addMessage(item: Message)
 
@@ -59,6 +65,9 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
         suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?
 
+        @Query("SELECT msg FROM Seen WHERE chat LIKE :chat AND dateSeen IS NULL")
+        suspend fun unseenInChat(chat: Short): List<Long>
+
         @Insert
         suspend fun addSeen(item: Seen)
 
@@ -69,7 +78,7 @@ abstract class Database : RoomDatabase() {
     companion object {
         fun build(c: Context) = Room
             .databaseBuilder(c, Database::class.java, "main.db")
-            // .addMigrations()
+            //.addMigrations()
             .build()
         // You cannot use DB Browser for SQLite in order to manually "MODIFY TABLES"!!
         // Although you can make other kinds of editions.

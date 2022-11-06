@@ -5,6 +5,11 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import ir.mahdiparastesh.homechat.Sender
 
+/**
+ * Only created for the Contacts, NOT ME!!
+ * YOURS is created in the Contacts' database!
+ * don't make a foreign key for "msg"; 'cus it got no unique index!
+ */
 @Entity(
     primaryKeys = ["msg", "chat", "contact"],
     indices = [Index("msg"), Index("chat"), Index("contact")],
@@ -21,7 +26,6 @@ import ir.mahdiparastesh.homechat.Sender
     )]
 )
 class Seen : Sender.Queuable {
-    // don't make a foreign key for "msg"; 'cus it got no unique index!
     val msg: Long
     val chat: Short
     val contact: Short
