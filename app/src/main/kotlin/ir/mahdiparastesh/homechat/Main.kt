@@ -21,7 +21,6 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
-import ir.mahdiparastesh.homechat.data.Contact
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
@@ -117,7 +116,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             serviceName = mServiceName
             serviceType = SERVICE_TYPE
             port = sp.getInt(PageSet.PRF_PORT, -1)
-            setAttribute(Contact.ATTR_UNIQUE, null) // TODO
+            setAttribute(PageSet.PRF_UNIQUE, null)
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
 
         // Request ignore battery optimizations

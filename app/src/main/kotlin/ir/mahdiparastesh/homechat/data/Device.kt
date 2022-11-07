@@ -1,6 +1,7 @@
 package ir.mahdiparastesh.homechat.data
 
 import android.net.nsd.NsdServiceInfo
+import ir.mahdiparastesh.homechat.page.PageSet
 import java.net.InetAddress
 
 @Suppress("MemberVisibilityCanBePrivate")
@@ -8,7 +9,7 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
     val name: String = srvInfo.serviceName
     val host: InetAddress = srvInfo.host
     val port: Int = srvInfo.port
-    val unique: String? = srvInfo.attr(Contact.ATTR_UNIQUE)
+    val unique: String? = srvInfo.attr(PageSet.PRF_UNIQUE)
 
     @Transient
     var contact: Contact? = null

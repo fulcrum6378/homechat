@@ -34,8 +34,6 @@ class Contact(
 
     companion object {
         // obtaining MAC address is almost impossible in the newer APIs!
-        const val ATTR_UNIQUE = "unique"
-
         suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device): Contact = Contact(
             chosenId, dev.name, dev.unique, dev.host.hostAddress!!, dev.port, Database.now()
         ).also {

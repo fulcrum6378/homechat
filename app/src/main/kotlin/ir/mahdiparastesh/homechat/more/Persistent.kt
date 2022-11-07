@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Model
+import ir.mahdiparastesh.homechat.page.PageSet
 
 interface Persistent {
     val c: Context
@@ -14,5 +15,5 @@ interface Persistent {
     val sp: SharedPreferences
 
     fun Context.sp(): SharedPreferences =
-        getSharedPreferences("settings", Context.MODE_PRIVATE)
+        getSharedPreferences(PageSet.SP_NAME, Context.MODE_PRIVATE)
 }

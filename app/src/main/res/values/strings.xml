@@ -22,6 +22,14 @@
     <!-- PageCht -->
     <string name="newMessage">Message&#8230;</string>
 
+    <!-- PageSet -->
+    <string name="setIdentity">Identification</string>
+    <string name="setUnique">Unique Name</string>
+    <string name="setUniqueDesc">
+        Enter a unique name for yourself which no one else would choose. Any characters are allowed.
+    </string>
+
+
     <!-- Receiver -->
     <string name="ntfGrpChat">Chat</string>
     <string name="ntfGrpChatDesc">Anything related to chats.</string>
