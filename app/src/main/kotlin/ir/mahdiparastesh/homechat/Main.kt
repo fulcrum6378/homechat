@@ -17,6 +17,7 @@ import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
+import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -224,7 +225,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        nav.navigate(navMap[item.itemId]!!); return true
+        nav.navigate(navMap[item.itemId]!!)
+        b.root.closeDrawer(GravityCompat.START)
+        return true
     }
 
     override fun onPause() {
@@ -236,7 +239,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (registered) nsdManager.unregisterService(regListener)
         handler = null
         m.aliveMain = false
-        // if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close() TODO ONLY ON USER COMMAND
+        // if (dbLazy.isInitialized() && m.anyPersistentAlive()) db.close()
         super.onDestroy()
     }
 
@@ -255,10 +258,13 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 }
 
 /* TODO
-* Cannot work with VPN!
-* Fucks up when 2 devices open simultaneously!
-* It doesn't store the self's message on a simultaneous send.
-* Regularly init the Queuer
-* Replying
-* Typing status
-*/
+  * Cannot work with VPN!
+  * Fucks up when 2 devices open simultaneously!
+  * SSLSocket
+  * It doesn't store the self's message on a simultaneous send.
+  * Regularly init the Queuer
+  * Replying
+  * Typing status
+  * https://developer.android.com/develop/ui/views/notifications/bubbles
+  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
+ */
