@@ -4,7 +4,6 @@ import android.net.nsd.NsdServiceInfo
 import ir.mahdiparastesh.homechat.page.PageSet
 import java.net.InetAddress
 
-@Suppress("MemberVisibilityCanBePrivate")
 class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
     val name: String = srvInfo.serviceName
     val host: InetAddress = srvInfo.host

@@ -1,10 +1,12 @@
 package ir.mahdiparastesh.homechat
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -14,8 +16,10 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
@@ -47,6 +51,10 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     )
     val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
     val timeFormat = SimpleDateFormat("HH:mm"/*:ss*/, Locale.US)
+    private val reqPermissions =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+        else arrayOf()
 
     private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String
@@ -133,6 +141,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 )
             )
         } catch (_: ActivityNotFoundException) {
+        }
+
+        // ask for permissions
+        reqPermissions.forEach {
+            if (ActivityCompat.checkSelfPermission(c, it) != PackageManager.PERMISSION_GRANTED)
+                reqPermLauncher.launch(it)
         }
     }
 
@@ -224,6 +238,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
     }
 
+    /** Requests all the required permissions. (currently only for notifications in Android 13+) */
+    private val reqPermLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /*isGranted ->*/ }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         nav.navigate(navMap[item.itemId]!!)
         b.root.closeDrawer(GravityCompat.START)
@@ -260,7 +279,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 /* TODO
   * Cannot work with VPN!
   * Fucks up when 2 devices open simultaneously!
-  * SSLSocket
   * It doesn't store the self's message on a simultaneous send.
   * Regularly init the Queuer
   * Replying

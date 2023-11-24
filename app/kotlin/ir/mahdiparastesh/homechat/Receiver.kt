@@ -1,13 +1,16 @@
 package ir.mahdiparastesh.homechat
 
+import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteConstraintException
 import android.net.IpSecManager.*
+import android.os.Build
+import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import androidx.lifecycle.ViewModelStore
 import ir.mahdiparastesh.homechat.data.*
 import ir.mahdiparastesh.homechat.more.Notify
 import ir.mahdiparastesh.homechat.more.WiseService
@@ -170,7 +173,10 @@ class Receiver : WiseService() {
 
     private suspend fun Message.notify(theChat: Chat, sendingContact: Contact) {
         theChat.matchContacts(m.contacts!!)
-        NotificationManagerCompat.from(c).notify(
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ActivityCompat.checkSelfPermission(c, Manifest.permission.POST_NOTIFICATIONS) ==
+            PackageManager.PERMISSION_GRANTED
+        ) NotificationManagerCompat.from(c).notify(
             chat.toInt(),
             NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).apply {
                 val style = NotificationCompat.MessagingStyle(sendingContact.person())

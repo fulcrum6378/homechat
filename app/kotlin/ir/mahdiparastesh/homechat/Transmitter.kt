@@ -7,7 +7,6 @@ import java.net.Socket
 import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.*
-import javax.net.ssl.SSLSocket
 import kotlin.math.min
 
 @Suppress("BlockingMethodInNonBlockingContext", "FunctionName")

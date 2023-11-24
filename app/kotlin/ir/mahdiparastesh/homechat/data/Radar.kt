@@ -24,7 +24,6 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
 
     var onDataChangedListener: () -> Unit = {}
 
-    @Suppress(/*"UNCHECKED_CAST",*/ "RedundantSuspendModifier")
     suspend fun update(dao: Database.DAO) {
         devices.forEach { it.matchContact(m, dao) }
         m.chats?.forEach { chat -> chat.matchContacts(m.contacts!!) }

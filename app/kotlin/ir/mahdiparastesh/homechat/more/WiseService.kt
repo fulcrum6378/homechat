@@ -12,8 +12,6 @@ import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Model
 
 abstract class WiseService : Service(), Persistent, ViewModelStoreOwner {
-    private val mViewModelStore = ViewModelStore()
-
     override val c: Context get() = applicationContext
     override lateinit var m: Model
     final override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
@@ -33,5 +31,5 @@ abstract class WiseService : Service(), Persistent, ViewModelStoreOwner {
     }*/
 
     override fun onBind(intent: Intent): IBinder? = null
-    override fun getViewModelStore(): ViewModelStore = mViewModelStore
+    override val viewModelStore: ViewModelStore = ViewModelStore()
 }
