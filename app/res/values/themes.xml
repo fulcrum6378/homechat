@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources xmlns:tools="http://schemas.android.com/tools">
+<resources>
 
     <style name="Theme.HomeChat.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#900081</item>
@@ -29,8 +29,8 @@
 
     <style name="Theme.HomeChat" parent="Theme.HomeChat.Base">
         <item name="android:textColor">?colorPrimary</item>
-        <item name="android:windowLightStatusBar" tools:ignore="NewApi">true</item>
-        <item name="android:windowLightNavigationBar" tools:ignore="NewApi">true</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
     </style>
 
 

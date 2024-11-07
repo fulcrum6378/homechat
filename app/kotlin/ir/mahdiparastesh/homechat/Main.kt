@@ -120,7 +120,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (!sp.contains(PageSet.PRF_PORT))
             sp.edit().putInt(PageSet.PRF_PORT, ServerSocket(0).use { it.localPort }).apply()
         if (!m.aliveReceiver) startService(Intent(c, Receiver::class.java))
-        nsdManager = getSystemService(Context.NSD_SERVICE) as NsdManager
+        nsdManager = getSystemService(NSD_SERVICE) as NsdManager
         nsdManager.registerService(NsdServiceInfo().apply {
             serviceName = mServiceName
             serviceType = SERVICE_TYPE
@@ -130,10 +130,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         // Request ignore battery optimizations
         // It must check for the ability of working in the background and also data in bg
-        val pm = getSystemService(Context.POWER_SERVICE) as PowerManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M &&
-            !pm.isIgnoringBatteryOptimizations(packageName)
-        ) try {
+        val pm = getSystemService(POWER_SERVICE) as PowerManager
+        if (!pm.isIgnoringBatteryOptimizations(packageName)) try {
             startActivity(
                 Intent(
                     Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,

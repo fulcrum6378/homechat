@@ -9,7 +9,7 @@ import java.nio.ByteBuffer
 import java.util.*
 import kotlin.math.min
 
-@Suppress("BlockingMethodInNonBlockingContext", "FunctionName")
+@Suppress("FunctionName")
 suspend fun Transmitter(
     address: Pair<String, Int>,
     header: Receiver.Header,
@@ -64,7 +64,7 @@ fun InputStream.readNBytesCompat(len: Int): ByteArray {
     } while (n >= 0 && remaining > 0)
     if (bufs == null) {
         if (result == null) return ByteArray(0)
-        return if (result.size == total) result else Arrays.copyOf(result, total)
+        return if (result.size == total) result else result.copyOf(total)
     }
     result = ByteArray(total)
     var offset = 0

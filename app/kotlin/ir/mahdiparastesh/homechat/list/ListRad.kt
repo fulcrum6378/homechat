@@ -30,8 +30,8 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
 
     override fun onBindViewHolder(h: AnyViewHolder<ListRadBinding>, i: Int) {
         val item = c.m.radar.getOrNull(i) ?: return
-        val chat = if (item is Chat) item else null
-        val dev = if (item is Device) item else null
+        val chat = item as? Chat
+        val dev = item as? Device
         h.b.title.text = "${i + 1}. " +
                 (dev?.name ?: chat!!.name ?: chat!!.contacts?.firstOrNull()?.device.toString())
         h.b.subtitle.text = dev?.toString() ?: (chat!!.dateInit

@@ -1,20 +1,20 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.kapt")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.ksp)
 }
 
 android {
     namespace = "ir.mahdiparastesh.homechat"
-    compileSdk = 34
-    buildToolsVersion = "34.0.0"
+    compileSdk = 35
+    buildToolsVersion = System.getenv("ANDROID_BUILD_TOOLS_VERSION")
 
     defaultConfig {
         applicationId = "ir.mahdiparastesh.homechat"
-        minSdk = 21
-        targetSdk = 34
+        minSdk = 26
+        targetSdk = 35
         versionCode = 1
-        versionName = "1.6.0"
+        versionName = "1.7.0"
     }
 
     sourceSets.getByName("main") {
@@ -22,31 +22,28 @@ android {
         kotlin.srcDirs("kotlin")
         res.setSrcDirs(listOf("res"))
     }
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_22
+        targetCompatibility = JavaVersion.VERSION_22
+    }
+    kotlinOptions { jvmTarget = "22" }
 
+    buildFeatures { buildConfig = true; viewBinding = true }
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro")
         }
     }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_20; targetCompatibility = JavaVersion.VERSION_20
-    }
-    kotlinOptions { jvmTarget = "20" }
-    buildFeatures { viewBinding = true }
 }
 
 dependencies {
-    val roomVersion = "2.6.0"
-
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("androidx.core:core-ktx:1.12.0")
-    implementation("androidx.navigation:navigation-fragment-ktx:2.7.5")
-    implementation("androidx.preference:preference-ktx:1.2.1")
-    //noinspection KaptUsageInsteadOfKsp
-    kapt("androidx.room:room-compiler:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion") // necessary for "suspend"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("com.google.android.material:material:1.10.0")
-    implementation("net.yslibrary.keyboardvisibilityevent:keyboardvisibilityevent:3.0.0-RC3")
+    implementation(libs.core.ktx)
+    implementation(libs.navigation)
+    implementation(libs.preference)
+    ksp(libs.room.compiler)
+    implementation(libs.room.ktx)
+    implementation(libs.room.runtime) // necessary for "suspend"
+    implementation(libs.material)
+    implementation(libs.keyboardvisibilityevent)
 }

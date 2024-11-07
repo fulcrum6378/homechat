@@ -49,9 +49,8 @@ class Notify {
         fun mutability(bb: Boolean = false): Int = when {
             Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
                 if (bb) PendingIntent.FLAG_MUTABLE else PendingIntent.FLAG_IMMUTABLE
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ->
+            else ->
                 if (bb) PendingIntent.FLAG_UPDATE_CURRENT else PendingIntent.FLAG_IMMUTABLE
-            else -> PendingIntent.FLAG_UPDATE_CURRENT
         }
     }
 }

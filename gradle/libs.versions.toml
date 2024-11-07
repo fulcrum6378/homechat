@@ -1,0 +1,25 @@
+[versions]
+agp = "8.7.2"
+kotlin = "2.0.20"
+ksp = "2.0.20-1.0.25"
+coreKtx = "1.15.0"
+navigation = "2.8.3"
+preference = "1.2.1"
+room = "2.6.1"
+material = "1.12.0"
+keyboardVisibilityEvent = "3.0.0-RC3"
+
+[plugins]
+android-application = { id = "com.android.application", version.ref = "agp" }
+kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
+kotlin-ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
+
+[libraries]
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+navigation = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigation" }
+preference = { group = "androidx.preference", name = "preference-ktx", version.ref = "preference" }
+room-compiler = { group = "androidx.room", name = "room-compiler", version.ref = "room" }
+room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
+room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
+material = { group = "com.google.android.material", name = "material", version.ref = "material" }
+keyboardvisibilityevent = { group = "net.yslibrary.keyboardvisibilityevent", name = "keyboardvisibilityevent", version.ref = "keyboardVisibilityEvent" }

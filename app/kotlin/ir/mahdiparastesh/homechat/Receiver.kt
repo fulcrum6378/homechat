@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.database.sqlite.SQLiteConstraintException
-import android.net.IpSecManager.*
 import android.os.Build
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
@@ -25,10 +24,8 @@ import java.net.ServerSocket
 import java.net.Socket
 import java.net.SocketException
 import java.nio.ByteBuffer
-import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
-@Suppress("BlockingMethodInNonBlockingContext")
 class Receiver : WiseService() {
     private lateinit var server: ServerSocket
     private val ipToContactId = hashMapOf<String, Short>()
@@ -60,6 +57,7 @@ class Receiver : WiseService() {
         return START_STICKY
     }
 
+    @Suppress("RedundantSuspendModifier")
     private suspend fun listen() {
         server.accept() // listens until a connection is made (blocks the thread)
             .apply { CoroutineScope(Dispatchers.IO).launch { resolve(this@apply) } }
@@ -80,7 +78,7 @@ class Receiver : WiseService() {
 
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
-        val header = Header.values().find { it.value == hb }
+        val header = Header.entries.find { it.value == hb }
         // Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
         val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
         val out: ByteArray = when (header) {

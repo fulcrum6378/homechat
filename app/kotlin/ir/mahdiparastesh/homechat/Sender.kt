@@ -1,6 +1,5 @@
 package ir.mahdiparastesh.homechat
 
-import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import ir.mahdiparastesh.homechat.data.Database
@@ -102,7 +101,7 @@ class Sender : WiseService() {
 
     @Suppress("RedundantSuspendModifier")
     private suspend fun write() {
-        c.openFileOutput(QUEUE_FILE, Context.MODE_PRIVATE).use {
+        c.openFileOutput(QUEUE_FILE, MODE_PRIVATE).use {
             it.write(queue.joinToString("\n").toByteArray(charset))
         }
     }
@@ -143,7 +142,7 @@ class Sender : WiseService() {
         }
 
         fun header(): Receiver.Header = when (this) {
-            is Message -> Receiver.Header.values().find { it.value == type }!!
+            is Message -> Receiver.Header.entries.find { it.value == type }!!
             is Seen -> Receiver.Header.SEEN
             else -> throw IllegalArgumentException()
         }
