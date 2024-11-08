@@ -7,6 +7,7 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.annotation.StringRes
 import ir.mahdiparastesh.homechat.R
 
@@ -24,6 +25,7 @@ class Notify {
             NotificationManager.IMPORTANCE_HIGH, ChannelGroup.CHAT.id
         );
 
+        @RequiresApi(Build.VERSION_CODES.O)
         fun create(c: Context) = NotificationChannel(id, c.resources.getString(rName), importance)
             .apply {
                 description = c.resources.getString(rDesc)
@@ -38,6 +40,7 @@ class Notify {
     ) {
         CHAT("chat", R.string.ntfGrpChat, R.string.ntfGrpChatDesc);
 
+        @RequiresApi(Build.VERSION_CODES.O)
         fun create(c: Context) = NotificationChannelGroup(id, c.resources.getString(rName))
             .apply {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P)

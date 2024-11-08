@@ -35,8 +35,10 @@ class Receiver : WiseService() {
         super.onCreate()
         m.aliveReceiver = true
         nm = NotificationManagerCompat.from(c)
-        nm.createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
-        nm.createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            nm.createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
+            nm.createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
+        }
     }
 
     /** A new instance of Receiver is created on the sticky resurrection.

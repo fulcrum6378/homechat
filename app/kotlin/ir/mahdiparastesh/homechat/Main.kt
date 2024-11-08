@@ -17,6 +17,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.WorkerThread
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -206,6 +207,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         override fun onServiceFound(srvInfo: NsdServiceInfo) {
             if (srvInfo.serviceType == SERVICE_TYPE) try {
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(
+                        Build.VERSION_CODES.TIRAMISU
+                    ) >= 7
+                ) nsdManager.registerServiceInfoCallback(srvInfo, null, serviceInfoCallback)*/
+                @Suppress("DEPRECATION")
                 nsdManager.resolveService(srvInfo, resolveListener)
             } catch (e: IllegalArgumentException) { // "listener already in use"
                 Toast.makeText(c, "${e.message}", Toast.LENGTH_SHORT).show()
@@ -226,7 +232,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
     }
 
-    private val resolveListener = object : NsdManager.ResolveListener { // not UI thread
+    private val resolveListener = object : NsdManager.ResolveListener {
+        @WorkerThread
         override fun onServiceResolved(srvInfo: NsdServiceInfo) {
             handler?.obtainMessage(MSG_FOUND, srvInfo)?.sendToTarget()
         }
@@ -235,6 +242,15 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             Toast.makeText(c, "onResolveFailed: $errorCode", Toast.LENGTH_LONG).show()
         }
     }
+
+    /*private val serviceInfoCallback = @RequiresExtension(
+        extension = Build.VERSION_CODES.TIRAMISU, version = 7
+    ) object : NsdManager.ServiceInfoCallback {
+        override fun onServiceInfoCallbackRegistrationFailed(errorCode: Int) {}
+        override fun onServiceUpdated(serviceInfo: NsdServiceInfo) {}
+        override fun onServiceLost() {}
+        override fun onServiceInfoCallbackUnregistered() {}
+    }*/
 
     /** Requests all the required permissions. (currently only for notifications in Android 13+) */
     private val reqPermLauncher = registerForActivityResult(
@@ -283,4 +299,5 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
   * Typing status
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
+  * No network detected message
  */

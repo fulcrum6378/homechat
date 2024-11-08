@@ -11,10 +11,10 @@ android {
 
     defaultConfig {
         applicationId = "ir.mahdiparastesh.homechat"
-        minSdk = 26
+        minSdk = 23
         targetSdk = 35
         versionCode = 1
-        versionName = "1.7.0"
+        versionName = "1.7.4"
     }
 
     sourceSets.getByName("main") {
@@ -42,8 +42,8 @@ dependencies {
     implementation(libs.navigation)
     implementation(libs.preference)
     ksp(libs.room.compiler)
-    implementation(libs.room.ktx)
-    implementation(libs.room.runtime) // necessary for "suspend"
+    implementation(libs.room.ktx) // for "suspend"
+    implementation(libs.room.runtime)
     implementation(libs.material)
     implementation(libs.keyboardvisibilityevent)
 }
