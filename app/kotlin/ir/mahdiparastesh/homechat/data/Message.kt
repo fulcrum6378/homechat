@@ -6,12 +6,9 @@ import androidx.room.Ignore
 import androidx.room.Index
 import ir.mahdiparastesh.homechat.Sender
 
-/**
- * It is not possible with a composite primary key to add auto-increment.
- */
 @Entity(
-    primaryKeys = ["id", "chat"], //
-    indices = [Index("id"), Index("chat")],
+    primaryKeys = ["id", "chat", "auth"],
+    indices = [Index("chat"), Index("time")],
     foreignKeys = [ForeignKey(
         entity = Chat::class,
         parentColumns = arrayOf("id"),
@@ -20,35 +17,35 @@ import ir.mahdiparastesh.homechat.Sender
     )]
 )
 class Message : Sender.Queuable {
-    val id: Long
+    val id: Long  // It is not possible with a composite primary key to add auto-increment.
     val chat: Short
-    val from: Short
+    val auth: Short
     val type: Byte
     var data: String
-    var repl: Long? // TODO make it changeable in UI
+    var repl: Long?
     var hide: Boolean
-    val date: Long
+    val time: Long
 
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(
-        id: Long, chat: Short, from: Short, type: Byte, data: String, repl: Long? = null,
-        hide: Boolean = false, date: Long = Database.now()
+        id: Long, chat: Short, auth: Short, type: Byte, data: String, repl: Long? = null,
+        hide: Boolean = false, time: Long = Database.now()
     ) {
         this.id = id
         this.chat = chat
-        this.from = from
+        this.auth = auth
         this.type = type
         this.data = data
         this.repl = repl
         this.hide = hide
-        this.date = date
+        this.time = time
     }
 
     @Ignore
     @Transient
     var status: ArrayList<Seen>? = null
 
-    fun me() = from == Chat.ME
+    fun me() = auth == Chat.ME
 
     suspend fun matchSeen(dao: Database.DAO) {
         status = ArrayList(dao.seenForMessage(id, chat))

@@ -213,8 +213,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 ) nsdManager.registerServiceInfoCallback(srvInfo, null, serviceInfoCallback)*/
                 @Suppress("DEPRECATION")
                 nsdManager.resolveService(srvInfo, resolveListener)
-            } catch (e: IllegalArgumentException) { // "listener already in use"
-                Toast.makeText(c, "${e.message}", Toast.LENGTH_SHORT).show()
+            } catch (e: IllegalArgumentException) {
+                if (e.message != "listener already in use")
+                    Toast.makeText(c, "${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -291,7 +292,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 }
 
 /* TODO
-  * Cannot work with VPN!
+  * A device with VPN cannot receive, but can send to a VPN-less device!
   * Fucks up when 2 devices open simultaneously!
   * It doesn't store the self's message on a simultaneous send.
   * Regularly init the Queuer
@@ -300,4 +301,5 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
   * No network detected message
+  * Crashes when you turn of the internet while chatting (Radar::update())
  */

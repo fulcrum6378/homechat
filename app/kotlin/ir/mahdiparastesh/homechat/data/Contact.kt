@@ -2,10 +2,11 @@ package ir.mahdiparastesh.homechat.data
 
 import androidx.core.app.Person
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import ir.mahdiparastesh.homechat.more.Persistent
 
-@Entity
+@Entity(indices = [Index("id")])
 class Contact(
     @PrimaryKey var id: Short, // Room does not support unsigned numbers!
     var device: String,

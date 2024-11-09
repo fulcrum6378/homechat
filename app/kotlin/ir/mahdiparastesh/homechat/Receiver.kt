@@ -5,8 +5,8 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.sqlite.SQLiteConstraintException
 import android.os.Build
+import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -81,7 +81,7 @@ class Receiver : WiseService() {
         // Act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
         val header = Header.entries.find { it.value == hb }
-        // Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
+        Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
         val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
         val out: ByteArray = when (header) {
             Header.PAIR ->
@@ -103,17 +103,17 @@ class Receiver : WiseService() {
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
                     val theChat = dao.chat(chat)
-                    val w = try {
-                        dao.addMessage(this)
-                        val seen = Seen(id, chat, contact.id)
-                        dao.addSeen(seen)
-                        status = arrayListOf(seen)
-                        PageCht.MSG_INSERTED
-                    } catch (_: SQLiteConstraintException) {
+                    //val w = try {
+                    dao.addMessage(this)
+                    val seen = Seen(id, chat, Chat.ME)
+                    dao.addSeen(seen)
+                    status = arrayListOf(seen)
+                    val w = PageCht.MSG_INSERTED
+                    /*} catch (_: SQLiteConstraintException) {
                         dao.updateMessage(this)
                         matchSeen(dao)
                         PageCht.MSG_UPDATED
-                    }
+                    }*/
                     when {
                         PageCht.handler != null -> PageCht.handler?.obtainMessage(
                             w, chat.toInt(), if (theChat.muted) 0 else 1, this
@@ -121,7 +121,7 @@ class Receiver : WiseService() {
                         Main.handler != null -> Main.handler?.obtainMessage(
                             Main.MSG_NEW_MESSAGE, chat.toInt(), if (theChat.muted) 0 else 1, this
                         )?.sendToTarget()
-                        w == PageCht.MSG_INSERTED && !theChat.muted -> notify(theChat, contact)
+                        /*w == PageCht.MSG_INSERTED && */!theChat.muted -> notify(theChat, contact)
                     }
                 }
                 0.toByte().toByteArray()
@@ -163,10 +163,10 @@ class Receiver : WiseService() {
 
     private fun decodeMessage(raw: List<Byte>, header: Header, contact: Contact): Message = Message(
         type = header.value,
-        from = contact.id,
+        auth = contact.id,
         id = raw.subList(0, 8).toNumber(),
         chat = raw.subList(8, 10).toNumber(),
-        date = raw.subList(10, 18).toNumber(),
+        time = raw.subList(10, 18).toNumber(),
         repl = raw.subList(18, 26).toNumber<Long>().let { if (it == -1L) null else it },
         data = String(raw.subList(26, raw.size).toByteArray()),
     )
@@ -180,12 +180,13 @@ class Receiver : WiseService() {
             chat.toInt(),
             NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).apply {
                 val style = NotificationCompat.MessagingStyle(sendingContact.person())
-                for (unread in dao.theseMessage(dao.unseenInChat(chat), chat)) style.addMessage(
-                    NotificationCompat.MessagingStyle.Message(
-                        unread.data, unread.date,
-                        theChat.contacts!!.find { it.id == unread.from }?.person()
+                for (unread in dao.theseMessage(dao.unseenInChat(chat), chat, sendingContact.id))
+                    style.addMessage(
+                        NotificationCompat.MessagingStyle.Message(
+                            unread.data, unread.time,
+                            theChat.contacts!!.find { it.id == unread.auth }?.person()
+                        )
                     )
-                )
                 setStyle(style)
                 setCategory(Notification.CATEGORY_MESSAGE)
                 setSmallIcon(R.mipmap.launcher_round)

@@ -43,17 +43,17 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         val isMe = msg.me()
 
         // Date
-        val cal = msg.date.calendar()
+        val cal = msg.time.calendar()
         var showDate = true
         if (i > 0) {
-            val prev = c.m.messages!![i - 1].date.calendar()
+            val prev = c.m.messages!![i - 1].time.calendar()
             if (cal[Calendar.YEAR] == prev[Calendar.YEAR] &&
                 cal[Calendar.MONTH] == prev[Calendar.MONTH] &&
                 cal[Calendar.DAY_OF_MONTH] == prev[Calendar.DAY_OF_MONTH]
             ) showDate = false
         }
         h.b.date.isVisible = showDate
-        if (showDate) h.b.date.text = c.dateFormat.format(msg.date)
+        if (showDate) h.b.date.text = c.dateFormat.format(msg.time)
 
         // Layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
@@ -84,7 +84,7 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         h.b.text.text = msg.data
 
         // Time
-        h.b.time.text = c.timeFormat.format(msg.date)
+        h.b.time.text = c.timeFormat.format(msg.time)
 
         // Seen status of mine
         h.b.seen.isVisible = isMe
@@ -104,7 +104,7 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
                 it.dateSeen = Database.now()
                 c.dao.updateSeen(it)
                 msg.status!!.add(it)
-                queue = queue.plus(it.toQueue(c.m))
+                queue = queue.plus(it.toQueue(c.m, msg.auth))
             }
             Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, queue) }
         }

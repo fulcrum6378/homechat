@@ -2,6 +2,8 @@ package ir.mahdiparastesh.homechat
 
 import android.content.ContextWrapper
 import android.content.Intent
+import android.util.Log
+import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
@@ -44,13 +46,14 @@ class Sender : WiseService() {
         read()
         i = 0
         while (i < queue.size) {
+            Log.println(Log.ASSERT, packageName, "SENDER: " + queue[i])
             val spl = queue[i].split("-")
             val contact = m.contacts?.find { it.id == spl[0].toShort() }
             if (contact == null) {
                 queue.safeRemoveAt(i); continue; }
             val o: Queuable? = when (spl[1]) {
-                Q_MESSAGE -> dao.message(spl[2].toLong(), spl[3].toShort())
-                Q_SEEN -> dao.seen(spl[2].toLong(), spl[3].toShort(), contact.id)
+                Q_MESSAGE -> dao.message(spl[2].toLong(), spl[3].toShort(), Chat.ME)
+                Q_SEEN -> dao.seen(spl[2].toLong(), spl[3].toShort(), Chat.ME)
                 else -> throw IllegalStateException()
             }
             if (o == null) {
@@ -67,7 +70,7 @@ class Sender : WiseService() {
                 when (o) {
                     is Message -> o.id.toByteArray()
                         .plus(o.chat.toByteArray())
-                        .plus(o.date.toByteArray())
+                        .plus(o.time.toByteArray())
                         .plus((o.repl ?: -1L).toByteArray())
                         .plus(o.data.encodeToByteArray())
                     is Seen -> o.msg.toByteArray()
@@ -133,10 +136,10 @@ class Sender : WiseService() {
     }
 
     interface Queuable { // "<receiver>-<type>-<indices**>"
-        fun toQueue(m: Model): Array<String> = when (this) {
+        fun toQueue(m: Model, seenContact: Short? = null): Array<String> = when (this) {
             is Message -> m.chats!!.find { it.id == chat }!!.contacts!!
                 .map { "${it.id}-$Q_MESSAGE-$id-$chat" }.toTypedArray()
-            is Seen -> arrayOf("$contact-$Q_SEEN-$msg-$chat")
+            is Seen -> arrayOf("$seenContact-$Q_SEEN-$msg-$chat")
             // m.chats!!.find { it.id == chat }!!.contacts!!.map { }
             else -> throw IllegalArgumentException()
         }
