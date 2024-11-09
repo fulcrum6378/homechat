@@ -7,6 +7,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.content.pm.PackageManager
+import android.net.ConnectivityManager
+import android.net.Network
+import android.net.NetworkCapabilities
+import android.net.NetworkRequest
 import android.net.Uri
 import android.net.nsd.NsdManager
 import android.net.nsd.NsdServiceInfo
@@ -112,11 +116,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                     MSG_NEW_MESSAGE -> {
                         // TODO in-app notifications
                     }
+                    MSG_WIFI -> m.wifi.value = msg.obj as Boolean
                 }
             }
         }
 
-        // Register the service (https://developer.android.com/training/connect-devices-wirelessly/nsd)
+        // Register the service
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         if (!sp.contains(PageSet.PRF_PORT))
             sp.edit().putInt(PageSet.PRF_PORT, ServerSocket(0).use { it.localPort }).apply()
@@ -147,6 +152,24 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             if (ActivityCompat.checkSelfPermission(c, it) != PackageManager.PERMISSION_GRANTED)
                 reqPermLauncher.launch(it)
         }
+
+        // monitor network connectivity
+        m.wifi.observe(this) { wifi ->
+            if (!wifi) b.toolbar.setSubtitle(R.string.noNetwork)
+            else b.toolbar.subtitle = ""
+        }
+        getSystemService(ConnectivityManager::class.java).registerNetworkCallback(
+            NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(),
+            object : ConnectivityManager.NetworkCallback() {
+                override fun onCapabilitiesChanged(nw: Network, nwc: NetworkCapabilities) {}
+                override fun onAvailable(network: Network) {
+                    handler?.obtainMessage(MSG_WIFI, true)?.sendToTarget()
+                }
+
+                override fun onLost(network: Network) {
+                    handler?.obtainMessage(MSG_WIFI, false)?.sendToTarget()
+                }
+            })
     }
 
     override fun setContentView(root: View?) {
@@ -286,6 +309,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         const val MSG_FOUND = 1
         const val MSG_LOST = 2
         const val MSG_NEW_MESSAGE = 3
+        const val MSG_WIFI = 100
         const val EXTRA_OPEN_CHAT = "open_chat"
         var handler: Handler? = null
     }
@@ -300,6 +324,5 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
   * Typing status
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
-  * No network detected message
   * Crashes when you turn of the internet while chatting (Radar::update())
  */

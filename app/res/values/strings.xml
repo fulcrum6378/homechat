@@ -12,6 +12,9 @@
     <string name="send">Send</string>
     <string name="mCopy">Copy</string>
 
+    <!-- Main -->
+    <string name="noNetwork">No network detected!</string>
+
     <!-- PageRad -->
     <string name="navOpen">Open</string>
     <string name="navClose">Close</string>
