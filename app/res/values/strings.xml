@@ -24,6 +24,7 @@
 
     <!-- PageCht -->
     <string name="newMessage">Message&#8230;</string>
+    <string name="reply">Reply</string>
 
     <!-- PageSet -->
     <string name="setIdentity">Identification</string>

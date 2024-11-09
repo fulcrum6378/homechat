@@ -23,7 +23,10 @@
         <item name="itemRippleColor">?rippleColor</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.HomeChat.Dialogue</item>
         <item name="navigationViewStyle">@style/Widget.HomeChat.Nav</item>
+        <!--<item name="popupMenuStyle">@style/Widget.HomeChat.PopupMenu</item>-->
         <item name="rippleColor">#20900081</item>
+        <item name="textAppearanceLargePopupMenu">@style/TextAppearance.HomeChat.Regular</item>
+        <item name="textAppearanceSmallPopupMenu">@style/TextAppearance.HomeChat.Light</item>
         <item name="titleTextColor">?android:textColor</item><!--toolbar-->
     </style>
 
@@ -42,6 +45,10 @@
         <!--<item name="itemRippleColor">@color/weakWhite</item>
         <item name="itemTextAppearance">@style/TextAppearance.HomeChat.Navigation</item>-->
     </style>
+
+    <!--<style name="Widget.HomeChat.PopupMenu" parent="Widget.Material3.PopupMenu">
+        <item name="android:popupBackground">@drawable/custom_popupmenu_background</item>
+    </style>-->
 
     <style name="ThemeOverlay.HomeChat.Dialogue" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <!--<item name="alertDialogStyle">@style/Theme.HomeChat.Dialogue</item>

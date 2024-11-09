@@ -113,6 +113,8 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
         h.b.body.setOnClickListener {
             EasyMenu(
                 c, it, R.menu.list_msg, hashMapOf(
+                    R.id.msg_reply to {
+                    },
                     R.id.msg_copy to {
                         (c.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)
                             ?.setPrimaryClip(ClipData.newPlainText(msg.data, msg.data))
