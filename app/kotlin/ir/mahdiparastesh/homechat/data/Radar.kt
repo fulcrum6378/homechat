@@ -22,7 +22,7 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
         update(dao)
     }
 
-    var onDataChangedListener: () -> Unit = {}
+    val updateListeners = ArrayList<OnUpdateListener>()
 
     suspend fun update(dao: Database.DAO) {
         devices.forEach { it.matchContact(m, dao) }
@@ -36,12 +36,18 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
             if (friends != null) d.filter { it.contact == null || it.contact!!.id !in friends } else d
         })
         sortBy { it is Chat }
-        withContext(Dispatchers.Main) { onDataChangedListener() }
+        withContext(Dispatchers.Main) {
+            updateListeners.forEach { it.onRadarUpdated() }
+        }
     }
 
     interface Item
 
     interface Named {
         fun name(): String
+    }
+
+    interface OnUpdateListener {
+        fun onRadarUpdated()
     }
 }

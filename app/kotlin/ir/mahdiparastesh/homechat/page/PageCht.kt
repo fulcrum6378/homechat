@@ -4,6 +4,8 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -38,12 +40,11 @@ class PageCht : BasePage<Main>() {
         onDestChanged = NavController.OnDestinationChangedListener { _, _, _ ->
             c.m.messages = null
         }
+        arguments?.getShort(ARG_CHAT_ID)?.let { id -> c.m.chats?.find { it.id == id } }
+            .also { if (it != null) chat = it }
+        if (!::chat.isInitialized) {
+            c.nav.navigateUp(); return; }
         super.onViewCreated(view, savedInstanceState)
-        arguments?.getShort(ARG_CHAT_ID)?.let { id -> c.m.chats?.find { it.id == id } }.also {
-            if (it == null) {
-                c.nav.navigateUp(); return; }
-            chat = it
-        }
 
         // Load data
         if (c.m.messages == null) CoroutineScope(Dispatchers.IO).launch {
@@ -92,9 +93,17 @@ class PageCht : BasePage<Main>() {
         }
 
         // Send
+        b.field.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                canSend(s?.isNotBlank() != false)
+            }
+        })
+        canSend(false)
         b.send.setOnClickListener {
             if (chat.contacts == null) return@setOnClickListener
-            val text = b.field.text.toString()
+            val text = b.field.text.toString().trim()
             if (text.isBlank()) return@setOnClickListener
             val repl: Long? = null
             b.field.setText("")
@@ -131,6 +140,8 @@ class PageCht : BasePage<Main>() {
         NotificationManagerCompat.from(c.c).cancel(chat.id.toInt())
     }
 
+    override fun tbTitle(): String = chat.title()
+
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList() {
         if (b.list.adapter == null) b.list.adapter = ListMsg(c/*, this*/)
@@ -141,6 +152,11 @@ class PageCht : BasePage<Main>() {
     /*override fun onListScrolled() {
         super.onListScrolled()
     }*/
+
+    private fun canSend(bb: Boolean) {
+        b.send.isClickable = bb
+        b.send.alpha = if (bb) 1f else 0.8f
+    }
 
     override fun onDestroy() {
         handler = null

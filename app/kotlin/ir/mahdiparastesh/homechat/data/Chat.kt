@@ -26,6 +26,15 @@ class Chat(
             .map { id -> allContacts.find { it.id == id.toShort() }!! }
     }
 
+    fun title(): String = name ?: contacts?.firstOrNull()?.device.toString()
+
+    fun onlineStatus(radar: Radar): String = when {
+        isDirect() -> if (contacts?.firstOrNull()?.ip
+                ?.let { ip -> ip in radar.devices.map { it.host.hostAddress } } == true
+        ) "online" else "offline"
+        else -> "${contacts?.size ?: 0} people" // TODO how many people online
+    }
+
     companion object {
         const val CONTACT_SEP = ","
         const val ME = (-1).toShort()

@@ -28,9 +28,16 @@ abstract class BasePage<C> : Fragment() where C : AppCompatActivity {
         }
     }
 
+    abstract fun tbTitle(): String
+
     override fun onResume() {
         super.onResume()
         updateShadow()
+
+        if (c is Main) (c as Main).also { c ->
+            c.b.toolbar.title = tbTitle()
+            c.tbSubtitleListener.onRadarUpdated()
+        }
     }
 
     open fun onListScrolled() {

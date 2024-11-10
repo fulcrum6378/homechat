@@ -27,6 +27,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
+import androidx.core.view.children
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -34,6 +35,7 @@ import com.google.android.material.navigation.NavigationView
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
+import ir.mahdiparastesh.homechat.data.Radar
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.more.Persistent
 import ir.mahdiparastesh.homechat.page.PageCht
@@ -49,6 +51,7 @@ import java.util.concurrent.CopyOnWriteArrayList
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
     val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
+    lateinit var navHost: NavHostFragment
     lateinit var nav: NavController
     private val navMap = mapOf(
         R.id.navRadar to R.id.page_rad,
@@ -89,11 +92,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             isDrawerIndicatorEnabled = true
             syncState()
         }
-        nav = (supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment).navController
-        /*nav.addOnDestinationChangedListener { _, dest, _ -> TODO
-            b.nav.menu.forEach { it.isChecked = navMap[it.itemId] == dest.id }
-        }*/
-        //nav.navigate(R.id.page_rad)
+        navHost = supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment
+        nav = navHost.navController
+        nav.addOnDestinationChangedListener { _, dest, _ ->
+            b.nav.menu.children.forEach { it.isChecked = navMap[it.itemId] == dest.id }
+        }
+        nav.navigate(R.id.page_rad)  // only in order to trigger the above listener
         b.nav.setNavigationItemSelectedListener(this)
 
         // Handler
@@ -154,10 +158,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
 
         // monitor network connectivity
-        m.wifi.observe(this) { wifi ->
-            if (!wifi) b.toolbar.setSubtitle(R.string.noNetwork)
-            else b.toolbar.subtitle = ""
-        }
+        m.wifi.observe(this) { wifi -> tbSubtitleListener.onRadarUpdated() }
         getSystemService(ConnectivityManager::class.java).registerNetworkCallback(
             NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(),
             object : ConnectivityManager.NetworkCallback() {
@@ -197,8 +198,13 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     private var firstResume = true
     override fun onResume() {
         super.onResume()
-        startDiscovery()
         val mFirstResume = firstResume
+
+        // The subtitle of the toolbar
+        m.radar.updateListeners.add(tbSubtitleListener)
+
+        // NSD
+        startDiscovery()
         CoroutineScope(Dispatchers.IO).launch {
             if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
             if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
@@ -210,6 +216,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 )
             }
         }
+
         firstResume = false
     }
 
@@ -281,6 +288,20 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         ActivityResultContracts.RequestPermission()
     ) { /*isGranted ->*/ }
 
+    val tbSubtitleListener = object : Radar.OnUpdateListener {
+        override fun onRadarUpdated() {
+            if (m.wifi.value == false) {
+                b.toolbar.setSubtitle(R.string.noNetwork)
+                return
+            }
+            b.toolbar.subtitle = when (nav.currentDestination?.id) {
+                R.id.page_cht -> (navHost.childFragmentManager.fragments[0] as PageCht)
+                    .chat.onlineStatus(m.radar)// ?: ""
+                else -> ""
+            }
+        }
+    }
+
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
         nav.navigate(navMap[item.itemId]!!)
         b.root.closeDrawer(GravityCompat.START)
@@ -289,7 +310,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     override fun onPause() {
         super.onPause()
+
+        // NSD
         if (discovering) nsdManager.stopServiceDiscovery(discoveryListener)
+
+        // The subtitle of the toolbar
+        m.radar.updateListeners.remove(tbSubtitleListener)
     }
 
     override fun onDestroy() {
