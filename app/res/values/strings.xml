@@ -11,6 +11,7 @@
     <string name="no">No</string>
     <string name="send">Send</string>
     <string name="mCopy">Copy</string>
+    <string name="yourself">yourself</string>
 
     <!-- Main -->
     <string name="noNetwork">No network detected!</string>
@@ -25,6 +26,7 @@
     <!-- PageCht -->
     <string name="newMessage">Message&#8230;</string>
     <string name="reply">Reply</string>
+    <string name="replyingTo">Replying to %s</string>
 
     <!-- PageSet -->
     <string name="setIdentity">Identification</string>

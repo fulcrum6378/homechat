@@ -17,5 +17,8 @@
     <dimen name="listPadV">14dp</dimen>
 
     <!-- PageCht -->
+    <dimen name="replyingToTextSize">15sp</dimen>
+    <dimen name="replyCancelSize">36dp</dimen>
+    <dimen name="replyCancelPad">4dp</dimen>
     <dimen name="fieldTextSize">18sp</dimen>
 </resources>

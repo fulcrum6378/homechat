@@ -50,4 +50,7 @@ class Message : Sender.Queuable {
     suspend fun matchSeen(dao: Database.DAO) {
         status = ArrayList(dao.seenForMessage(id, chat))
     }
+
+    fun shorten(max: Int = 30): String =
+        if (data.length > max) data.substring(0, max) else data
 }

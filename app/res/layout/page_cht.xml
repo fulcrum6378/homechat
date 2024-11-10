@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:ignore="MissingConstraints">
+    tools:ignore="ContentDescription,MissingConstraints">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -16,7 +16,7 @@
         android:paddingRight="@dimen/pagePadH"
         android:paddingBottom="10dp"
         app:layoutManager=".more.SafeLinearLayoutManager"
-        app:layout_constraintBottom_toTopOf="@id/panel"
+        app:layout_constraintBottom_toTopOf="@id/reply"
         app:layout_constraintTop_toTopOf="parent"
         app:stackFromEnd="true" />
 
@@ -26,7 +26,7 @@
         android:layout_height="2.5dp"
         android:alpha="0.4"
         android:rotationX="180"
-        app:layout_constraintBottom_toTopOf="@id/panel" />
+        app:layout_constraintBottom_toTopOf="@id/reply" />
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/reply"
@@ -35,7 +35,52 @@
         android:visibility="gone"
         app:layout_constraintBottom_toTopOf="@id/panel">
 
-        <!--TODO REPLY-->
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/replyingToContact"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/pagePadH"
+            android:layout_marginTop="14dp"
+            android:layout_marginEnd="10dp"
+            android:textAppearance="@style/TextAppearance.HomeChat.Regular"
+            android:textSize="@dimen/replyingToTextSize"
+            app:layout_constraintEnd_toStartOf="@id/replyCancel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/replyingToMessage"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/pagePadH"
+            android:layout_marginEnd="10dp"
+            android:paddingBottom="14dp"
+            android:textAppearance="@style/TextAppearance.HomeChat.Light"
+            android:textSize="@dimen/replyingToTextSize"
+            app:layout_constraintEnd_toStartOf="@id/replyCancel"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/replyingToContact" />
+
+        <ImageView
+            android:id="@+id/replyCancel"
+            android:layout_width="@dimen/replyCancelSize"
+            android:layout_height="@dimen/replyCancelSize"
+            android:layout_marginEnd="@dimen/pagePadH"
+            android:background="@drawable/button_rectangle_round"
+            android:padding="@dimen/replyCancelPad"
+            android:src="@drawable/close"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:background="@color/separator"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintWidth_percent="1" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout

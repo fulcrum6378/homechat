@@ -4,6 +4,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.graphics.drawable.RippleDrawable
+import android.view.View
 import android.view.ViewGroup
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
@@ -21,12 +22,13 @@ import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.more.AnyViewHolder
 import ir.mahdiparastesh.homechat.more.EasyMenu
+import ir.mahdiparastesh.homechat.page.PageCht
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
 
-class ListMsg(private val c: Main/*, private val f: PageCht*/) :
+class ListMsg(private val c: Main, private val f: PageCht) :
     RecyclerView.Adapter<AnyViewHolder<ListMsgBinding>>() {
 
     private val rtl = c.resources.getBoolean(R.bool.dirRtl)
@@ -80,6 +82,17 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
             RippleDrawable(ContextCompat.getColorStateList(c, R.color.msg_ripple)!!, it, null)
         }
 
+        // Reply
+        val hasReply = msg.repl != null
+        val repliedTo = msg.repl?.let { repl -> c.m.messages!!.find { it.id == repl } }
+        h.b.replyText.text = repliedTo?.data
+        h.b.reply.isVisible = hasReply
+        h.b.reply.setOnClickListener(if (!hasReply) null else object : View.OnClickListener {
+            override fun onClick(v: View?) {
+                // TODO scroll to it
+            }
+        })
+
         // Data
         h.b.text.text = msg.data
 
@@ -114,6 +127,7 @@ class ListMsg(private val c: Main/*, private val f: PageCht*/) :
             EasyMenu(
                 c, it, R.menu.list_msg, hashMapOf(
                     R.id.msg_reply to {
+                        f.reply(msg)
                     },
                     R.id.msg_copy to {
                         (c.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager)

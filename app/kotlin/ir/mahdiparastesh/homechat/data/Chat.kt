@@ -26,7 +26,7 @@ class Chat(
             .map { id -> allContacts.find { it.id == id.toShort() }!! }
     }
 
-    fun title(): String = name ?: contacts?.firstOrNull()?.device.toString()
+    fun title(): String = name ?: contacts?.firstOrNull()?.name() ?: ""
 
     fun onlineStatus(radar: Radar): String = when {
         isDirect() -> if (contacts?.firstOrNull()?.ip

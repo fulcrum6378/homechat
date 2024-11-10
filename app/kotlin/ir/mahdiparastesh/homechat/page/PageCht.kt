@@ -10,9 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.isVisible
 import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import ir.mahdiparastesh.homechat.Main
+import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.data.Chat
@@ -30,6 +32,7 @@ import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 class PageCht : BasePage<Main>() {
     private lateinit var b: PageChtBinding
     lateinit var chat: Chat
+    private var replyingTo: Message? = null
 
     override fun rv(): RecyclerView? = if (::b.isInitialized) b.list else null
     override fun onCreateView(
@@ -92,7 +95,10 @@ class PageCht : BasePage<Main>() {
             }
         }
 
-        // Send
+        // Reply
+        b.replyCancel.setOnClickListener { reply(null) }
+
+        // Field
         b.field.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
@@ -100,19 +106,20 @@ class PageCht : BasePage<Main>() {
                 canSend(s?.isNotBlank() != false)
             }
         })
+
+        // Send
         canSend(false)
         b.send.setOnClickListener {
             if (chat.contacts == null) return@setOnClickListener
             val text = b.field.text.toString().trim()
             if (text.isBlank()) return@setOnClickListener
-            val repl: Long? = null
             b.field.setText("")
             CoroutineScope(Dispatchers.IO).launch {
                 val ids = c.m.messages!!.map { it.id }
                 var chosenId = 0L
                 do chosenId++ while (chosenId in ids)
                 val msg = Message(
-                    chosenId, chat.id, Chat.ME, Receiver.Header.TEXT.value, text, repl
+                    chosenId, chat.id, Chat.ME, Receiver.Header.TEXT.value, text, replyingTo?.id
                 )
                 c.dao.addMessage(msg)
                 for (contact in chat.contacts!!) Seen(chosenId, chat.id, contact.id).apply {
@@ -144,7 +151,7 @@ class PageCht : BasePage<Main>() {
 
     @SuppressLint("NotifyDataSetChanged")
     private fun updateList() {
-        if (b.list.adapter == null) b.list.adapter = ListMsg(c/*, this*/)
+        if (b.list.adapter == null) b.list.adapter = ListMsg(c, this)
         else b.list.adapter?.notifyDataSetChanged()
         c.m.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
     }
@@ -156,6 +163,22 @@ class PageCht : BasePage<Main>() {
     private fun canSend(bb: Boolean) {
         b.send.isClickable = bb
         b.send.alpha = if (bb) 1f else 0.8f
+    }
+
+    fun reply(replyingTo: Message? = null) {
+        this.replyingTo = replyingTo
+        val bb = replyingTo != null
+        b.reply.isVisible = bb
+        b.replyingToContact.text =
+            if (bb) getString(
+                R.string.replyingTo,
+                if (replyingTo.auth == Chat.ME) getString(R.string.yourself)
+                else c.m.contacts?.find { it.id == replyingTo.auth }?.name()
+            )
+            else ""
+        b.replyingToMessage.text =
+            if (bb) replyingTo.shorten()
+            else ""
     }
 
     override fun onDestroy() {

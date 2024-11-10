@@ -2,6 +2,9 @@
 <resources>
 
     <color name="background">#1C1B20</color>
+    <color name="separator">#333</color>
+    <color name="shadowStart">#25333333</color>
+    <color name="shadowEnd">#333</color>
 
     <!-- PageCht -->
     <color name="msgMe">#444</color>
