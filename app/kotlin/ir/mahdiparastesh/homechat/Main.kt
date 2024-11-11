@@ -32,12 +32,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
+import ir.mahdiparastesh.homechat.base.Persistent
 import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.data.Radar
 import ir.mahdiparastesh.homechat.databinding.MainBinding
-import ir.mahdiparastesh.homechat.more.Persistent
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageSet
 import kotlinx.coroutines.CoroutineScope
@@ -45,8 +45,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.ServerSocket
-import java.text.SimpleDateFormat
-import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
@@ -75,8 +73,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             arrayOf(Manifest.permission.POST_NOTIFICATIONS)
         else arrayOf()
-    val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
-    val timeFormat = SimpleDateFormat("HH:mm"/*:ss*/, Locale.US)
 
     companion object {
         const val SERVICE_TYPE = "_homechat._tcp."

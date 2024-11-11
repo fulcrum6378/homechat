@@ -15,7 +15,7 @@
         android:paddingTop="@dimen/pageAbovePad"
         android:paddingRight="@dimen/pagePadH"
         android:paddingBottom="10dp"
-        app:layoutManager=".more.SafeLinearLayoutManager"
+        app:layoutManager=".util.SafeLinearLayoutManager"
         app:layout_constraintBottom_toTopOf="@id/reply"
         app:layout_constraintTop_toTopOf="parent"
         app:stackFromEnd="true" />

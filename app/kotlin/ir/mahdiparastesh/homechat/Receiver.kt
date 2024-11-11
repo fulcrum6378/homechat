@@ -10,11 +10,11 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
+import ir.mahdiparastesh.homechat.base.WiseService
 import ir.mahdiparastesh.homechat.data.*
-import ir.mahdiparastesh.homechat.more.Notify
-import ir.mahdiparastesh.homechat.more.WiseService
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageSet
+import ir.mahdiparastesh.homechat.util.Notify
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

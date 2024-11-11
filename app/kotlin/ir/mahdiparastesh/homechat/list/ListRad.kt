@@ -9,13 +9,14 @@ import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Transmitter
+import ir.mahdiparastesh.homechat.base.AnyViewHolder
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Contact
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.ListRadBinding
-import ir.mahdiparastesh.homechat.more.AnyViewHolder
 import ir.mahdiparastesh.homechat.page.PageCht
+import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -35,7 +36,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         h.b.title.text = "${i + 1}. " + (dev?.name ?: chat!!.title())
         h.b.subtitle.text =
             dev?.toString() ?: (chat!!.dateInit.let {
-                c.dateFormat.format(it) + " " + c.timeFormat.format(it)
+                Time.dateFormat.format(it) + " " + Time.timeFormat.format(it)
             } + " - " + chat.onlineStatus(c.m.radar))
 
         if (chat != null) h.b.root.setOnClickListener {

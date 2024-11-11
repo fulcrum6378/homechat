@@ -1,4 +1,4 @@
-package ir.mahdiparastesh.homechat.more
+package ir.mahdiparastesh.homechat.util
 
 import android.annotation.SuppressLint
 import android.app.NotificationChannel

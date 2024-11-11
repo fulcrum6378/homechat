@@ -1,4 +1,4 @@
-package ir.mahdiparastesh.homechat.more
+package ir.mahdiparastesh.homechat.base
 
 import androidx.recyclerview.widget.RecyclerView
 import androidx.viewbinding.ViewBinding

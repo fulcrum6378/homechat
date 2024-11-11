@@ -2,7 +2,6 @@ package ir.mahdiparastesh.homechat.data
 
 import android.content.Context
 import androidx.room.*
-import java.util.*
 
 @androidx.room.Database(
     entities = [
@@ -82,10 +81,5 @@ abstract class Database : RoomDatabase() {
             .build()
         // You cannot use DB Browser for SQLite in order to manually "MODIFY TABLES"!!
         // Although you can make other kinds of editions.
-
-        fun now() = Calendar.getInstance().timeInMillis
-
-        fun Long.calendar(): Calendar = // from milliseconds
-            Calendar.getInstance().apply { timeInMillis = this@calendar }
     }
 }

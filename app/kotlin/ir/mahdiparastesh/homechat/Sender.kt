@@ -3,13 +3,13 @@ package ir.mahdiparastesh.homechat
 import android.content.ContextWrapper
 import android.content.Intent
 import android.util.Log
+import ir.mahdiparastesh.homechat.base.WiseService
 import ir.mahdiparastesh.homechat.data.Chat
-import ir.mahdiparastesh.homechat.data.Database
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.data.Seen
-import ir.mahdiparastesh.homechat.more.WiseService
 import ir.mahdiparastesh.homechat.page.PageCht
+import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -82,7 +82,7 @@ class Sender : WiseService() {
                 if (res?.firstOrNull() == 0.toByte()) {
                     queue.safeRemoveAt(i)
                     if (o is Message) dao.seen(o.id, o.chat, contact.id)!!.apply {
-                        dateSent = Database.now()
+                        dateSent = Time.now()
                         dao.updateSeen(this)
                         PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, o.chat.toInt(), 0, this)
                             ?.sendToTarget()

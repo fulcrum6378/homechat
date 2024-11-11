@@ -1,5 +1,6 @@
 package ir.mahdiparastesh.homechat.data
 
+import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.util.concurrent.CopyOnWriteArrayList
@@ -16,9 +17,17 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
     }
 
     suspend fun delete(itemName: String, dao: Database.DAO) {
-        devices.forEach { if (it.name == itemName) devices.remove(it) }
-        // NEVER CAST "removeAll {}" on a CopyOnWriteArrayList/Set!!
-        // removeAll {} -> filterInPlace() -> iterator() -> CopyOnWriteArrayList$COWIterator::remove()
+        devices.forEach {
+            if (it.name == itemName) {
+                it.contact?.apply {
+                    lastOnline = Time.now()
+                    dao.updateContact(this)
+                }
+                devices.remove(it)
+                // NEVER CAST "removeAll {}" on a CopyOnWriteArrayList/Set!!
+                // removeAll {} -> filterInPlace() -> iterator() -> CopyOnWriteArrayList$COWIterator::remove()
+            }
+        }
         update(dao)
     }
 

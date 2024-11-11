@@ -1,4 +1,4 @@
-package ir.mahdiparastesh.homechat.more
+package ir.mahdiparastesh.homechat.base
 
 import android.app.Service
 import android.content.Context

@@ -16,13 +16,13 @@ import com.google.android.material.shape.ShapeAppearanceModel
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Sender
-import ir.mahdiparastesh.homechat.data.Database
-import ir.mahdiparastesh.homechat.data.Database.Companion.calendar
+import ir.mahdiparastesh.homechat.base.AnyViewHolder
 import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
-import ir.mahdiparastesh.homechat.more.AnyViewHolder
-import ir.mahdiparastesh.homechat.more.EasyMenu
 import ir.mahdiparastesh.homechat.page.PageCht
+import ir.mahdiparastesh.homechat.util.EasyMenu
+import ir.mahdiparastesh.homechat.util.Time
+import ir.mahdiparastesh.homechat.util.Time.calendar
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -56,7 +56,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             ) showDate = false
         }
         h.b.date.isVisible = showDate
-        if (showDate) h.b.date.text = c.dateFormat.format(msg.time)
+        if (showDate) h.b.date.text = Time.dateFormat.format(msg.time)
 
         // Layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
@@ -105,7 +105,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         h.b.text.text = msg.data
 
         // Time
-        h.b.time.text = c.timeFormat.format(msg.time)
+        h.b.time.text = Time.timeFormat.format(msg.time)
 
         // Seen status of mine
         h.b.seen.isVisible = isMe
@@ -122,7 +122,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         ) CoroutineScope(Dispatchers.IO).launch {
             var queue = arrayOf<String>()
             notSeen!!.forEach {
-                it.dateSeen = Database.now()
+                it.dateSeen = Time.now()
                 c.dao.updateSeen(it)
                 msg.status!!.add(it)
                 queue = queue.plus(it.toQueue(c.m, msg.auth))

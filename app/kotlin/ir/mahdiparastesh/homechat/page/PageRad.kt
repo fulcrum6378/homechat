@@ -9,10 +9,10 @@ import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
+import ir.mahdiparastesh.homechat.data.BasePage
 import ir.mahdiparastesh.homechat.data.Radar.OnUpdateListener
 import ir.mahdiparastesh.homechat.databinding.PageRadBinding
 import ir.mahdiparastesh.homechat.list.ListRad
-import ir.mahdiparastesh.homechat.more.BasePage
 
 class PageRad : BasePage<Main>(), OnUpdateListener {
     private lateinit var b: PageRadBinding

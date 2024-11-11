@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-package ir.mahdiparastesh.homechat.more
+package ir.mahdiparastesh.homechat.util
 
 import android.content.Context
 import android.util.AttributeSet

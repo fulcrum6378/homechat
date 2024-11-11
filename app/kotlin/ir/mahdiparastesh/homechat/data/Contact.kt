@@ -4,7 +4,8 @@ import androidx.core.app.Person
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import ir.mahdiparastesh.homechat.more.Persistent
+import ir.mahdiparastesh.homechat.base.Persistent
+import ir.mahdiparastesh.homechat.util.Time
 
 @Entity(indices = [Index("id")])
 class Contact(
@@ -14,7 +15,7 @@ class Contact(
     var ip: String?,
     var port: Int?,
     var lastOnline: Long? = null,
-    val dateCreated: Long = Database.now(),
+    val dateCreated: Long = Time.now(),
     var isFav: Boolean = false,
 ) : Radar.Named {
     override fun toString(): String = id.toString()
@@ -36,7 +37,7 @@ class Contact(
     companion object {
         // obtaining MAC address is almost impossible in the newer APIs!
         suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device): Contact = Contact(
-            chosenId, dev.name, dev.unique, dev.host.hostAddress!!, dev.port, Database.now()
+            chosenId, dev.name, dev.unique, dev.host.hostAddress!!, dev.port, Time.now()
         ).also {
             c.dao.addContact(it)
             c.m.contacts?.add(it)

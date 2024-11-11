@@ -17,12 +17,12 @@ import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
+import ir.mahdiparastesh.homechat.data.BasePage
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.PageChtBinding
 import ir.mahdiparastesh.homechat.list.ListMsg
-import ir.mahdiparastesh.homechat.more.BasePage
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

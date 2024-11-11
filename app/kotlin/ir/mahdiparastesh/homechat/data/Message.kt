@@ -5,6 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.Index
 import ir.mahdiparastesh.homechat.Sender
+import ir.mahdiparastesh.homechat.util.Time
 
 @Entity(
     primaryKeys = ["id", "chat", "auth"],
@@ -29,7 +30,7 @@ class Message : Sender.Queuable {
     @Suppress("ConvertSecondaryConstructorToPrimary")
     constructor(
         id: Long, chat: Short, auth: Short, type: Byte, data: String, repl: Long? = null,
-        hide: Boolean = false, time: Long = Database.now()
+        hide: Boolean = false, time: Long = Time.now()
     ) {
         this.id = id
         this.chat = chat

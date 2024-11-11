@@ -4,14 +4,15 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import ir.mahdiparastesh.homechat.more.Persistent
+import ir.mahdiparastesh.homechat.base.Persistent
+import ir.mahdiparastesh.homechat.util.Time
 
 @Entity(indices = [Index("id")])
 class Chat(
     @PrimaryKey var id: Short = 0,
     var contactIds: String, // separated by CONTACT_SEP
     var name: String? = null,
-    val dateInit: Long = Database.now(),
+    val dateInit: Long = Time.now(),
     var muted: Boolean = false,
 ) : Radar.Item {
 
