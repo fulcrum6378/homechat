@@ -4,8 +4,10 @@ import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.base.Persistent
 import ir.mahdiparastesh.homechat.util.Time
+import ir.mahdiparastesh.homechat.util.Time.calendar
 
 @Entity(indices = [Index("id")])
 class Chat(
@@ -29,13 +31,24 @@ class Chat(
 
     fun title(): String = name ?: contacts?.firstOrNull()?.name() ?: ""
 
-    fun onlineStatus(radar: Radar): String {
-        val peers = radar.devices.map { it.host.hostAddress }
-        return when {
-            isDirect() ->
-                (if (contacts?.firstOrNull()?.ip?.let { ip -> ip in peers } == true) "online"
-                else "offline")
-            else -> "${contacts?.size ?: 0} people" // TODO how many people online
+    fun onlineStatus(c: Persistent): String {
+        val peers = c.m.radar.devices.map { it.host.hostAddress }
+        return if (isDirect()) {
+            val contact = contacts?.firstOrNull()
+            if (contact?.ip?.let { ip -> ip in peers } == true) c.c.getString(R.string.online)
+            else {
+                val lo = contact?.lastOnline
+                if (lo == null) c.c.getString(R.string.offline)
+                else c.c.getString(R.string.lastOnline) +
+                        Time.distance(c.c, lo.calendar(), append = R.string.ago)
+            }
+        } else {
+            if (!contacts.isNullOrEmpty()) c.c.getString(
+                R.string.peopleOnline,
+                contacts!!.count { it.ip?.let { ip -> ip in peers } == true },
+                contacts!!.size
+            )
+            else c.c.getString(R.string.empty)
         }
     }
 

@@ -1,15 +1,68 @@
 package ir.mahdiparastesh.homechat.util
 
+import android.content.Context
+import androidx.annotation.StringRes
+import ir.mahdiparastesh.homechat.R
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.abs
 
 object Time {
-    val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
-    val timeFormat = SimpleDateFormat("HH:mm"/*:ss*/, Locale.US)
+    const val PATTERN_DATE = "MMMM d"
+    const val PATTERN_DATE_FULL = "yyyy.MM.dd"
+    const val PATTERN_TIME = "HH:mm"/*:ss*/
+    const val SECOND = 1000L
+    const val MINUTE = 60000L
+    const val HOUR = 3600000L
+    const val DAY = 86400000L
+    const val WEEK = 604800000L
+    val thisYear = cal()[Calendar.YEAR]
 
-    fun now() = Calendar.getInstance().timeInMillis
+
+    fun cal() = Calendar.getInstance()
+
+    fun now() = cal().timeInMillis
 
     fun Long.calendar(): Calendar = // from milliseconds
-        Calendar.getInstance().apply { timeInMillis = this@calendar }
+        cal().apply { timeInMillis = this@calendar }
+
+    fun formatDate(cal: Calendar): String =
+        if (cal[Calendar.YEAR] == thisYear)
+            SimpleDateFormat(PATTERN_DATE, Locale.getDefault()).format(cal.timeInMillis)
+        else SimpleDateFormat(PATTERN_DATE_FULL, Locale.getDefault()).format(cal.timeInMillis)
+
+    fun formatTime(time: Long): String =
+        SimpleDateFormat(PATTERN_TIME, Locale.getDefault()).format(time)
+
+    fun distance(
+        c: Context, a: Calendar, b: Calendar = cal(), @StringRes append: Int? = null
+    ): String {
+        val dif = abs(a.time.time - b.time.time)
+        val append = if (append != null) c.getString(append) else ""
+        return when {
+            dif < (SECOND * 15) -> c.getString(R.string.justNow)
+            dif < MINUTE -> c.getString(R.string.seconds, (dif / SECOND).toInt()) + append
+            dif < HOUR -> {
+                val unit = (dif / MINUTE).toInt()
+                (if (unit == 1) c.getString(R.string.aMinute)
+                else c.getString(R.string.minutes, unit)) + append
+            }
+            dif < DAY -> {
+                val unit = (dif / HOUR).toInt()
+                (if (unit == 1) c.getString(R.string.anHour)
+                else c.getString(R.string.hours, unit)) + append
+            }
+            dif < WEEK -> {
+                val unit = (dif / DAY).toInt()
+                (if (unit == 1) c.getString(R.string.aDay)
+                else c.getString(R.string.days, unit)) + append
+            }
+            else -> {
+                val unit = (dif / WEEK).toInt()
+                (if (unit == 1) c.getString(R.string.aWeek)
+                else c.getString(R.string.weeks, (dif / WEEK).toInt())) + append
+            }
+        }
+    }
 }

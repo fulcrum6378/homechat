@@ -40,6 +40,7 @@ import ir.mahdiparastesh.homechat.data.Radar
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageSet
+import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -268,6 +269,15 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         override fun onDiscoveryStopped(serviceType: String) {
             discovering = false
+
+            CoroutineScope(Dispatchers.IO).launch {
+                m.radar.devices.forEach {
+                    it.contact?.apply {
+                        lastOnline = Time.now()
+                        dao.updateContact(this)
+                    }
+                }
+            }
         }
 
         override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
@@ -309,7 +319,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             }
             b.toolbar.subtitle = when (nav.currentDestination?.id) {
                 R.id.page_cht -> (navHost.childFragmentManager.fragments[0] as PageCht)
-                    .chat.onlineStatus(m.radar)// ?: ""
+                    .chat.onlineStatus(this@Main)// ?: ""
                 else -> ""
             }
         }
@@ -347,5 +357,4 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
   * Crashes when you turn of the internet while chatting (Radar::update())
-  * Contact::lastOnline
  */

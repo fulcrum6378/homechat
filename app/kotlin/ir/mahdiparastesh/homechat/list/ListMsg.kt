@@ -56,7 +56,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             ) showDate = false
         }
         h.b.date.isVisible = showDate
-        if (showDate) h.b.date.text = Time.dateFormat.format(msg.time)
+        if (showDate) h.b.date.text = Time.formatDate(cal)
 
         // Layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
@@ -105,7 +105,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         h.b.text.text = msg.data
 
         // Time
-        h.b.time.text = Time.timeFormat.format(msg.time)
+        h.b.time.text = Time.formatTime(msg.time)
 
         // Seen status of mine
         h.b.seen.isVisible = isMe

@@ -17,7 +17,7 @@ import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
-import ir.mahdiparastesh.homechat.data.BasePage
+import ir.mahdiparastesh.homechat.base.BasePage
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Seen
@@ -38,6 +38,14 @@ class PageCht : BasePage<Main>() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View = PageChtBinding.inflate(inflater, container, false).apply { b = this }.root
+
+    companion object {
+        const val ARG_CHAT_ID = "chat_id"
+        const val MSG_INSERTED = 0
+        const val MSG_UPDATED = 1
+        const val MSG_SEEN = 2
+        var handler: Handler? = null
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         onDestChanged = NavController.OnDestinationChangedListener { _, _, _ ->
@@ -184,13 +192,5 @@ class PageCht : BasePage<Main>() {
     override fun onDestroy() {
         handler = null
         super.onDestroy()
-    }
-
-    companion object {
-        const val ARG_CHAT_ID = "chat_id"
-        const val MSG_INSERTED = 0
-        const val MSG_UPDATED = 1
-        const val MSG_SEEN = 2
-        var handler: Handler? = null
     }
 }

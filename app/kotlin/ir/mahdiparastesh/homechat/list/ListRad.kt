@@ -16,7 +16,6 @@ import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.ListRadBinding
 import ir.mahdiparastesh.homechat.page.PageCht
-import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -34,10 +33,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val chat = item as? Chat
         val dev = item as? Device
         h.b.title.text = "${i + 1}. " + (dev?.name ?: chat!!.title())
-        h.b.subtitle.text =
-            dev?.toString() ?: (chat!!.dateInit.let {
-                Time.dateFormat.format(it) + " " + Time.timeFormat.format(it)
-            } + " - " + chat.onlineStatus(c.m.radar))
+        h.b.subtitle.text = dev?.toString() ?: chat!!.onlineStatus(c)
 
         if (chat != null) h.b.root.setOnClickListener {
             c.nav.navigate(

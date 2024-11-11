@@ -11,10 +11,27 @@
     <string name="no">No</string>
     <string name="send">Send</string>
     <string name="mCopy">Copy</string>
-    <string name="yourself">yourself</string>
-
-    <!-- Main -->
     <string name="noNetwork">No network detected!</string>
+    <string name="yourself">yourself</string>
+    <string name="online">online</string>
+    <string name="offline">offline</string>
+    <string name="lastOnline">Last seen&#160;</string>
+    <string name="peopleOnline">%1$d/%2$d people online</string>
+    <string name="empty">empty</string>
+
+    <!-- #Time -->
+    <string name="justNow">just now</string>
+    <string name="seconds">%d seconds</string>
+    <string name="aMinute">a minute</string>
+    <string name="minutes">%d minutes</string>
+    <string name="anHour">an hour</string>
+    <string name="hours">%d hours</string>
+    <string name="aDay">a day</string>
+    <string name="days">%d days</string>
+    <string name="aWeek">a week</string>
+    <string name="weeks">%d weeks</string>
+    <string name="ago">&#160;ago</string>
+
 
     <!-- PageRad -->
     <string name="navOpen">Open</string>
