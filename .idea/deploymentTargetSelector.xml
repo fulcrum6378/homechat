@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="Launch">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2024-11-09T03:23:59.733334600Z">
+        <DropdownSelection timestamp="2024-11-11T10:27:53.645736400Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="Default" identifier="serial=192.168.1.20:43559;connection=18cac1ee" />
+              <DeviceId pluginId="Default" identifier="serial=192.168.1.20:35655;connection=dda3de13" />
             </handle>
           </Target>
         </DropdownSelection>
@@ -15,16 +15,19 @@
           <targets>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="Default" identifier="serial=192.168.1.20:36141;connection=c9de131d" />
+                <DeviceId pluginId="PhysicalDevice" identifier="serial=G7NPFP0096689VX" />
               </handle>
             </Target>
             <Target type="DEFAULT_BOOT">
               <handle>
-                <DeviceId pluginId="PhysicalDevice" identifier="serial=G7NPFP0096689VX" />
+                <DeviceId pluginId="Default" identifier="serial=192.168.1.20:35655;connection=dda3de13" />
               </handle>
             </Target>
           </targets>
         </DialogSelection>
+      </SelectionState>
+      <SelectionState runConfigName="Install Silently">
+        <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
     </selectionStates>
   </component>

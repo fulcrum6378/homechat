@@ -50,24 +50,6 @@ import java.util.*
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSelectedListener {
-    val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
-    lateinit var navHost: NavHostFragment
-    lateinit var nav: NavController
-    private val navMap = mapOf(
-        R.id.navRadar to R.id.page_rad,
-        R.id.navSettings to R.id.page_set,
-    )
-    val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
-    val timeFormat = SimpleDateFormat("HH:mm"/*:ss*/, Locale.US)
-    private val reqPermissions =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
-        else arrayOf()
-
-    private lateinit var nsdManager: NsdManager
-    private lateinit var mServiceName: String
-    private var registered = false
-    private var discovering = false
 
     override val c: Context get() = applicationContext
     override lateinit var m: Model
@@ -75,6 +57,36 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override val db: Database by dbLazy
     override val dao: Database.DAO by lazy { db.dao() }
     override lateinit var sp: SharedPreferences
+
+    val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
+    lateinit var navHost: NavHostFragment
+    lateinit var nav: NavController
+    private val navMap = mapOf(
+        R.id.navRadar to R.id.page_rad,
+        R.id.navSettings to R.id.page_set,
+    )
+
+    private lateinit var nsdManager: NsdManager
+    private lateinit var mServiceName: String
+    private var registered = false
+    private var discovering = false
+
+    private val reqPermissions =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+            arrayOf(Manifest.permission.POST_NOTIFICATIONS)
+        else arrayOf()
+    val dateFormat = SimpleDateFormat("yyyy.MM.dd", Locale.US/*TODO?*/)
+    val timeFormat = SimpleDateFormat("HH:mm"/*:ss*/, Locale.US)
+
+    companion object {
+        const val SERVICE_TYPE = "_homechat._tcp."
+        const val MSG_FOUND = 1
+        const val MSG_LOST = 2
+        const val MSG_NEW_MESSAGE = 3
+        const val MSG_WIFI = 100
+        const val EXTRA_OPEN_CHAT = "open_chat"
+        var handler: Handler? = null
+    }
 
     @SuppressLint("BatteryLife")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -97,7 +109,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         nav.addOnDestinationChangedListener { _, dest, _ ->
             b.nav.menu.children.forEach { it.isChecked = navMap[it.itemId] == dest.id }
         }
-        nav.navigate(R.id.page_rad)  // only in order to trigger the above listener
         b.nav.setNavigationItemSelectedListener(this)
 
         // Handler
@@ -178,6 +189,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         root?.layoutDirection =
             if (!resources.getBoolean(R.bool.dirRtl)) ViewGroup.LAYOUT_DIRECTION_LTR
             else ViewGroup.LAYOUT_DIRECTION_RTL
+    }
+
+    override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        nav.navigate(navMap[item.itemId]!!)
+        b.root.closeDrawer(GravityCompat.START)
+        return true
     }
 
     private val regListener = object : NsdManager.RegistrationListener {
@@ -302,12 +319,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
     }
 
-    override fun onNavigationItemSelected(item: MenuItem): Boolean {
-        nav.navigate(navMap[item.itemId]!!)
-        b.root.closeDrawer(GravityCompat.START)
-        return true
-    }
-
     override fun onPause() {
         super.onPause()
 
@@ -329,16 +340,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     /*@ColorInt
     fun themeColor(@AttrRes attr: Int) =
         TypedValue().apply { theme.resolveAttribute(attr, this, true) }.data*/
-
-    companion object {
-        const val SERVICE_TYPE = "_homechat._tcp."
-        const val MSG_FOUND = 1
-        const val MSG_LOST = 2
-        const val MSG_NEW_MESSAGE = 3
-        const val MSG_WIFI = 100
-        const val EXTRA_OPEN_CHAT = "open_chat"
-        var handler: Handler? = null
-    }
 }
 
 /* TODO
@@ -346,9 +347,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
   * Fucks up when 2 devices open simultaneously!
   * It doesn't store the self's message on a simultaneous send.
   * Regularly init the Queuer
-  * Replying
   * Typing status
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
   * Crashes when you turn of the internet while chatting (Radar::update())
+  * Contact::lastOnline
  */

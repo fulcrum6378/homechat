@@ -3,6 +3,7 @@
 
     <item
         android:id="@+id/navRadar"
+        android:checked="true"
         android:title="@string/radar" />
     <item
         android:id="@+id/navSettings"

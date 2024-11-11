@@ -43,6 +43,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
     override fun onBindViewHolder(h: AnyViewHolder<ListMsgBinding>, i: Int) {
         val msg = c.m.messages?.getOrNull(i) ?: return
         val isMe = msg.me()
+        val hasReply = msg.repl != null
 
         // Date
         val cal = msg.time.calendar()
@@ -60,8 +61,12 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         // Layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
             .apply { horizontalBias = if (isMe) 1f else 0f }
-        h.b.body.layoutParams = (h.b.body.layoutParams as ConstraintLayout.LayoutParams)
-            .apply { horizontalBias = if (isMe) 1f else 0f }
+        h.b.body.layoutParams = (h.b.body.layoutParams as ConstraintLayout.LayoutParams).apply {
+            horizontalBias = if (isMe) 1f else 0f
+            topToTop =
+                if (!hasReply) ConstraintLayout.LayoutParams.PARENT_ID
+                else R.id.barrier
+        }
         h.b.body.background = MaterialShapeDrawable(
             ShapeAppearanceModel.Builder().apply {
                 setTopLeftCorner(cornerFamily, cornerSize)
@@ -83,13 +88,16 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         }
 
         // Reply
-        val hasReply = msg.repl != null
-        val repliedTo = msg.repl?.let { repl -> c.m.messages!!.find { it.id == repl } }
+        var repliedToIdx = i
+        val repliedTo = msg.repl?.let { repl ->
+            repliedToIdx = c.m.messages!!.indexOfFirst { it.id == repl }
+            c.m.messages!!.getOrNull(repliedToIdx)
+        }
         h.b.replyText.text = repliedTo?.data
         h.b.reply.isVisible = hasReply
         h.b.reply.setOnClickListener(if (!hasReply) null else object : View.OnClickListener {
             override fun onClick(v: View?) {
-                // TODO scroll to it
+                f.b.list.scrollToPosition(repliedToIdx)
             }
         })
 

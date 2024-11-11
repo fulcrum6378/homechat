@@ -11,4 +11,6 @@
     <color name="msgThemStroke">#AAA</color>
     <color name="chatText">#555</color>
     <color name="chatTime">#888</color>
+    <color name="reply">#FAFAFA</color>
+    <color name="replyText">#777</color>
 </resources>

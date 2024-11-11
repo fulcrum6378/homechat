@@ -30,7 +30,7 @@ import kotlinx.coroutines.withContext
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
 
 class PageCht : BasePage<Main>() {
-    private lateinit var b: PageChtBinding
+    lateinit var b: PageChtBinding
     lateinit var chat: Chat
     private var replyingTo: Message? = null
 

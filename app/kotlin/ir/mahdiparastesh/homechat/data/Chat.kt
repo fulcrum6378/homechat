@@ -28,11 +28,14 @@ class Chat(
 
     fun title(): String = name ?: contacts?.firstOrNull()?.name() ?: ""
 
-    fun onlineStatus(radar: Radar): String = when {
-        isDirect() -> if (contacts?.firstOrNull()?.ip
-                ?.let { ip -> ip in radar.devices.map { it.host.hostAddress } } == true
-        ) "online" else "offline"
-        else -> "${contacts?.size ?: 0} people" // TODO how many people online
+    fun onlineStatus(radar: Radar): String {
+        val peers = radar.devices.map { it.host.hostAddress }
+        return when {
+            isDirect() ->
+                (if (contacts?.firstOrNull()?.ip?.let { ip -> ip in peers } == true) "online"
+                else "offline")
+            else -> "${contacts?.size ?: 0} people" // TODO how many people online
+        }
     }
 
     companion object {
