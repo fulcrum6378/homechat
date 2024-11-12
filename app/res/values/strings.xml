@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">Home Chat</string>
 
     <!-- #GLOBAL -->
@@ -21,15 +21,23 @@
 
     <!-- #Time -->
     <string name="justNow">just now</string>
-    <string name="seconds">%d seconds</string>
-    <string name="aMinute">a minute</string>
-    <string name="minutes">%d minutes</string>
-    <string name="anHour">an hour</string>
-    <string name="hours">%d hours</string>
-    <string name="aDay">a day</string>
-    <string name="days">%d days</string>
-    <string name="aWeek">a week</string>
-    <string name="weeks">%d weeks</string>
+    <string name="seconds" tools:ignore="PluralsCandidate">%d seconds</string>
+    <plurals name="minute">
+        <item quantity="one">a minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="hour">
+        <item quantity="one">an hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+    <plurals name="day">
+        <item quantity="one">a day</item><!--TODO yesterday-->
+        <item quantity="other">%d days</item>
+    </plurals>
+    <plurals name="week">
+        <item quantity="one">a week</item>
+        <item quantity="other">%d weeks</item>
+    </plurals>
     <string name="ago">&#160;ago</string>
 
 

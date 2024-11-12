@@ -1,5 +1,6 @@
 package ir.mahdiparastesh.homechat.list
 
+import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.os.bundleOf
@@ -28,6 +29,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
     ): AnyViewHolder<ListRadBinding> =
         AnyViewHolder(ListRadBinding.inflate(c.layoutInflater, parent, false))
 
+    @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(h: AnyViewHolder<ListRadBinding>, i: Int) {
         val item = c.m.radar.getOrNull(i) ?: return
         val chat = item as? Chat

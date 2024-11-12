@@ -45,23 +45,19 @@ object Time {
             dif < MINUTE -> c.getString(R.string.seconds, (dif / SECOND).toInt()) + append
             dif < HOUR -> {
                 val unit = (dif / MINUTE).toInt()
-                (if (unit == 1) c.getString(R.string.aMinute)
-                else c.getString(R.string.minutes, unit)) + append
+                c.resources.getQuantityString(R.plurals.minute, unit, unit) + append
             }
             dif < DAY -> {
                 val unit = (dif / HOUR).toInt()
-                (if (unit == 1) c.getString(R.string.anHour)
-                else c.getString(R.string.hours, unit)) + append
+                c.resources.getQuantityString(R.plurals.hour, unit, unit) + append
             }
             dif < WEEK -> {
                 val unit = (dif / DAY).toInt()
-                (if (unit == 1) c.getString(R.string.aDay)
-                else c.getString(R.string.days, unit)) + append
+                c.resources.getQuantityString(R.plurals.day, unit, unit) + append
             }
             else -> {
                 val unit = (dif / WEEK).toInt()
-                (if (unit == 1) c.getString(R.string.aWeek)
-                else c.getString(R.string.weeks, (dif / WEEK).toInt())) + append
+                c.resources.getQuantityString(R.plurals.week, unit, unit) + append
             }
         }
     }
