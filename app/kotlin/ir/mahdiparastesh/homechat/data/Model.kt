@@ -8,6 +8,7 @@ class Model : ViewModel() {
     val radar = Radar(this)
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
+    val pendingContacts = hashSetOf<Short>()
     var aliveMain = false
     var aliveSender = false
     var aliveReceiver = false

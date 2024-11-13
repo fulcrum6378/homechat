@@ -1,17 +1,29 @@
 package ir.mahdiparastesh.homechat.data
 
 import android.net.nsd.NsdServiceInfo
+import android.os.Build
+import android.os.ext.SdkExtensions
 import ir.mahdiparastesh.homechat.page.PageSet
 import java.net.InetAddress
 
 class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
     val name: String = srvInfo.serviceName
-    val host: InetAddress = srvInfo.host
+    val host: InetAddress
     val port: Int = srvInfo.port
     val unique: String? = srvInfo.attr(PageSet.PRF_UNIQUE)
 
     @Transient
     var contact: Contact? = null
+
+    init {
+        @Suppress("DEPRECATION")
+        host =
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+                SdkExtensions.getExtensionVersion(Build.VERSION_CODES.TIRAMISU) >= 7
+            ) srvInfo.hostAddresses[0]
+            else srvInfo.host
+    }
+
 
     fun NsdServiceInfo.attr(key: String): String? = attributes[key]?.let { String(it) }
 
@@ -22,7 +34,7 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
             return; }
         contact = if (matches.size == 1) matches[0] else null
 
-        // Update IP and port
+        // update IP and port
         contact?.apply {
             if (ip != host.hostAddress || this@apply.port != this@Device.port) {
                 ip = host.hostAddress
@@ -31,7 +43,7 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
             }
         }
 
-        // Remove this IP address from any other Contact
+        // remove this IP address from any other Contact
         m.contacts?.forEach {
             if (it.id == contact?.id) return@forEach
             if (it.ip == contact?.ip) {

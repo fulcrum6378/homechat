@@ -43,6 +43,7 @@ class Sender : WiseService() {
 
     private suspend fun start() {
         working = true
+        m.pendingContacts.clear()
         read()
         i = 0
         while (i < queue.size) {
@@ -64,7 +65,10 @@ class Sender : WiseService() {
                 contact.port = dev?.port
             }
             if (contact.ip == null) {
-                i++; continue; }
+                m.pendingContacts.add(contact.id)
+                i++
+                continue
+            }
 
             Transmitter(Pair(contact.ip!!, contact.port!!), o.header(), {
                 when (o) {
@@ -87,7 +91,10 @@ class Sender : WiseService() {
                         PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, o.chat.toInt(), 0, this)
                             ?.sendToTarget()
                     }
-                } else i++
+                } else {
+                    m.pendingContacts.add(contact.id)
+                    i++
+                }
             }
             write()
         }

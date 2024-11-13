@@ -44,6 +44,7 @@ import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageRad
 import ir.mahdiparastesh.homechat.page.PageSet
+import ir.mahdiparastesh.homechat.util.Delay
 import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -65,7 +66,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     val mm: MyModel by viewModels()
     val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
     private lateinit var abdt: ActionBarDrawerToggle
-    lateinit var navHost: NavHostFragment
+    private lateinit var navHost: NavHostFragment
     lateinit var nav: NavController
     private val navMap = mapOf(
         R.id.navRadar to R.id.page_rad,
@@ -127,7 +128,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 View.OnClickListener { @Suppress("DEPRECATION") onBackPressed() }
         }
 
-        // Navigation
+        // navigation
         navHost = supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment
         nav = navHost.navController
         nav.addOnDestinationChangedListener { _, dest, _ ->
@@ -142,10 +143,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 when (msg.what) {
                     MSG_FOUND -> Device(msg.obj as NsdServiceInfo).apply {
                         if (name == mServiceName) m.radar.self = this
-                        else {
-                            CoroutineScope(Dispatchers.IO)
-                                .launch { m.radar.insert(this@apply, dao) }
-                            Sender.init(this@Main)
+                        else CoroutineScope(Dispatchers.IO).launch {
+                            m.radar.insert(this@apply, dao)
+                            if (contact?.id in m.pendingContacts) Sender.init(this@Main)
                         }
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
@@ -217,6 +217,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             })
 
         // miscellaneous
+        Delay(2000) { Sender.init(this@Main) }
         if (mm.navOpen) b.root.openDrawer(GravityCompat.START)
         intent.check()
         addOnNewIntentListener { it.check() }
@@ -292,9 +293,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         override fun onServiceFound(srvInfo: NsdServiceInfo) {
             if (srvInfo.serviceType == SERVICE_TYPE) try {
-                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && SdkExtensions.getExtensionVersion(
-                        Build.VERSION_CODES.TIRAMISU
-                    ) >= 7
+                /*if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R &&
+                    SdkExtensions.getExtensionVersion(Build.VERSION_CODES.TIRAMISU) >= 7
                 ) nsdManager.registerServiceInfoCallback(srvInfo, null, serviceInfoCallback)*/
                 @Suppress("DEPRECATION")
                 nsdManager.resolveService(srvInfo, resolveListener)
@@ -400,10 +400,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
 /* TODO
   * A device with VPN cannot receive, but can send to a VPN-less device!
-  * Regularly init the Queuer
   * Regularly update subtitle of Toolbar in PageChat
   * Typing status
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
-  * Crashes when you turn of the internet while chatting (Radar::update())
  */
