@@ -145,7 +145,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         if (name == mServiceName) m.radar.self = this
                         else CoroutineScope(Dispatchers.IO).launch {
                             m.radar.insert(this@apply, dao)
-                            if (contact?.id in m.pendingContacts) Sender.init(this@Main)
+                            if (contact != null && contact?.id in m.pendingContacts)
+                                Sender.init(this@Main)
                         }
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
@@ -398,10 +399,22 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     }
 }
 
-/* TODO
-  * A device with VPN cannot receive, but can send to a VPN-less device!
-  * Regularly update subtitle of Toolbar in PageChat
-  * Typing status
-  * https://developer.android.com/develop/ui/views/notifications/bubbles
-  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
+/*TODO
+ * Problems:
+ * A device with VPN cannot receive, but can send to a VPN-less device!
+ * Regularly update subtitle of Toolbar in PageChat
+ * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
+ * -
+ * Extension:
+ * Drag to reply
+ * Hide message?
+ * Clear history?
+ * BINARY {file, voice}
+ * Muting & Favourite
+ * Unpair?
+ * GIF & Sticker
+ * Typing status
+ * https://developer.android.com/develop/ui/views/notifications/bubbles (Android 10/11+)
+ * Group chat
+ * Voice/video call
  */

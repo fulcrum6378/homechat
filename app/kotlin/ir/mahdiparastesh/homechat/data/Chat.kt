@@ -17,6 +17,7 @@ class Chat(
     var name: String? = null,
     val dateInit: Long = Time.now(),
     var muted: Boolean = false,
+    //var pinned: Boolean = false, TODO
 ) : Radar.Item {
 
     @Ignore

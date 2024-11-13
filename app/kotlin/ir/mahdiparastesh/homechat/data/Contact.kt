@@ -16,7 +16,7 @@ class Contact(
     var port: Int?,
     var lastOnline: Long? = null,
     val dateCreated: Long = Time.now(),
-    var isFav: Boolean = false,
+    var isFav: Boolean = false, //TODO remove
 ) : Radar.Named {
     override fun toString(): String = id.toString()
     override fun hashCode(): Int = id.hashCode()

@@ -6,12 +6,10 @@ import androidx.room.PrimaryKey
 @Entity
 class Binary(
     @PrimaryKey(autoGenerate = true) val here: Long,
-    val there: Long,
+    val there: Long, // TODO what about a group chat
     val contact: Short,
     val title: String,
     val ext: String,
-    val dateModified: Long,
-    val dateReceived: Long,
 ) {
     fun file() = "$here.$ext"
 }
