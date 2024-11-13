@@ -26,7 +26,7 @@ abstract class Database : RoomDatabase() {
         suspend fun updateContact(item: Contact)
 
 
-        @Query("SELECT * FROM Chat")
+        @Query("SELECT * FROM Chat ORDER BY (SELECT MAX(time) FROM Message WHERE chat = Chat.id) DESC")
         suspend fun chats(): List<Chat>
 
         @Query("SELECT id FROM Chat")
@@ -64,8 +64,11 @@ abstract class Database : RoomDatabase() {
         @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
         suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?
 
-        @Query("SELECT msg FROM Seen WHERE chat LIKE :chat AND dateSeen IS NULL")
+        @Query("SELECT msg FROM Seen WHERE chat LIKE :chat AND contact LIKE -1 AND dateSeen IS NULL")
         suspend fun unseenInChat(chat: Short): List<Long>
+
+        @Query("SELECT COUNT(*) FROM Seen WHERE chat LIKE :chat AND contact LIKE -1 AND dateSeen IS NULL")
+        suspend fun countUnseenInChat(chat: Short): Int
 
         @Insert
         suspend fun addSeen(item: Seen)

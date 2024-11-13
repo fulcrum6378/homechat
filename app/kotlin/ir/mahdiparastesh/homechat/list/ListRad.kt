@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.core.os.bundleOf
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ir.mahdiparastesh.homechat.Main
@@ -34,9 +35,17 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val item = c.m.radar.getOrNull(i) ?: return
         val chat = item as? Chat
         val dev = item as? Device
+
+        // texts
         h.b.title.text = "${i + 1}. " + (dev?.name ?: chat!!.title())
         h.b.subtitle.text = dev?.toString() ?: chat!!.onlineStatus(c)
 
+        // counter badge
+        val hasNew = chat?.newOnes != null && chat.newOnes!! > 0
+        if (hasNew) h.b.badge.text = chat.newOnes.toString()
+        h.b.badge.isVisible = hasNew
+
+        // clicks
         if (chat != null) h.b.root.setOnClickListener {
             c.nav.navigate(
                 R.id.action_page_rad_to_page_cht, bundleOf(PageCht.ARG_CHAT_ID to chat.id)

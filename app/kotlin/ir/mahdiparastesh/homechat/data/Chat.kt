@@ -12,7 +12,8 @@ import ir.mahdiparastesh.homechat.util.Time.calendar
 @Entity(indices = [Index("id")])
 class Chat(
     @PrimaryKey var id: Short = 0,
-    var contactIds: String, // separated by CONTACT_SEP
+    /** Items are separated by [CONTACT_SEP]. */
+    var contactIds: String,
     var name: String? = null,
     val dateInit: Long = Time.now(),
     var muted: Boolean = false,
@@ -21,6 +22,10 @@ class Chat(
     @Ignore
     @Transient
     var contacts: List<Contact>? = null
+
+    @Ignore
+    @Transient
+    var newOnes: Int? = null
 
     fun isDirect() = (contacts?.size ?: contactIds.split(CONTACT_SEP).size) == 1
 
@@ -50,6 +55,10 @@ class Chat(
             )
             else c.c.getString(R.string.empty)
         }
+    }
+
+    suspend fun checkForNewOnes(dao: Database.DAO) {
+        newOnes = dao.countUnseenInChat(id)
     }
 
     companion object {

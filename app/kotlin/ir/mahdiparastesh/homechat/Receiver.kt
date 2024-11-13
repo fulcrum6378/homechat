@@ -110,7 +110,7 @@ class Receiver : WiseService() {
                     status = arrayListOf(seen)
                     val w = PageCht.MSG_INSERTED
                     /*} catch (_: SQLiteConstraintException) {
-                        dao.updateMessage(this)
+                        dao.updateMessage(this) TODO
                         matchSeen(dao)
                         PageCht.MSG_UPDATED
                     }*/

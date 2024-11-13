@@ -43,6 +43,7 @@ import ir.mahdiparastesh.homechat.page.PageSet
 import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.net.ServerSocket
@@ -71,6 +72,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     private var registered = false
     private var discovering = false
 
+    private lateinit var loadDB: Job
     private val reqPermissions =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             arrayOf(Manifest.permission.POST_NOTIFICATIONS)
@@ -137,6 +139,13 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                     MSG_WIFI -> m.wifi.value = msg.obj as Boolean
                 }
             }
+        }
+
+        // load the database
+        loadDB = CoroutineScope(Dispatchers.IO).launch {
+            m.contacts = CopyOnWriteArrayList(dao.contacts())
+            m.chats = CopyOnWriteArrayList(dao.chats())
+            m.chats!!.onEach { it.checkForNewOnes(dao) }
         }
 
         // register the service
@@ -220,14 +229,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         super.onResume()
         val mFirstResume = firstResume
 
-        // The subtitle of the toolbar
+        // Radar
         m.radar.updateListeners.add(tbSubtitleListener)
-
-        // NSD
         startDiscovery()
         CoroutineScope(Dispatchers.IO).launch {
-            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
-            if (m.chats == null) m.chats = CopyOnWriteArrayList(dao.chats())
+            if (!loadDB.isCompleted) loadDB.join()
             m.radar.update(dao)
             if (mFirstResume && intent.hasExtra(EXTRA_OPEN_CHAT)) withContext(Dispatchers.Main) {
                 nav.navigate(

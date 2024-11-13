@@ -11,18 +11,41 @@
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginEnd="10sp"
         android:textAppearance="@style/TextAppearance.HomeChat.Bold"
         android:textSize="@dimen/listTitle"
+        app:layout_constraintEnd_toStartOf="@id/badge"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/subtitle"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:paddingTop="@dimen/listBtwTitle"
         android:textAlignment="viewStart"
         android:textSize="@dimen/listSubtitle"
+        app:layout_constraintEnd_toEndOf="@id/title"
+        app:layout_constraintStart_toStartOf="@id/title"
         app:layout_constraintTop_toBottomOf="@id/title" />
+
+    <com.google.android.material.textview.MaterialTextView
+        android:id="@+id/badge"
+        android:layout_width="wrap_content"
+        android:layout_height="20sp"
+        android:background="@drawable/counter_badge"
+        android:minWidth="20sp"
+        android:paddingStart="6sp"
+        android:paddingTop="1.5sp"
+        android:paddingEnd="6dp"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.HomeChat.Regular"
+        android:textColor="@android:color/white"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

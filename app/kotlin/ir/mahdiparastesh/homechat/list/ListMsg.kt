@@ -45,7 +45,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         val isMe = msg.me()
         val hasReply = msg.repl != null
 
-        // Date
+        // date
         val cal = msg.time.calendar()
         var showDate = true
         if (i > 0) {
@@ -58,7 +58,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         h.b.date.isVisible = showDate
         if (showDate) h.b.date.text = Time.formatDate(cal)
 
-        // Layout
+        // layout
         h.b.area.layoutParams = (h.b.area.layoutParams as ConstraintLayout.LayoutParams)
             .apply { horizontalBias = if (isMe) 1f else 0f }
         h.b.body.layoutParams = (h.b.body.layoutParams as ConstraintLayout.LayoutParams).apply {
@@ -87,7 +87,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             RippleDrawable(ContextCompat.getColorStateList(c, R.color.msg_ripple)!!, it, null)
         }
 
-        // Reply
+        // reply
         var repliedToIdx = i
         val repliedTo = msg.repl?.let { repl ->
             repliedToIdx = c.m.messages!!.indexOfFirst { it.id == repl }
@@ -101,13 +101,13 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             }
         })
 
-        // Data
+        // data
         h.b.text.text = msg.data
 
-        // Time
+        // time
         h.b.time.text = Time.formatTime(msg.time)
 
-        // Seen status of mine
+        // seen status of mine
         h.b.seen.isVisible = isMe
         if (isMe) h.b.seen.setImageResource(when {
             msg.status?.any { it.dateSeen != null } == true -> R.drawable.seen
@@ -115,7 +115,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             else -> R.drawable.no_signal
         })
 
-        // Seen theirs if not
+        // seen theirs if not
         var notSeen: List<Seen>? = null
         if (!isMe &&
             msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }.isNotEmpty()
@@ -124,13 +124,14 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             notSeen!!.forEach {
                 it.dateSeen = Time.now()
                 c.dao.updateSeen(it)
-                msg.status!!.add(it)
+                msg.status!!.add(it) // TODO won't you replace them?!?
                 queue = queue.plus(it.toQueue(c.m, msg.auth))
             }
+            f.chat.checkForNewOnes(c.dao)
             Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, queue) }
         }
 
-        // Clicks
+        // clicks
         h.b.body.setOnClickListener {
             EasyMenu(
                 c, it, R.menu.list_msg, hashMapOf(
