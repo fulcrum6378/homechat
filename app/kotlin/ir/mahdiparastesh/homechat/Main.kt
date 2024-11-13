@@ -58,6 +58,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override lateinit var sp: SharedPreferences
 
     val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
+    private lateinit var abdt: ActionBarDrawerToggle
     lateinit var navHost: NavHostFragment
     lateinit var nav: NavController
     private val navMap = mapOf(
@@ -93,18 +94,23 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         setContentView(b.root)
         sp = sp()
 
-        // Navigation
-        ActionBarDrawerToggle(
+        // Toolbar
+        abdt = ActionBarDrawerToggle(
             this, b.root, b.toolbar, R.string.navOpen, R.string.navClose
         ).apply {
             b.root.addDrawerListener(this)
             isDrawerIndicatorEnabled = true
             syncState()
+            toolbarNavigationClickListener =
+                View.OnClickListener { @Suppress("DEPRECATION") onBackPressed() }
         }
+
+        // Navigation
         navHost = supportFragmentManager.findFragmentById(R.id.pager) as NavHostFragment
         nav = navHost.navController
         nav.addOnDestinationChangedListener { _, dest, _ ->
             b.nav.menu.children.forEach { it.isChecked = navMap[it.itemId] == dest.id }
+            abdt.isDrawerIndicatorEnabled = dest.id == R.id.page_rad
         }
         b.nav.setNavigationItemSelectedListener(this)
 
@@ -133,7 +139,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             }
         }
 
-        // Register the service
+        // register the service
         mServiceName = Settings.Global.getString(contentResolver, "device_name")
         if (!sp.contains(PageSet.PRF_PORT))
             sp.edit().putInt(PageSet.PRF_PORT, ServerSocket(0).use { it.localPort }).apply()
@@ -146,8 +152,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             setAttribute(PageSet.PRF_UNIQUE, null)
         }, NsdManager.PROTOCOL_DNS_SD, regListener)
 
-        // Request ignore battery optimizations
-        // It must check for the ability of working in the background and also data in bg
+        // request ignore battery optimizations
+        // it must check for the ability of working in the background and also data in bg
         val pm = getSystemService(POWER_SERVICE) as PowerManager
         if (!pm.isIgnoringBatteryOptimizations(packageName)) try {
             startActivity(

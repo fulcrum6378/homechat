@@ -10,7 +10,8 @@
 
         <action
             android:id="@+id/action_page_rad_to_page_cht"
-            app:destination="@id/page_cht" />
+            app:destination="@id/page_cht"
+            app:popUpTo="@id/page_rad" />
     </fragment>
 
     <fragment

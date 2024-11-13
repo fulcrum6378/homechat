@@ -31,11 +31,11 @@
         <item quantity="other">%d hours</item>
     </plurals>
     <plurals name="day">
-        <item quantity="one">a day</item><!--TODO yesterday-->
+        <item quantity="one">yesterday</item>
         <item quantity="other">%d days</item>
     </plurals>
     <plurals name="week">
-        <item quantity="one">a week</item>
+        <item quantity="one">last week</item>
         <item quantity="other">%d weeks</item>
     </plurals>
     <string name="ago">&#160;ago</string>

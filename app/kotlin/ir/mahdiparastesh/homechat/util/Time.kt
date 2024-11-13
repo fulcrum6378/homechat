@@ -53,11 +53,13 @@ object Time {
             }
             dif < WEEK -> {
                 val unit = (dif / DAY).toInt()
-                c.resources.getQuantityString(R.plurals.day, unit, unit) + append
+                c.resources.getQuantityString(R.plurals.day, unit, unit) +
+                        (if (unit != 1) append else "")
             }
             else -> {
                 val unit = (dif / WEEK).toInt()
-                c.resources.getQuantityString(R.plurals.week, unit, unit) + append
+                c.resources.getQuantityString(R.plurals.week, unit, unit) +
+                        (if (unit != 1) append else "")
             }
         }
     }
