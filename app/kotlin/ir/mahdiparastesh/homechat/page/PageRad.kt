@@ -31,7 +31,7 @@ class PageRad : BasePage<Main>(), OnUpdateListener {
     override fun tbTitle(): String = getString(R.string.app_name)
 
     @SuppressLint("NotifyDataSetChanged")
-    private fun updateList() {
+    fun updateList() {
         if (b.list.isComputingLayout) return
         if (b.list.adapter == null) b.list.adapter = ListRad(c)
         else b.list.adapter?.notifyDataSetChanged()

@@ -34,21 +34,22 @@ class Receiver : WiseService() {
     override fun onCreate() {
         super.onCreate()
         m.aliveReceiver = true
-        nm = NotificationManagerCompat.from(c)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            nm.createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
-            nm.createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
-        }
-    }
+        CoroutineScope(Dispatchers.IO).launch {
 
-    /** A new instance of Receiver is created on the sticky resurrection.
-     * START_STICKY_COMPATIBILITY does not guarantee onStartCommand! */
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (!::server.isInitialized) CoroutineScope(Dispatchers.IO).launch {
+            // notifications
+            nm = NotificationManagerCompat.from(c)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                nm.createNotificationChannelGroup(Notify.ChannelGroup.CHAT.create(c))
+                nm.createNotificationChannel(Notify.Channel.NEW_MESSAGE.create(c))
+            }
+
+            // load Contacts
+            if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
+
+            // initalise the server socket
             try {
                 server = ServerSocket(sp.getInt(PageSet.PRF_PORT, -1))
                 // close it only on user command and also make it null
-                if (m.contacts == null) m.contacts = CopyOnWriteArrayList(dao.contacts())
                 listen()
             } catch (_: BindException) {
                 // "bind failed: EADDRINUSE (Address already in use)"
@@ -56,8 +57,9 @@ class Receiver : WiseService() {
                 // "listen failed: EADDRINUSE (Address already in use)"
             }
         }
-        return START_STICKY
     }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int = START_STICKY
 
     @Suppress("RedundantSuspendModifier")
     private suspend fun listen() {
@@ -71,14 +73,14 @@ class Receiver : WiseService() {
         val input = socket.getInputStream()
         val output = socket.getOutputStream() // don't use PrintWriter even with autoFlush
 
-        // Identify the Transmitter
+        // identify the Transmitter
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
         val dev = m.radar.devices.find { it.host.hostAddress == fromIp }
         val contact =
             if (dev != null) m.contacts?.find { it.equals(dev) }
             else m.contacts?.find { it.ip == fromIp }
 
-        // Act based on the Header
+        // act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
         val header = Header.entries.find { it.value == hb }
         Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
@@ -102,26 +104,22 @@ class Receiver : WiseService() {
 
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
                 decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
-                    val theChat = dao.chat(chat)
-                    //val w = try {
+                    val theChat = m.chats?.find { it.id == chat } ?: dao.chat(chat)
                     dao.addMessage(this)
                     val seen = Seen(id, chat, Chat.ME)
                     dao.addSeen(seen)
                     status = arrayListOf(seen)
-                    val w = PageCht.MSG_INSERTED
-                    /*} catch (_: SQLiteConstraintException) {
-                        dao.updateMessage(this) TODO
-                        matchSeen(dao)
-                        PageCht.MSG_UPDATED
-                    }*/
-                    when {
-                        PageCht.handler != null -> PageCht.handler?.obtainMessage(
-                            w, chat.toInt(), if (theChat.muted) 0 else 1, this
+                    theChat.checkForNewOnes(dao)
+
+                    if (PageCht.handler != null)
+                        PageCht.handler?.obtainMessage(
+                            PageCht.MSG_INSERTED, chat.toInt(), if (theChat.muted) 0 else 1, this
                         )?.sendToTarget()
-                        Main.handler != null -> Main.handler?.obtainMessage(
+                    else {
+                        if (!theChat.muted) notify(theChat, contact)
+                        Main.handler?.obtainMessage(
                             Main.MSG_NEW_MESSAGE, chat.toInt(), if (theChat.muted) 0 else 1, this
                         )?.sendToTarget()
-                        /*w == PageCht.MSG_INSERTED && */!theChat.muted -> notify(theChat, contact)
                     }
                 }
                 0.toByte().toByteArray()
@@ -192,8 +190,9 @@ class Receiver : WiseService() {
                 setSmallIcon(R.mipmap.launcher_round)
                 setContentIntent(
                     PendingIntent.getActivity(
-                        c, 1, Intent(c, Main::class.java)
-                            .putExtra(Main.EXTRA_OPEN_CHAT, chat), Notify.mutability(true)
+                        c, 1, Intent(Main.Action.VIEW.s)
+                            .setData(android.net.Uri.parse(chat.toString())),
+                        Notify.mutability(true)
                     )
                 )
                 setAutoCancel(true)

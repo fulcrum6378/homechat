@@ -49,7 +49,7 @@ class PageCht : BasePage<Main>() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         onDestChanged = NavController.OnDestinationChangedListener { _, _, _ ->
-            c.m.messages = null
+            c.mm.messages = null
         }
         arguments?.getShort(ARG_CHAT_ID)?.let { id -> c.m.chats?.find { it.id == id } }
             .also { if (it != null) chat = it }
@@ -58,27 +58,24 @@ class PageCht : BasePage<Main>() {
         super.onViewCreated(view, savedInstanceState)
 
         // Load data
-        if (c.m.messages == null) CoroutineScope(Dispatchers.IO).launch {
-            c.m.messages = ArrayList(c.dao.messages(chat.id)).onEach { it.matchSeen(c.dao) }
+        if (c.mm.messages == null) CoroutineScope(Dispatchers.IO).launch {
+            c.mm.messages = ArrayList(c.dao.messages(chat.id)).onEach { it.matchSeen(c.dao) }
             withContext(Dispatchers.Main) { updateList() }
         }
 
         // Handler
         handler = object : Handler(Looper.getMainLooper()) {
             override fun handleMessage(msg: android.os.Message) {
-                if (msg.arg1 != chat.id.toInt() && msg.obj is Message) {
-                    Main.handler?.obtainMessage(Main.MSG_NEW_MESSAGE, msg.arg1, msg.arg2, msg.obj)
-                        ?.sendToTarget(); return; }
                 when (msg.what) {
                     MSG_INSERTED -> (msg.obj as Message).apply {
-                        c.m.messages?.also { list ->
+                        c.mm.messages?.also { list ->
                             list.add(this)
                             b.list.adapter?.notifyItemInserted(list.size - 1)
                             b.list.scrollToPosition(list.size - 1)
                         }
                     }
                     MSG_UPDATED -> (msg.obj as Message).apply {
-                        c.m.messages?.also { list ->
+                        c.mm.messages?.also { list ->
                             val index = list.indexOfFirst { it.id == id }
                             if (index != -1) {
                                 list[index] = this
@@ -88,7 +85,7 @@ class PageCht : BasePage<Main>() {
                         }
                     }
                     MSG_SEEN -> (msg.obj as Seen).apply {
-                        c.m.messages?.also { list ->
+                        c.mm.messages?.also { list ->
                             val index = list.indexOfFirst { it.id == this@apply.msg }
                             if (index != -1) {
                                 if (list[index].status == null) list[index].status = arrayListOf()
@@ -123,7 +120,7 @@ class PageCht : BasePage<Main>() {
             if (text.isBlank()) return@setOnClickListener
             b.field.setText("")
             CoroutineScope(Dispatchers.IO).launch {
-                val ids = c.m.messages!!.map { it.id }
+                val ids = c.mm.messages!!.map { it.id }
                 var chosenId = 0L
                 do chosenId++ while (chosenId in ids)
                 val msg = Message(
@@ -135,10 +132,10 @@ class PageCht : BasePage<Main>() {
                     if (msg.status == null) msg.status = arrayListOf()
                     msg.status!!.add(this)
                 } // Do not queue the Seen now! It'll be created automatically on the target device!
-                c.m.messages?.add(msg)
+                c.mm.messages?.add(msg)
                 withContext(Dispatchers.Main) {
                     Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, msg.toQueue(c.m)) }
-                    c.m.messages?.size?.also { size ->
+                    c.mm.messages?.size?.also { size ->
                         b.list.adapter?.notifyItemInserted(size - 1)
                         b.list.scrollToPosition(size - 1)
                     }
@@ -150,7 +147,7 @@ class PageCht : BasePage<Main>() {
         KeyboardVisibilityEvent.setEventListener(c, this) {
             // b.list.addOnLayoutChangeListener
             if (!b.list.canScrollVertically(1))
-                c.m.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
+                c.mm.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
         }
         NotificationManagerCompat.from(c.c).cancel(chat.id.toInt())
     }
@@ -161,7 +158,7 @@ class PageCht : BasePage<Main>() {
     private fun updateList() {
         if (b.list.adapter == null) b.list.adapter = ListMsg(c, this)
         else b.list.adapter?.notifyDataSetChanged()
-        c.m.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
+        c.mm.messages?.size?.also { size -> b.list.scrollToPosition(size - 1) }
     }
 
     /*override fun onListScrolled() {

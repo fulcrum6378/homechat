@@ -54,8 +54,8 @@ abstract class Database : RoomDatabase() {
         @Insert(onConflict = OnConflictStrategy.ABORT)
         suspend fun addMessage(item: Message)
 
-        @Update
-        suspend fun updateMessage(item: Message)
+        /*@Update
+        suspend fun updateMessage(item: Message)*/
 
 
         @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat")

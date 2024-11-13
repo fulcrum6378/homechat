@@ -21,6 +21,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
@@ -28,6 +29,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.view.children
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -39,6 +42,7 @@ import ir.mahdiparastesh.homechat.data.Model
 import ir.mahdiparastesh.homechat.data.Radar
 import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.page.PageCht
+import ir.mahdiparastesh.homechat.page.PageRad
 import ir.mahdiparastesh.homechat.page.PageSet
 import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
@@ -58,6 +62,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     override val dao: Database.DAO by lazy { db.dao() }
     override lateinit var sp: SharedPreferences
 
+    val mm: MyModel by viewModels()
     val b: MainBinding by lazy { MainBinding.inflate(layoutInflater) }
     private lateinit var abdt: ActionBarDrawerToggle
     lateinit var navHost: NavHostFragment
@@ -72,7 +77,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     private var registered = false
     private var discovering = false
 
-    private lateinit var loadDB: Job
+    private var loadDB: Job? = null
     private val reqPermissions =
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
             arrayOf(Manifest.permission.POST_NOTIFICATIONS)
@@ -84,8 +89,13 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         const val MSG_LOST = 2
         const val MSG_NEW_MESSAGE = 3
         const val MSG_WIFI = 100
-        const val EXTRA_OPEN_CHAT = "open_chat"
         var handler: Handler? = null
+    }
+
+    class MyModel : ViewModel() {
+        val wifi = MutableLiveData<Boolean>(true)
+        var messages: ArrayList<ir.mahdiparastesh.homechat.data.Message>? = null
+        var navOpen = false
     }
 
     @SuppressLint("BatteryLife")
@@ -97,9 +107,19 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         sp = sp()
 
         // Toolbar
-        abdt = ActionBarDrawerToggle(
+        abdt = object : ActionBarDrawerToggle(
             this, b.root, b.toolbar, R.string.navOpen, R.string.navClose
-        ).apply {
+        ) {
+            override fun onDrawerOpened(drawerView: View) {
+                super.onDrawerOpened(drawerView)
+                mm.navOpen = true
+            }
+
+            override fun onDrawerClosed(drawerView: View) {
+                super.onDrawerClosed(drawerView)
+                mm.navOpen = false
+            }
+        }.apply {
             b.root.addDrawerListener(this)
             isDrawerIndicatorEnabled = true
             syncState()
@@ -133,19 +153,20 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         CoroutineScope(Dispatchers.IO)
                             .launch { m.radar.delete(srvInfo.serviceName, dao) }
                     }
-                    MSG_NEW_MESSAGE -> {
-                        // TODO in-app notifications
-                    }
-                    MSG_WIFI -> m.wifi.value = msg.obj as Boolean
+                    MSG_NEW_MESSAGE -> updatePageRad()
+                    MSG_WIFI -> mm.wifi.value = msg.obj as Boolean
                 }
             }
         }
 
         // load the database
-        loadDB = CoroutineScope(Dispatchers.IO).launch {
+        if (m.chats == null) loadDB = CoroutineScope(Dispatchers.IO).launch {
+            // m.contacts may be non-null because Receiver needs it, unlike m.chats!
             m.contacts = CopyOnWriteArrayList(dao.contacts())
             m.chats = CopyOnWriteArrayList(dao.chats())
             m.chats!!.onEach { it.checkForNewOnes(dao) }
+            withContext(Dispatchers.Main) { updatePageRad() }
+            loadDB = null
         }
 
         // register the service
@@ -181,7 +202,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
 
         // monitor network connectivity
-        m.wifi.observe(this) { wifi -> tbSubtitleListener.onRadarUpdated() }
+        mm.wifi.observe(this) { wifi -> tbSubtitleListener.onRadarUpdated() }
         getSystemService(ConnectivityManager::class.java).registerNetworkCallback(
             NetworkRequest.Builder().addTransportType(NetworkCapabilities.TRANSPORT_WIFI).build(),
             object : ConnectivityManager.NetworkCallback() {
@@ -194,6 +215,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                     handler?.obtainMessage(MSG_WIFI, false)?.sendToTarget()
                 }
             })
+
+        // miscellaneous
+        if (mm.navOpen) b.root.openDrawer(GravityCompat.START)
+        intent.check()
+        addOnNewIntentListener { it.check() }
     }
 
     override fun setContentView(root: View?) {
@@ -224,26 +250,29 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         }
     }
 
-    private var firstResume = true
-    override fun onResume() {
-        super.onResume()
-        val mFirstResume = firstResume
-
-        // Radar
-        m.radar.updateListeners.add(tbSubtitleListener)
-        startDiscovery()
-        CoroutineScope(Dispatchers.IO).launch {
-            if (!loadDB.isCompleted) loadDB.join()
-            m.radar.update(dao)
-            if (mFirstResume && intent.hasExtra(EXTRA_OPEN_CHAT)) withContext(Dispatchers.Main) {
+    private fun Intent.check() {
+        when (action) {
+            Action.VIEW.s -> (try {
+                dataString?.toInt()
+            } catch (_: NumberFormatException) {
+                null
+            })?.also { chat ->
                 nav.navigate(
                     R.id.action_page_rad_to_page_cht,
-                    bundleOf(PageCht.ARG_CHAT_ID to intent.getShortExtra(EXTRA_OPEN_CHAT, 0))
+                    bundleOf(PageCht.ARG_CHAT_ID to chat)
                 )
             }
         }
+    }
 
-        firstResume = false
+    override fun onResume() {
+        super.onResume()
+        m.radar.updateListeners.add(tbSubtitleListener)
+        startDiscovery()
+        CoroutineScope(Dispatchers.IO).launch {
+            loadDB?.join()
+            m.radar.update(dao)
+        }
     }
 
     private fun startDiscovery() {
@@ -325,7 +354,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     val tbSubtitleListener = object : Radar.OnUpdateListener {
         override fun onRadarUpdated() {
-            if (m.wifi.value == false) {
+            if (mm.wifi.value == false) {
                 b.toolbar.setSubtitle(R.string.noNetwork)
                 return
             }
@@ -335,6 +364,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 else -> ""
             }
         }
+    }
+
+    private fun updatePageRad() {
+        val page = navHost.childFragmentManager.fragments[0]
+        if (page is PageRad) page.updateList()
     }
 
     override fun onPause() {
@@ -358,13 +392,16 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     /*@ColorInt
     fun themeColor(@AttrRes attr: Int) =
         TypedValue().apply { theme.resolveAttribute(attr, this, true) }.data*/
+
+    enum class Action(val s: String) {
+        VIEW("${Main::class.java.`package`!!.name}.ACTION_VIEW"),
+    }
 }
 
 /* TODO
   * A device with VPN cannot receive, but can send to a VPN-less device!
-  * Fucks up when 2 devices open simultaneously!
-  * It doesn't store the self's message on a simultaneous send.
   * Regularly init the Queuer
+  * Regularly update subtitle of Toolbar in PageChat
   * Typing status
   * https://developer.android.com/develop/ui/views/notifications/bubbles
   * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings

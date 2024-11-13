@@ -41,7 +41,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         AnyViewHolder(ListMsgBinding.inflate(c.layoutInflater, parent, false))
 
     override fun onBindViewHolder(h: AnyViewHolder<ListMsgBinding>, i: Int) {
-        val msg = c.m.messages?.getOrNull(i) ?: return
+        val msg = c.mm.messages?.getOrNull(i) ?: return
         val isMe = msg.me()
         val hasReply = msg.repl != null
 
@@ -49,7 +49,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         val cal = msg.time.calendar()
         var showDate = true
         if (i > 0) {
-            val prev = c.m.messages!![i - 1].time.calendar()
+            val prev = c.mm.messages!![i - 1].time.calendar()
             if (cal[Calendar.YEAR] == prev[Calendar.YEAR] &&
                 cal[Calendar.MONTH] == prev[Calendar.MONTH] &&
                 cal[Calendar.DAY_OF_MONTH] == prev[Calendar.DAY_OF_MONTH]
@@ -90,8 +90,8 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         // reply
         var repliedToIdx = i
         val repliedTo = msg.repl?.let { repl ->
-            repliedToIdx = c.m.messages!!.indexOfFirst { it.id == repl }
-            c.m.messages!!.getOrNull(repliedToIdx)
+            repliedToIdx = c.mm.messages!!.indexOfFirst { it.id == repl }
+            c.mm.messages!!.getOrNull(repliedToIdx)
         }
         h.b.replyText.text = repliedTo?.data
         h.b.reply.isVisible = hasReply
@@ -124,7 +124,7 @@ class ListMsg(private val c: Main, private val f: PageCht) :
             notSeen!!.forEach {
                 it.dateSeen = Time.now()
                 c.dao.updateSeen(it)
-                msg.status!!.add(it) // TODO won't you replace them?!?
+                msg.status!![msg.status!!.indexOfFirst { st -> st.contact == it.contact }] = it
                 queue = queue.plus(it.toQueue(c.m, msg.auth))
             }
             f.chat.checkForNewOnes(c.dao)
@@ -147,5 +147,5 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         }
     } // Don't put onBindView in a companion object for exporting, make a dynamic class
 
-    override fun getItemCount(): Int = c.m.messages?.size ?: 0
+    override fun getItemCount(): Int = c.mm.messages?.size ?: 0
 }

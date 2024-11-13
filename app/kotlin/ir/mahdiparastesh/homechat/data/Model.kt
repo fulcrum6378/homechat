@@ -1,16 +1,13 @@
 package ir.mahdiparastesh.homechat.data
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Model : ViewModel() {
-    val wifi = MutableLiveData<Boolean>(true)
     val radar = Radar(this)
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
-    var messages: ArrayList<Message>? = null
     var aliveMain = false
     var aliveSender = false
     var aliveReceiver = false
