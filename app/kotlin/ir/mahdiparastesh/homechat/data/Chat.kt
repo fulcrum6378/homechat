@@ -15,9 +15,9 @@ class Chat(
     /** Items are separated by [CONTACT_SEP]. */
     var contactIds: String,
     var name: String? = null,
-    val dateInit: Long = Time.now(),
+    var pinned: Boolean = false,
     var muted: Boolean = false,
-    //var pinned: Boolean = false, TODO
+    val createdAt: Long = Time.now(),
 ) : Radar.Item {
 
     @Ignore

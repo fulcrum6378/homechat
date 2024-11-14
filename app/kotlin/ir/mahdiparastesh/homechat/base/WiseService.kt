@@ -5,7 +5,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.IBinder
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStore
 import androidx.lifecycle.ViewModelStoreOwner
 import ir.mahdiparastesh.homechat.data.Database
@@ -14,14 +13,14 @@ import ir.mahdiparastesh.homechat.data.Model
 abstract class WiseService : Service(), Persistent, ViewModelStoreOwner {
     override val c: Context get() = applicationContext
     override lateinit var m: Model
-    final override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
+    final override val dbLazy: Lazy<Database> = lazy { database() }
     override val db: Database by dbLazy
     override val dao: Database.DAO by lazy { db.dao() }
     override lateinit var sp: SharedPreferences
 
     override fun onCreate() {
         super.onCreate()
-        m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
+        m = model()
         sp = sp()
     }
 

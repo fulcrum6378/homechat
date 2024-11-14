@@ -6,6 +6,9 @@
     <color name="shadowStart">#25000000</color>
     <color name="shadowEnd">#00000000</color>
 
+    <!-- PageRad -->
+    <color name="badgeText">#FFF</color>
+
     <!-- PageCht -->
     <color name="msgMe">#FEF0FC</color><!--#15900081-->
     <color name="msgThemStroke">#AAA</color>

@@ -31,7 +31,6 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.children
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import com.google.android.material.navigation.NavigationView
@@ -44,13 +43,11 @@ import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageRad
 import ir.mahdiparastesh.homechat.page.PageSet
-import ir.mahdiparastesh.homechat.util.Delay
 import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import java.net.ServerSocket
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -58,7 +55,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     override val c: Context get() = applicationContext
     override lateinit var m: Model
-    override val dbLazy: Lazy<Database> = lazy { Database.build(c) }
+    override val dbLazy: Lazy<Database> = lazy { database() }
     override val db: Database by dbLazy
     override val dao: Database.DAO by lazy { db.dao() }
     override lateinit var sp: SharedPreferences
@@ -102,7 +99,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
     @SuppressLint("BatteryLife")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        m = ViewModelProvider(this, Model.Factory())["Model", Model::class.java]
+        m = model()
         m.aliveMain = true
         setContentView(b.root)
         sp = sp()
@@ -166,7 +163,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             m.contacts = CopyOnWriteArrayList(dao.contacts())
             m.chats = CopyOnWriteArrayList(dao.chats())
             m.chats!!.onEach { it.checkForNewOnes(dao) }
-            withContext(Dispatchers.Main) { updatePageRad() }
+            Sender.read(this@Main)
             loadDB = null
         }
 
@@ -218,7 +215,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             })
 
         // miscellaneous
-        Delay(2000) { Sender.init(this@Main) }
         if (mm.navOpen) b.root.openDrawer(GravityCompat.START)
         intent.check()
         addOnNewIntentListener { it.check() }
@@ -274,6 +270,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         CoroutineScope(Dispatchers.IO).launch {
             loadDB?.join()
             m.radar.update(dao)
+            Sender.init(this@Main)
         }
     }
 
@@ -406,6 +403,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
  * -
  * Extension:
+ * Make a soft sound when each message is received in PageChat
  * Drag to reply
  * Hide message?
  * Clear history?

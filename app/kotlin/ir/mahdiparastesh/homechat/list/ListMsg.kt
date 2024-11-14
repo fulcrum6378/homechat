@@ -120,15 +120,14 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         if (!isMe &&
             msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }.isNotEmpty()
         ) CoroutineScope(Dispatchers.IO).launch {
-            var queue = arrayOf<String>()
             notSeen!!.forEach {
                 it.dateSeen = Time.now()
                 c.dao.updateSeen(it)
                 msg.status!![msg.status!!.indexOfFirst { st -> st.contact == it.contact }] = it
-                queue = queue.plus(it.toQueue(c.m, msg.auth))
+                c.m.enqueue(msg.auth, it)
             }
             f.chat.checkForNewOnes(c.dao)
-            Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, queue) }
+            Sender.init(c)
         }
 
         // clicks

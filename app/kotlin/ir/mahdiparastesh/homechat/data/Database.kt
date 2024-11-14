@@ -1,11 +1,10 @@
 package ir.mahdiparastesh.homechat.data
 
-import android.content.Context
 import androidx.room.*
 
 @androidx.room.Database(
     entities = [
-        Contact::class, Chat::class, Message::class, Seen::class
+        Contact::class, Chat::class, Message::class, Seen::class, Binary::class
     ], version = 1, exportSchema = false
 )
 abstract class Database : RoomDatabase() {
@@ -75,14 +74,5 @@ abstract class Database : RoomDatabase() {
 
         @Update
         suspend fun updateSeen(item: Seen)
-    }
-
-    companion object {
-        fun build(c: Context) = Room
-            .databaseBuilder(c, Database::class.java, "main.db")
-            .fallbackToDestructiveMigration() //.addMigrations()
-            .build()
-        // You cannot use DB Browser for SQLite in order to manually "MODIFY TABLES"!!
-        // Although you can make other kinds of editions.
     }
 }

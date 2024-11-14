@@ -15,7 +15,7 @@ suspend fun Transmitter(
     header: Receiver.Header,
     data: suspend () -> ByteArray,
     response: suspend (response: ByteArray?) -> Unit
-) {
+): Boolean {
     var res: ByteArray? = null
     try {
         Socket(address.first, address.second).use {
@@ -30,7 +30,9 @@ suspend fun Transmitter(
     } catch (_: ConnectException) {
     } catch (_: SocketException) { // "Connection reset"
     }
-    response(res)
+    val ret = res?.firstOrNull() == 0.toByte()
+    if (ret) response(res)
+    return ret
 }
 
 @Throws(IOException::class, SocketException::class)

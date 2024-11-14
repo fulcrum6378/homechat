@@ -54,4 +54,16 @@ class Message : Sender.Queuable {
 
     fun shorten(max: Int = 30): String =
         if (data.length > max) data.substring(0, max) else data
+
+    override fun equals(other: Any?): Boolean {
+        if (other !is Message) return false
+        return id == other.id && chat == other.chat && auth == other.auth
+    }
+
+    override fun hashCode(): Int {
+        var result = id.hashCode()
+        result = 31 * result + chat
+        result = 31 * result + auth
+        return result
+    }
 }

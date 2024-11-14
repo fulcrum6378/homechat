@@ -15,8 +15,7 @@ class Contact(
     var ip: String?,
     var port: Int?,
     var lastOnline: Long? = null,
-    val dateCreated: Long = Time.now(),
-    var isFav: Boolean = false, //TODO remove
+    val createdAt: Long = Time.now(),
 ) : Radar.Named {
     override fun toString(): String = id.toString()
     override fun hashCode(): Int = id.hashCode()
@@ -28,10 +27,10 @@ class Contact(
 
     override fun name(): String = unique ?: device
 
-    fun person(): Person = Person.Builder()
+    fun person(isImportant: Boolean): Person = Person.Builder()
         .setName(unique ?: device)
         .setKey(id.toString())
-        .setImportant(isFav)
+        .setImportant(isImportant)
         .build()
 
     companion object {

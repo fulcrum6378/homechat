@@ -2,18 +2,32 @@ package ir.mahdiparastesh.homechat.data
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import ir.mahdiparastesh.homechat.Sender.Queuable
 import java.util.concurrent.CopyOnWriteArrayList
 
 class Model : ViewModel() {
     val radar = Radar(this)
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
+    val queue = hashMapOf<Short, ArrayList<Queuable>>()
     val pendingContacts = hashSetOf<Short>()
     var aliveMain = false
     var aliveSender = false
     var aliveReceiver = false
 
     //fun anyPersistentAlive() = aliveMain || aliveReceiver || aliveSender  // used in Main::onDestroy
+
+    fun enqueue(contact: Short, item: Queuable) {
+        if (!queue.containsKey(contact)) queue[contact] = arrayListOf<Queuable>(item)
+        else queue[contact]!!.add(item)
+    }
+
+    fun dequeue(contact: Short, item: Queuable) {
+        if (!queue.containsKey(contact)) return
+        queue[contact]!!.remove(item)
+        if (queue[contact]!!.isEmpty()) queue.remove(contact)
+    }
+
 
     @Suppress("UNCHECKED_CAST")
     class Factory : ViewModelProvider.Factory {

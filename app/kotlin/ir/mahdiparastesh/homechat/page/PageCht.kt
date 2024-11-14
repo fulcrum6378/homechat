@@ -127,14 +127,19 @@ class PageCht : BasePage<Main>() {
                     chosenId, chat.id, Chat.ME, Receiver.Header.TEXT.value, text, replyingTo?.id
                 )
                 c.dao.addMessage(msg)
-                for (contact in chat.contacts!!) Seen(chosenId, chat.id, contact.id).apply {
-                    c.dao.addSeen(this)
-                    if (msg.status == null) msg.status = arrayListOf()
-                    msg.status!!.add(this)
-                } // Do not queue the Seen now! It'll be created automatically on the target device!
                 c.mm.messages?.add(msg)
+                for (contact in chat.contacts!!) {
+                    c.m.enqueue(contact.id, msg)
+
+                    Seen(chosenId, chat.id, contact.id).apply {
+                        c.dao.addSeen(this)
+                        if (msg.status == null) msg.status = arrayListOf()
+                        msg.status!!.add(this)
+                    } // Do not queue the Seen now! It'll be created automatically on the target device!
+                }
+
                 withContext(Dispatchers.Main) {
-                    Sender.init(c) { putExtra(Sender.EXTRA_NEW_QUEUE, msg.toQueue(c.m)) }
+                    Sender.init(c)
                     c.mm.messages?.size?.also { size ->
                         b.list.adapter?.notifyItemInserted(size - 1)
                         b.list.scrollToPosition(size - 1)

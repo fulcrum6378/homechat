@@ -42,7 +42,7 @@
         android:paddingEnd="6dp"
         android:textAlignment="center"
         android:textAppearance="@style/TextAppearance.HomeChat.Regular"
-        android:textColor="@android:color/white"
+        android:textColor="@color/badgeText"
         android:textSize="14sp"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"

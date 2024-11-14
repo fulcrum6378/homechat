@@ -3,6 +3,7 @@ package ir.mahdiparastesh.homechat
 import android.Manifest
 import android.app.Notification
 import android.app.PendingIntent
+import android.content.ComponentName
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
@@ -177,12 +178,12 @@ class Receiver : WiseService() {
         ) NotificationManagerCompat.from(c).notify(
             chat.toInt(),
             NotificationCompat.Builder(c, Notify.Channel.NEW_MESSAGE.id).apply {
-                val style = NotificationCompat.MessagingStyle(sendingContact.person())
+                val style = NotificationCompat.MessagingStyle(sendingContact.person(theChat.pinned))
                 for (unread in dao.theseMessage(dao.unseenInChat(chat), chat, sendingContact.id))
                     style.addMessage(
                         NotificationCompat.MessagingStyle.Message(
                             unread.data, unread.time,
-                            theChat.contacts!!.find { it.id == unread.auth }?.person()
+                            theChat.contacts!!.find { it.id == unread.auth }?.person(theChat.pinned)
                         )
                     )
                 setStyle(style)
@@ -191,6 +192,7 @@ class Receiver : WiseService() {
                 setContentIntent(
                     PendingIntent.getActivity(
                         c, 1, Intent(Main.Action.VIEW.s)
+                            .setComponent(ComponentName(packageName, "$packageName.Main"))
                             .setData(android.net.Uri.parse(chat.toString())),
                         Notify.mutability(true)
                     )
