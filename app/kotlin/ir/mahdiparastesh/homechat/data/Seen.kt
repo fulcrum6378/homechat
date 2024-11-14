@@ -8,20 +8,12 @@ import ir.mahdiparastesh.homechat.Sender
 @Entity(
     primaryKeys = ["msg", "chat", "contact"],
     indices = [Index("chat"), Index("contact"), Index("msg")],
-    foreignKeys = [
-        ForeignKey(
-            entity = Message::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("msg"),
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Chat::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("chat"),
-            onDelete = ForeignKey.CASCADE
-        ),
-    ]
+    foreignKeys = [ForeignKey(
+        entity = Chat::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("chat"),
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 class Seen : Sender.Queuable {
     val msg: Long

@@ -189,7 +189,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                     Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
                     Uri.parse("package:${BuildConfig.APPLICATION_ID}")
                 )
-            )
+            ) // sometimes it mysteriously does nothing at all! (even after a reboot)
         } catch (_: ActivityNotFoundException) {
         }
 

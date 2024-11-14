@@ -15,11 +15,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.InputStreamReader
+import kotlin.collections.firstOrNull
 import kotlin.text.split
 
 class Sender : WiseService() {
     private var working = false
-    private var i = 0
 
     override fun onCreate() {
         super.onCreate()
@@ -36,7 +36,9 @@ class Sender : WiseService() {
     private suspend fun start() {
         working = true
         m.pendingContacts.clear()
-        i = 0
+        var address: Pair<String, Int>
+        var available: Boolean
+
         for (target in m.queue.keys) {
             val contact = m.contacts?.find { it.id == target }
             if (contact == null) {
@@ -46,36 +48,43 @@ class Sender : WiseService() {
                 m.pendingContacts.add(contact.id)
                 continue; }
 
-            val addr = Pair(contact.ip!!, contact.port!!)
-            for (o in m.queue[target]!!) if (!Transmitter(addr, o.header(), {
-                    when (o) {
-                        is Message -> o.id.toByteArray()
-                            .plus(o.chat.toByteArray())
-                            .plus(o.time.toByteArray())
-                            .plus((o.repl ?: -1L).toByteArray())
-                            .plus(o.data.encodeToByteArray())
-                        is Seen -> o.msg.toByteArray()
-                            .plus(o.chat.toByteArray())
-                            .plus(o.dateSeen!!.toByteArray())
-                        else -> throw IllegalStateException()
+            address = Pair(contact.ip!!, contact.port!!)
+            available = true
+            for (o in m.queue[target]!!) if (available) Transmitter(address, o.header(), {
+                when (o) {
+                    is Message -> o.id.toByteArray()
+                        .plus(o.chat.toByteArray())
+                        .plus(o.time.toByteArray())
+                        .plus((o.repl ?: -1L).toByteArray())
+                        .plus(o.data.encodeToByteArray())
+                    is Seen -> o.msg.toByteArray()
+                        .plus(o.chat.toByteArray())
+                        .plus(o.dateSeen!!.toByteArray())
+                    else -> throw IllegalStateException()
+                }
+            }, { // validate the response
+                it?.firstOrNull() == 0.toByte()
+            }, { // on error
+                m.pendingContacts.add(contact.id)
+                available = false
+            }) { res -> // on success
+                when (o) {
+                    is Message -> dao.seen(o.id, o.chat, contact.id)!!.apply {
+                        dateSent = Time.now()
+                        dao.updateSeen(this)
+                        PageCht.handler?.obtainMessage(
+                            PageCht.MSG_SEEN, o.chat.toInt(), 0, this
+                        )?.sendToTarget()
                     }
-                }) { res ->
-                    when (o) {
-                        is Message -> dao.seen(o.id, o.chat, contact.id)!!.apply {
-                            dateSent = Time.now()
-                            dao.updateSeen(this)
-                            PageCht.handler?.obtainMessage(
-                                PageCht.MSG_SEEN, o.chat.toInt(), 0, this
-                            )?.sendToTarget()
-                        }
-                        is Seen -> {
-                            o.dateSent = Time.now()
-                            dao.updateSeen(o)
-                        }
+                    is Seen -> {
+                        o.dateSent = Time.now()
+                        dao.updateSeen(o)
                     }
-                    m.dequeue(target, o)
+                }
+                m.dequeue(target, o)
 
-                }) {;m.pendingContacts.add(contact.id); break; }
+            }
+            else break
         }
         write(this)
         working = false
@@ -137,12 +146,6 @@ class Sender : WiseService() {
         fun header(): Receiver.Header = when (this) {
             is Message -> Receiver.Header.entries.find { it.value == type }!!
             is Seen -> Receiver.Header.SEEN
-            else -> throw IllegalArgumentException()
-        }
-
-        fun contact(): Short = when (this) {
-            is Message -> auth
-            is Seen -> contact
             else -> throw IllegalArgumentException()
         }
     }

@@ -6,21 +6,13 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 
 @Entity(
-    indices = [Index("id")],
-    foreignKeys = [
-        ForeignKey(
-            entity = Message::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("msg"),
-            onDelete = ForeignKey.CASCADE
-        ),
-        ForeignKey(
-            entity = Chat::class,
-            parentColumns = arrayOf("id"),
-            childColumns = arrayOf("chat"),
-            onDelete = ForeignKey.CASCADE
-        ),
-    ]
+    indices = [Index("id"), Index("chat")],
+    foreignKeys = [ForeignKey(
+        entity = Chat::class,
+        parentColumns = arrayOf("id"),
+        childColumns = arrayOf("chat"),
+        onDelete = ForeignKey.CASCADE
+    )]
 )
 class Binary(
     @PrimaryKey(autoGenerate = true) val id: Long,

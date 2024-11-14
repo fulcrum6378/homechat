@@ -65,11 +65,10 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val address = toString().makeAddressPair()
         Transmitter(address, Receiver.Header.PAIR, {
             c.dao.contactIds().joinToString(",").encodeToByteArray()
+        }, { it != null }, {
+            withContext(Dispatchers.Main) { error("pair() returned null; using VPN?") }
         }) { res ->
-            if (res == null) {
-                withContext(Dispatchers.Main) { error("pair() returned null; using VPN?") }
-                return@Transmitter; }
-            val chosenId = ByteBuffer.wrap(res).short
+            val chosenId = ByteBuffer.wrap(res!!).short
             if (chosenId == (-1).toShort()) {
                 withContext(Dispatchers.Main) { error("chosenId == -1") }
                 return@Transmitter; }
@@ -81,12 +80,13 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
     private suspend fun List<Contact>.init(address: Pair<String, Int>) {
         Transmitter(address, Receiver.Header.INIT, {
             c.dao.chatIds().joinToString(",").encodeToByteArray()
+        }, { it != null }, {
+            withContext(Dispatchers.Main) { error("init() returned null") }
         }) { res ->
-            if (res == null) {
-                withContext(Dispatchers.Main) { error("init() returned null") }
-                return@Transmitter; }
             Chat.postInitiation(
-                c, ByteBuffer.wrap(res).short, joinToString(Chat.CONTACT_SEP) { it.id.toString() })
+                c,
+                ByteBuffer.wrap(res!!).short,
+                joinToString(Chat.CONTACT_SEP) { it.id.toString() })
         }
     }
 
