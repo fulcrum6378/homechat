@@ -62,12 +62,22 @@ class Sender : WiseService() {
                         .plus(o.dateSeen!!.toByteArray())
                     else -> throw IllegalStateException()
                 }
-            }, { // validate the response
-                it?.firstOrNull() == 0.toByte()
-            }, { // on error
+            }, { // on error:
                 m.pendingContacts.add(contact.id)
                 available = false
-            }) { res -> // on success
+            }) { res -> // on success:
+                val code = res.firstOrNull()
+                if (code != Receiver.STAT_SUCCESS) {
+                    when (code) {
+                        Receiver.STAT_CONTACT_NOT_FOUND -> {
+                            m.pendingContacts.add(contact.id)
+                            available = false
+                            // TODO REPAIR
+                        }
+                    }
+                    return@Transmitter
+                }
+
                 when (o) {
                     is Message -> dao.seen(o.id, o.chat, contact.id)!!.apply {
                         dateSent = Time.now()

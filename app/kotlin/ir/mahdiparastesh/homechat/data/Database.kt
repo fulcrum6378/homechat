@@ -25,7 +25,7 @@ abstract class Database : RoomDatabase() {
         suspend fun updateContact(item: Contact)
 
 
-        @Query("SELECT * FROM Chat ORDER BY (SELECT MAX(time) FROM Message WHERE chat = Chat.id) DESC")
+        @Query("SELECT * FROM Chat ORDER BY pinned DESC, (SELECT MAX(time) FROM Message WHERE chat = Chat.id) DESC")
         suspend fun chats(): List<Chat>
 
         @Query("SELECT id FROM Chat")

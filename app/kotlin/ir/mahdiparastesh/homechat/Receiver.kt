@@ -123,8 +123,8 @@ class Receiver : WiseService() {
                         )?.sendToTarget()
                     }
                 }
-                0.toByte().toByteArray()
-            } else 1.toByte().toByteArray()
+                STAT_SUCCESS.toByteArray()
+            } else STAT_CONTACT_NOT_FOUND.toByteArray()
 
             Header.SEEN -> if (contact != null) {
                 val raw = input.readNBytesCompat(len!!).toList()
@@ -138,8 +138,8 @@ class Receiver : WiseService() {
                     PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, chat.toInt(), 0, this)
                         ?.sendToTarget()
                 }
-                0.toByte().toByteArray()
-            } else 1.toByte().toByteArray()
+                STAT_SUCCESS.toByteArray()
+            } else STAT_CONTACT_NOT_FOUND.toByteArray()
 
             else -> throw IllegalArgumentException("${header?.name}: ${hb.toInt()}")
         }
@@ -247,5 +247,10 @@ class Receiver : WiseService() {
             bb.rewind()
             return bb.array()
         }
+    }
+
+    companion object {
+        const val STAT_SUCCESS = 0.toByte()
+        const val STAT_CONTACT_NOT_FOUND = 1.toByte()
     }
 }

@@ -14,9 +14,8 @@ suspend fun Transmitter(
     address: Pair<String, Int>,
     header: Receiver.Header,
     data: suspend () -> ByteArray,
-    validate: (response: ByteArray?) -> Boolean,
     failure: suspend () -> Unit,
-    success: suspend (response: ByteArray?) -> Unit
+    success: suspend (response: ByteArray) -> Unit
 ) {
     var res: ByteArray? = null
     try {
@@ -32,7 +31,7 @@ suspend fun Transmitter(
     } catch (_: ConnectException) {
     } catch (_: SocketException) { // "Connection reset"
     }
-    if (validate(res)) success(res)
+    if (res != null) success(res)
     else failure()
 }
 

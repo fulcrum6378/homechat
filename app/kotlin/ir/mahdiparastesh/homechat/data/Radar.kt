@@ -59,7 +59,7 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
 
     fun sort() {
         try {
-            sortBy { it is Chat } // TODO
+            sortWith(compareBy({ it is Chat }, { it is Chat && !it.pinned }))
         } catch (e: java.lang.UnsupportedOperationException) {
             // mysterious error by CopyOnWriteArrayList$COWIterator.set while sorting
             if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) throw e

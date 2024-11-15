@@ -16,6 +16,9 @@
     <dimen name="listBtwTitle">4dp</dimen>
     <dimen name="listPadV">14dp</dimen>
 
+    <!-- PageRad -->
+    <dimen name="radItemIconSize">20sp</dimen>
+
     <!-- PageCht -->
     <dimen name="replyingToTextSize">15sp</dimen>
     <dimen name="replyCancelSize">36dp</dimen>

@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/button_rectangle"
     android:paddingStart="@dimen/pagePadH"
     android:paddingTop="@dimen/listPadV"
     android:paddingEnd="@dimen/pagePadH"
-    android:paddingBottom="@dimen/listPadV">
+    android:paddingBottom="@dimen/listPadV"
+    tools:ignore="ContentDescription">
 
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/title"
@@ -34,9 +36,9 @@
     <com.google.android.material.textview.MaterialTextView
         android:id="@+id/badge"
         android:layout_width="wrap_content"
-        android:layout_height="20sp"
+        android:layout_height="@dimen/radItemIconSize"
         android:background="@drawable/counter_badge"
-        android:minWidth="20sp"
+        android:minWidth="@dimen/radItemIconSize"
         android:paddingStart="6sp"
         android:paddingTop="1.5sp"
         android:paddingEnd="6dp"
@@ -44,6 +46,26 @@
         android:textAppearance="@style/TextAppearance.HomeChat.Regular"
         android:textColor="@color/badgeText"
         android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/mute"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/mute"
+        android:layout_width="@dimen/radItemIconSize"
+        android:layout_height="@dimen/radItemIconSize"
+        android:background="@drawable/close"
+        android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/pin"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/pin"
+        android:layout_width="@dimen/radItemIconSize"
+        android:layout_height="@dimen/radItemIconSize"
+        android:background="@drawable/sent"
         android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

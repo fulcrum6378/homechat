@@ -46,6 +46,10 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         if (hasNew) h.b.badge.text = chat.newOnes.toString()
         h.b.badge.isVisible = hasNew
 
+        // icons
+        h.b.mute.isVisible = chat?.muted == true
+        h.b.pin.isVisible = chat?.pinned == true
+
         // clicks
         if (chat != null) {
             h.b.root.setOnClickListener {
@@ -56,10 +60,10 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
             h.b.root.setOnLongClickListener {
                 EasyMenu(
                     c, it, R.menu.list_rad_chat, hashMapOf(
-                        R.id.chat_pin to { chat.edit { pinned = true } },
-                        R.id.chat_unpin to { chat.edit { pinned = false } },
-                        R.id.chat_mute to { chat.edit { muted = true } },
-                        R.id.chat_unmute to { chat.edit { muted = false } },
+                        R.id.chat_pin to { chat.pin(true) },
+                        R.id.chat_unpin to { chat.pin(false) },
+                        R.id.chat_mute to { chat.mute(true) },
+                        R.id.chat_unmute to { chat.mute(false) },
                     )
                 ).show {
                     if (chat.pinned) {
@@ -93,10 +97,10 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         val address = toString().makeAddressPair()
         Transmitter(address, Receiver.Header.PAIR, {
             c.dao.contactIds().joinToString(",").encodeToByteArray()
-        }, { it != null }, {
+        }, {
             withContext(Dispatchers.Main) { error("pair() returned null; using VPN?") }
         }) { res ->
-            val chosenId = ByteBuffer.wrap(res!!).short
+            val chosenId = ByteBuffer.wrap(res).short
             if (chosenId == (-1).toShort()) {
                 withContext(Dispatchers.Main) { error("chosenId == -1") }
                 return@Transmitter; }
@@ -108,11 +112,11 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
     private suspend fun List<Contact>.init(address: Pair<String, Int>) {
         Transmitter(address, Receiver.Header.INIT, {
             c.dao.chatIds().joinToString(",").encodeToByteArray()
-        }, { it != null }, {
+        }, {
             withContext(Dispatchers.Main) { error("init() returned null") }
         }) { res ->
             Chat.postInitiation(
-                c, ByteBuffer.wrap(res!!).short,
+                c, ByteBuffer.wrap(res).short,
                 joinToString(Chat.CONTACT_SEP) { it.id.toString() })
         }
     }
@@ -121,15 +125,28 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
         Toast.makeText(c, "Pairing failed: $why", Toast.LENGTH_LONG).show()
     }
 
-    private fun Chat.edit(func: Chat.() -> Unit) {
-        func()
+    private fun Chat.pin(bb: Boolean) {
+        pinned = bb
         CoroutineScope(Dispatchers.IO).launch {
-            c.dao.updateChat(this@edit)
-            val oldIndex = c.m.radar.indexOf(this@edit)
+            c.dao.updateChat(this@pin)
+            val oldIndex = c.m.radar.indexOf(this@pin)
             c.m.radar.sort()
-            val newIndex = c.m.radar.indexOf(this@edit)
-            if (oldIndex != newIndex) withContext(Dispatchers.Main) {
-                notifyItemMoved(oldIndex, newIndex)
+            val newIndex = c.m.radar.indexOf(this@pin)
+            if (newIndex != -1) withContext(Dispatchers.Main) {
+                if (oldIndex != newIndex) notifyItemMoved(oldIndex, newIndex)
+                notifyItemChanged(oldIndex)
+                notifyItemChanged(newIndex)
+            }
+        }
+    }
+
+    private fun Chat.mute(bb: Boolean) {
+        muted = bb
+        CoroutineScope(Dispatchers.IO).launch {
+            c.dao.updateChat(this@mute)
+            val index = c.m.radar.indexOf(this@mute)
+            if (index != -1) withContext(Dispatchers.Main) {
+                notifyItemChanged(index)
             }
         }
     }
