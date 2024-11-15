@@ -3,8 +3,18 @@ package ir.mahdiparastesh.homechat.data
 import android.net.nsd.NsdServiceInfo
 import android.os.Build
 import android.os.ext.SdkExtensions
+import ir.mahdiparastesh.homechat.R
+import ir.mahdiparastesh.homechat.Receiver
+import ir.mahdiparastesh.homechat.Transmitter
+import ir.mahdiparastesh.homechat.base.Persistent
 import ir.mahdiparastesh.homechat.page.PageSet
+import ir.mahdiparastesh.homechat.toByteArray
+import ir.mahdiparastesh.homechat.toNumber
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.net.InetAddress
+import java.nio.ByteBuffer
+import kotlin.collections.joinToString
 
 class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
     val name: String = srvInfo.serviceName
@@ -54,6 +64,38 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
         }
     }
 
+    fun makeAddressPair(): Pair<String, Int> =
+        toString().split(":").let { Pair(it[0], it[1].toInt()) }
+
+    suspend fun pair(c: Persistent, error: (msg: Int) -> Unit) {
+        val address = makeAddressPair()
+        Transmitter(address, Receiver.Header.PAIR, {
+            val contacts = c.dao.contactIds().joinToString(",").encodeToByteArray()
+            val chats = c.dao.chatIds().joinToString(",").encodeToByteArray()
+            contacts.size.toShort().toByteArray().plus(contacts)
+                .plus(chats.size.toShort().toByteArray()).plus(chats)
+        }, {
+            withContext(Dispatchers.Main) { error(R.string.pairFailedToConnect) }
+        }) { res ->
+            if (ByteBuffer.wrap(res).int == -1) {
+                withContext(Dispatchers.Main) { error(R.string.pairFailedToPair) }
+                return@Transmitter; }
+
+            val lb = res.toList()
+            val contactId = lb.subList(0, 2).toNumber<Short>()
+            val chatId = lb.subList(2, 4).toNumber<Short>()
+            Contact(contactId, this).apply {
+                c.dao.addContact(this)
+                c.m.contacts?.add(this)
+            }
+            Chat(chatId, contactId.toString()).apply {
+                c.dao.addChat(this)
+                c.m.chats?.add(this)
+            }
+            c.m.radar.update(c.dao)
+        }
+    }
+
     override fun name(): String = unique ?: name
 
     override fun toString(): String = "${host.hostAddress}:$port"
@@ -69,10 +111,5 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
         result = 31 * result + host.hashCode()
         result = 31 * result + (unique?.hashCode() ?: 0)
         return result
-    }
-
-    companion object {
-        fun String.makeAddressPair(): Pair<String, Int> =
-            split(":").let { Pair(it[0], it[1].toInt()) }
     }
 }

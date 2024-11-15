@@ -9,13 +9,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
-import ir.mahdiparastesh.homechat.Receiver
-import ir.mahdiparastesh.homechat.Transmitter
 import ir.mahdiparastesh.homechat.base.AnyViewHolder
 import ir.mahdiparastesh.homechat.data.Chat
-import ir.mahdiparastesh.homechat.data.Contact
 import ir.mahdiparastesh.homechat.data.Device
-import ir.mahdiparastesh.homechat.data.Device.Companion.makeAddressPair
 import ir.mahdiparastesh.homechat.databinding.ListRadBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.util.EasyMenu
@@ -23,7 +19,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.nio.ByteBuffer
 
 class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadBinding>>() {
     override fun onCreateViewHolder(
@@ -82,7 +77,11 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
                 MaterialAlertDialogBuilder(c).apply {
                     setTitle(R.string.newContact)
                     setPositiveButton(R.string.pair) { _, _ ->
-                        CoroutineScope(Dispatchers.IO).launch { dev.pair() }
+                        CoroutineScope(Dispatchers.IO).launch {
+                            dev.pair(c) { msg ->
+                                Toast.makeText(c, msg, Toast.LENGTH_LONG).show()
+                            }
+                        }
                     }
                     setNegativeButton(R.string.cancel, null)
                 }.show()
@@ -92,38 +91,6 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
     }
 
     override fun getItemCount(): Int = c.m.radar.size
-
-    private suspend fun Device.pair() {
-        val address = toString().makeAddressPair()
-        Transmitter(address, Receiver.Header.PAIR, {
-            c.dao.contactIds().joinToString(",").encodeToByteArray()
-        }, {
-            withContext(Dispatchers.Main) { error("pair() returned null; using VPN?") }
-        }) { res ->
-            val chosenId = ByteBuffer.wrap(res).short
-            if (chosenId == (-1).toShort()) {
-                withContext(Dispatchers.Main) { error("chosenId == -1") }
-                return@Transmitter; }
-            Contact.postPairing(c, chosenId, this)
-                .apply { listOf(this).init(address) }
-        }
-    }
-
-    private suspend fun List<Contact>.init(address: Pair<String, Int>) {
-        Transmitter(address, Receiver.Header.INIT, {
-            c.dao.chatIds().joinToString(",").encodeToByteArray()
-        }, {
-            withContext(Dispatchers.Main) { error("init() returned null") }
-        }) { res ->
-            Chat.postInitiation(
-                c, ByteBuffer.wrap(res).short,
-                joinToString(Chat.CONTACT_SEP) { it.id.toString() })
-        }
-    }
-
-    private fun error(why: String) {
-        Toast.makeText(c, "Pairing failed: $why", Toast.LENGTH_LONG).show()
-    }
 
     private fun Chat.pin(bb: Boolean) {
         pinned = bb

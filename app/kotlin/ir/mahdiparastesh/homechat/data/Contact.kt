@@ -4,7 +4,6 @@ import androidx.core.app.Person
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
-import ir.mahdiparastesh.homechat.base.Persistent
 import ir.mahdiparastesh.homechat.util.Time
 
 @Entity(indices = [Index("id")])
@@ -17,15 +16,11 @@ class Contact(
     var lastOnline: Long? = null,
     val createdAt: Long = Time.now(),
 ) : Radar.Named {
-    override fun toString(): String = id.toString()
-    override fun hashCode(): Int = id.hashCode()
-    override fun equals(other: Any?): Boolean = when (other) {
-        is Contact -> toString() == other.toString()
-        is Device -> if (unique != null) unique == other.unique else device == other.name
-        else -> false
-    }
 
-    override fun name(): String = unique ?: device
+    // obtaining MAC address is almost impossible in the newer APIs!
+    constructor(id: Short, dev: Device) : this(
+        id, dev.name, dev.unique, dev.host.hostAddress!!, dev.port, Time.now()
+    )
 
     fun person(isImportant: Boolean): Person = Person.Builder()
         .setName(unique ?: device)
@@ -33,13 +28,12 @@ class Contact(
         .setImportant(isImportant)
         .build()
 
-    companion object {
-        // obtaining MAC address is almost impossible in the newer APIs!
-        suspend fun postPairing(c: Persistent, chosenId: Short, dev: Device): Contact = Contact(
-            chosenId, dev.name, dev.unique, dev.host.hostAddress!!, dev.port, Time.now()
-        ).also {
-            c.dao.addContact(it)
-            c.m.contacts?.add(it)
-        }
+    override fun name(): String = unique ?: device
+    override fun toString(): String = id.toString()
+    override fun hashCode(): Int = id.hashCode()
+    override fun equals(other: Any?): Boolean = when (other) {
+        is Contact -> toString() == other.toString()
+        is Device -> if (unique != null) unique == other.unique else device == other.name
+        else -> false
     }
 }

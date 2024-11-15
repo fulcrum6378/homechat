@@ -93,9 +93,9 @@ fun Number.toByteArray(): ByteArray {
 }
 
 @Suppress("UNCHECKED_CAST")
-fun <N> List<Byte>.toNumber(): N {
+fun <N> ByteArray.toNumber(): N {
     if (size == Byte.SIZE_BYTES) return this[0] as N
-    val bb = ByteBuffer.wrap(toByteArray())
+    val bb = ByteBuffer.wrap(this)
     bb.rewind()
     return when (size) {
         Short.SIZE_BYTES -> bb.short as N
@@ -104,3 +104,6 @@ fun <N> List<Byte>.toNumber(): N {
         else -> 0 as N
     }
 }
+
+fun <N> List<Byte>.toNumber(): N =
+    toByteArray().toNumber<N>()

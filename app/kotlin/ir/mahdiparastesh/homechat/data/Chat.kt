@@ -65,13 +65,5 @@ class Chat(
     companion object {
         const val CONTACT_SEP = ","
         const val ME = (-1).toShort()
-
-        suspend fun postInitiation(c: Persistent, chosenId: Short, contactIds: String) {
-            Chat(chosenId, contactIds).also {
-                c.dao.addChat(it)
-                c.m.chats?.add(it)
-            }
-            c.m.radar.update(c.dao)
-        }
     }
 }

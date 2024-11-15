@@ -41,12 +41,21 @@
     <string name="ago">&#160;ago</string>
 
 
-    <!-- PageRad -->
+    <!-- Main -->
     <string name="navOpen">Open</string>
     <string name="navClose">Close</string>
+
+    <!-- PageRad -->
     <string name="radarEmpty">No other devices found!</string>
     <string name="newContact">New Contact</string>
     <string name="pair">Pair</string>
+    <string name="pairFailedToConnect">
+        Couldn\'t connect to the target device!
+        Are you using VPN? If yes, please turn it off&#8230;
+    </string>
+    <string name="pairFailedToPair">
+        The target device couldn\'t pair with this device!
+    </string>
     <string name="chatPin">Pin</string>
     <string name="chatUnpin">Unpin</string>
     <string name="chatMute">Mute</string>

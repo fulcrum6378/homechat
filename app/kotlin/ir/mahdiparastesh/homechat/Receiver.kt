@@ -83,28 +83,41 @@ class Receiver : WiseService() {
 
         // act based on the Header
         val hb = input.read().toByte() // never put "output.read()" in a repeated function!!
-        val header = Header.entries.find { it.value == hb }
-        Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header?.name}")
-        val len: Int? = header?.getLength(input.readNBytesCompat(header.indicateLenInNBytes))
+        val header = Header.entries.find { it.value == hb }!!
+        Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header.name}")
+        val len = header.getLength(input.readNBytesCompat(header.writeLengthInNBytes))
         val out: ByteArray = when (header) {
-            Header.PAIR ->
-                (if (dev != null) findUniqueId(
-                    String(input.readNBytesCompat(len!!)),
+            Header.PAIR -> (if (dev != null) {
+                // grab the list of contact IDs, suggest a number OUTSIDE them and create a Contact
+                val contactsLen = input.readNBytesCompat(2).toNumber<Short>().toInt()
+                val contactId = findUniqueId(
+                    String(input.readNBytesCompat(contactsLen)),
                     dao.contactIds()
-                ).also { chosenId ->
-                    Contact.postPairing(this, chosenId, dev)
-                    ipToContactId[fromIp] = chosenId
-                } else (-1).toShort()).toByteArray()
+                )
+                Contact(contactId, dev).apply {
+                    dao.addContact(this)
+                    m.contacts?.add(this)
+                }
 
-            Header.INIT -> (if (fromIp in ipToContactId) {
-                val chosenId = findUniqueId(String(input.readNBytesCompat(len!!)), dao.chatIds())
-                Chat.postInitiation(this, chosenId, ipToContactId[fromIp].toString())
-                // FIXME not compatible with group chat
-                chosenId
-            } else (-1).toShort()).toByteArray()
+                ipToContactId[fromIp] = contactId
+
+                // grab the list of chat IDs, suggest a number OUTSIDE them and create a Chat
+                val chatsLen = input.readNBytesCompat(2).toNumber<Short>().toInt()
+                val chatId = findUniqueId(
+                    String(input.readNBytesCompat(chatsLen)),
+                    dao.chatIds()
+                )
+                Chat(chatId, ipToContactId[fromIp].toString()).apply {
+                    dao.addChat(this)
+                    m.chats?.add(this)
+                }
+                m.radar.update(dao)
+
+                contactId.toByteArray().plus(chatId.toByteArray())
+            } else (-1).toShort().toByteArray())
 
             Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
-                decodeMessage(input.readNBytesCompat(len!!).toList(), header, contact).apply {
+                decodeMessage(input.readNBytesCompat(len).toList(), header, contact).apply {
                     val theChat = m.chats?.find { it.id == chat } ?: dao.chat(chat)
                     dao.addMessage(this)
                     val seen = Seen(id, chat, Chat.ME)
@@ -127,7 +140,7 @@ class Receiver : WiseService() {
             } else STAT_CONTACT_NOT_FOUND.toByteArray()
 
             Header.SEEN -> if (contact != null) {
-                val raw = input.readNBytesCompat(len!!).toList()
+                val raw = input.readNBytesCompat(len).toList()
                 dao.seen(
                     contact = contact.id,
                     msg = raw.subList(0, 8).toNumber(),
@@ -141,7 +154,7 @@ class Receiver : WiseService() {
                 STAT_SUCCESS.toByteArray()
             } else STAT_CONTACT_NOT_FOUND.toByteArray()
 
-            else -> throw IllegalArgumentException("${header?.name}: ${hb.toInt()}")
+            else -> throw IllegalArgumentException("${header.name}: ${hb.toInt()}")
         }
         output.write(out)
         output.flush()
@@ -208,10 +221,9 @@ class Receiver : WiseService() {
     }
 
     enum class Header(
-        val value: Byte, val indicateLenInNBytes: Int, val responseBytes: Int = Byte.SIZE_BYTES
+        val value: Byte, val writeLengthInNBytes: Int, val responseBytes: Int = Byte.SIZE_BYTES
     ) {
-        PAIR(0x00, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Contact ids>
-        INIT(0x01, Short.SIZE_BYTES, Short.SIZE_BYTES), // <all Chat ids>
+        PAIR(0x01, Short.SIZE_BYTES, 4), // <length><all Contact ids><length><all Chat ids>
 
         // Profile picture
         PROF(0x0E, Int.SIZE_BYTES),
@@ -237,9 +249,9 @@ class Receiver : WiseService() {
         }
 
         fun putLength(size: Int): ByteArray {
-            if (indicateLenInNBytes == 1) return byteArrayOf(size.toByte())
-            val bb = ByteBuffer.allocate(indicateLenInNBytes)
-            when (indicateLenInNBytes) {
+            if (writeLengthInNBytes == 1) return byteArrayOf(size.toByte())
+            val bb = ByteBuffer.allocate(writeLengthInNBytes)
+            when (writeLengthInNBytes) {
                 Short.SIZE_BYTES -> bb.putShort(size.toShort())
                 Int.SIZE_BYTES -> bb.putInt(size)
                 Long.SIZE_BYTES -> bb.putLong(size.toLong())
