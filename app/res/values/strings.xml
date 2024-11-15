@@ -47,6 +47,10 @@
     <string name="radarEmpty">No other devices found!</string>
     <string name="newContact">New Contact</string>
     <string name="pair">Pair</string>
+    <string name="chatPin">Pin</string>
+    <string name="chatUnpin">Unpin</string>
+    <string name="chatMute">Mute</string>
+    <string name="chatUnmute">Unmute</string>
 
     <!-- PageCht -->
     <string name="newMessage">Message&#8230;</string>

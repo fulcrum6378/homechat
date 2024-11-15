@@ -37,6 +37,9 @@ abstract class Database : RoomDatabase() {
         @Insert
         suspend fun addChat(item: Chat)
 
+        @Update
+        suspend fun updateChat(item: Chat)
+
 
         @Query("SELECT * FROM Message WHERE chat LIKE :chat ORDER BY time")
         suspend fun messages(chat: Short): List<Message>

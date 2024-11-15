@@ -18,8 +18,8 @@ class EasyMenu(
         inflate(res)
     }
 
-    /*fun show(apply: EasyMenu.() -> Unit) {
+    fun show(apply: EasyMenu.() -> Unit) {
         apply()
         show()
-    }*/
+    }
 }

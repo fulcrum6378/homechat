@@ -408,7 +408,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * Hide message?
  * Clear history?
  * BINARY {file, voice}
- * Muting & Favourite
  * Unpair?
  * GIF & Sticker
  * Typing status

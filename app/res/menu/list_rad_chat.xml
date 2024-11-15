@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/chat_pin"
+        android:title="@string/chatPin" />
+    <item
+        android:id="@+id/chat_unpin"
+        android:title="@string/chatUnpin"
+        android:visible="false" />
+    <item
+        android:id="@+id/chat_mute"
+        android:title="@string/chatMute" />
+    <item
+        android:id="@+id/chat_unmute"
+        android:title="@string/chatUnmute"
+        android:visible="false" />
+</menu>

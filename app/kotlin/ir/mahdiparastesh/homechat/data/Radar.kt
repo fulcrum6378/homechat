@@ -51,15 +51,19 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
         addAll(devices.let { d ->
             if (friends != null) d.filter { it.contact == null || it.contact!!.id !in friends } else d
         })
+        sort()
+        withContext(Dispatchers.Main) {
+            updateListeners.forEach { it.onRadarUpdated() }
+        }
+    }
+
+    fun sort() {
         try {
-            sortBy { it is Chat }
+            sortBy { it is Chat } // TODO
         } catch (e: java.lang.UnsupportedOperationException) {
             // mysterious error by CopyOnWriteArrayList$COWIterator.set while sorting
             if (BuildConfig.DEBUG && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) throw e
             // apparently Android 7 (24) adopted JVM 1.8, which supports sorting while altering.
-        }
-        withContext(Dispatchers.Main) {
-            updateListeners.forEach { it.onRadarUpdated() }
         }
     }
 
