@@ -142,7 +142,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         if (name == mServiceName) m.radar.self = this
                         else CoroutineScope(Dispatchers.IO).launch {
                             m.radar.insert(this@apply, dao)
-                            if (contact != null && contact?.id in m.pendingContacts)
+                            if (contact != null && contact?.id in m.queue)
                                 Sender.init(this@Main)
                         }
                     }

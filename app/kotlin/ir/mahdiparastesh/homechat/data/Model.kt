@@ -10,7 +10,6 @@ class Model : ViewModel() {
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
     val queue = hashMapOf<Short, ArrayList<Queuable>>()
-    val pendingContacts = hashSetOf<Short>()
     var aliveMain = false
     var aliveSender = false
     var aliveReceiver = false

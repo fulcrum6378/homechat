@@ -1,7 +1,7 @@
 package ir.mahdiparastesh.homechat
 
-import android.content.ContextWrapper
 import android.content.Intent
+import android.util.Log
 import ir.mahdiparastesh.homechat.base.Persistent
 import ir.mahdiparastesh.homechat.base.WiseService
 import ir.mahdiparastesh.homechat.data.Chat
@@ -35,18 +35,16 @@ class Sender : WiseService() {
 
     private suspend fun start() {
         working = true
-        m.pendingContacts.clear()
         var address: Pair<String, Int>
         var available: Boolean
 
         for (target in m.queue.keys) {
-            val contact = m.contacts?.find { it.id == target }
+            val contact = m.contacts!!.find { it.id == target }
             if (contact == null) {
                 m.queue.remove(target)
                 continue; }
-            if (contact.ip == null || contact.port == null) {
-                m.pendingContacts.add(contact.id)
-                continue; }
+            if (contact.ip == null || contact.port == null)
+                continue
 
             address = Pair(contact.ip!!, contact.port!!)
             available = true
@@ -63,14 +61,13 @@ class Sender : WiseService() {
                     else -> throw IllegalStateException()
                 }
             }, { // on error:
-                m.pendingContacts.add(contact.id)
                 available = false
             }) { res -> // on success:
                 val code = res.firstOrNull()
+                Log.println(Log.ASSERT, packageName, "SENT " + o.header().name + " GOT " + code)
                 if (code != Receiver.STAT_SUCCESS) {
                     when (code) {
                         Receiver.STAT_CONTACT_NOT_FOUND -> {
-                            m.pendingContacts.add(contact.id)
                             available = false
                             // TODO REPAIR
                         }
@@ -112,9 +109,10 @@ class Sender : WiseService() {
         val charset = Charsets.US_ASCII
 
 
-        fun init(c: ContextWrapper, onIntent: (Intent.() -> Unit)? = null) {
+        fun init(c: Persistent, onIntent: (Intent.() -> Unit)? = null) {
+            if (c.m.queue.isEmpty()) return
             val func: Intent.() -> Intent = { onIntent?.also { it() }; this }
-            c.startService(Intent(c, Sender::class.java).func())
+            c.c.startService(Intent(c.c, Sender::class.java).func())
         }
 
         suspend fun read(c: Persistent) {

@@ -144,6 +144,7 @@ class PageCht : BasePage<Main>() {
                         b.list.adapter?.notifyItemInserted(size - 1)
                         b.list.scrollToPosition(size - 1)
                     }
+                    reply(null)
                 }
             }
         }
