@@ -22,7 +22,7 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
         devices.forEach {
             if (it.name == itemName) {
                 it.contact?.apply {
-                    lastOnline = Time.now()
+                    online_at = Time.now()
                     dao.updateContact(this)
                 }
                 try {
@@ -47,7 +47,7 @@ class Radar(private val m: Model) : CopyOnWriteArrayList<Radar.Item>() {
         // val prev = clone() as CopyOnWriteArrayList<Item>
         clear()
         m.chats?.also { addAll(it) }
-        val friends = m.chats?.filter { it.isDirect() }?.map { it.contactIds.toShort() }
+        val friends = m.chats?.filter { it.isDirect() }?.map { it.contact_ids.toShort() }
         addAll(devices.let { d ->
             if (friends != null) d.filter { it.contact == null || it.contact!!.id !in friends } else d
         })

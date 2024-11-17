@@ -8,6 +8,7 @@ import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.util.Time
 
 @Entity(
+    tableName = "message",
     primaryKeys = ["id", "chat", "auth"],
     indices = [Index("chat"), Index("time")],
     foreignKeys = [ForeignKey(

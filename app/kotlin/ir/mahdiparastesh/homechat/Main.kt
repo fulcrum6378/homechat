@@ -312,7 +312,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
             CoroutineScope(Dispatchers.IO).launch {
                 m.radar.devices.forEach {
                     it.contact?.apply {
-                        lastOnline = Time.now()
+                        online_at = Time.now()
                         dao.updateContact(this)
                     }
                 }

@@ -6,15 +6,19 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import ir.mahdiparastesh.homechat.util.Time
 
-@Entity(indices = [Index("id")])
+@Suppress("PropertyName")
+@Entity(
+    tableName = "contact",
+    indices = [Index("id")],
+)
 class Contact(
     @PrimaryKey var id: Short, // Room does not support unsigned numbers!
     var device: String,
     var unique: String?,
     var ip: String?,
     var port: Int?,
-    var lastOnline: Long? = null,
-    val createdAt: Long = Time.now(),
+    var online_at: Long? = null,
+    val created_at: Long = Time.now(),
 ) : Radar.Named {
 
     // obtaining MAC address is almost impossible in the newer APIs!

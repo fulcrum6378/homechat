@@ -146,7 +146,7 @@ class Receiver : WiseService() {
                     msg = raw.subList(0, 8).toNumber(),
                     chat = raw.subList(8, 10).toNumber(),
                 )!!.apply {
-                    dateSeen = raw.subList(10, 18).toNumber()
+                    seen_at = raw.subList(10, 18).toNumber()
                     dao.updateSeen(this)
                     PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, chat.toInt(), 0, this)
                         ?.sendToTarget()

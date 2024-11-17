@@ -12,10 +12,10 @@ abstract class Database : RoomDatabase() {
 
     @Dao
     interface DAO {
-        @Query("SELECT * FROM Contact")
+        @Query("SELECT * FROM contact")
         suspend fun contacts(): List<Contact>
 
-        @Query("SELECT id FROM Contact")
+        @Query("SELECT id FROM contact")
         suspend fun contactIds(): List<Short>
 
         @Insert
@@ -25,13 +25,13 @@ abstract class Database : RoomDatabase() {
         suspend fun updateContact(item: Contact)
 
 
-        @Query("SELECT * FROM Chat ORDER BY pinned DESC, (SELECT MAX(time) FROM Message WHERE chat = Chat.id) DESC")
+        @Query("SELECT * FROM chat ORDER BY pinned DESC, (SELECT MAX(time) FROM message WHERE chat = chat.id) DESC")
         suspend fun chats(): List<Chat>
 
-        @Query("SELECT id FROM Chat")
+        @Query("SELECT id FROM chat")
         suspend fun chatIds(): List<Short>
 
-        @Query("SELECT * FROM Chat WHERE id LIKE :id LIMIT 1")
+        @Query("SELECT * FROM chat WHERE id LIKE :id LIMIT 1")
         suspend fun chat(id: Short): Chat
 
         @Insert
@@ -41,16 +41,16 @@ abstract class Database : RoomDatabase() {
         suspend fun updateChat(item: Chat)
 
 
-        @Query("SELECT * FROM Message WHERE chat LIKE :chat ORDER BY time")
+        @Query("SELECT * FROM message WHERE chat LIKE :chat ORDER BY time")
         suspend fun messages(chat: Short): List<Message>
 
-        @Query("SELECT * FROM Message WHERE id LIKE :id AND chat LIKE :chat AND auth LIKE :auth LIMIT 1")
+        @Query("SELECT * FROM message WHERE id LIKE :id AND chat LIKE :chat AND auth LIKE :auth LIMIT 1")
         suspend fun message(id: Long, chat: Short, auth: Short): Message?
 
-        @Query("SELECT * FROM Message WHERE id IN (:ids) AND chat LIKE :chat AND auth LIKE :auth")
+        @Query("SELECT * FROM message WHERE id IN (:ids) AND chat LIKE :chat AND auth LIKE :auth")
         suspend fun theseMessage(ids: List<Long>, chat: Short, auth: Short): List<Message>
 
-        /*@Query("SELECT id FROM Message WHERE chat LIKE :chat")
+        /*@Query("SELECT id FROM message WHERE chat LIKE :chat")
         suspend fun messageIds(chat: Short): List<Long>*/
 
         @Insert(onConflict = OnConflictStrategy.ABORT)
@@ -60,16 +60,16 @@ abstract class Database : RoomDatabase() {
         suspend fun updateMessage(item: Message)*/
 
 
-        @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat")
+        @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat")
         suspend fun seenForMessage(msg: Long, chat: Short): List<Seen>
 
-        @Query("SELECT * FROM Seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
+        @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
         suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?
 
-        @Query("SELECT msg FROM Seen WHERE chat LIKE :chat AND contact LIKE -1 AND dateSeen IS NULL")
+        @Query("SELECT msg FROM seen WHERE chat LIKE :chat AND contact LIKE -1 AND seen_at IS NULL")
         suspend fun unseenInChat(chat: Short): List<Long>
 
-        @Query("SELECT COUNT(*) FROM Seen WHERE chat LIKE :chat AND contact LIKE -1 AND dateSeen IS NULL")
+        @Query("SELECT COUNT(*) FROM Seen WHERE chat LIKE :chat AND contact LIKE -1 AND seen_at IS NULL")
         suspend fun countUnseenInChat(chat: Short): Int
 
         @Insert

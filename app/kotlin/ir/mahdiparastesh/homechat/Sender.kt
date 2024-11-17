@@ -57,7 +57,7 @@ class Sender : WiseService() {
                         .plus(o.data.encodeToByteArray())
                     is Seen -> o.msg.toByteArray()
                         .plus(o.chat.toByteArray())
-                        .plus(o.dateSeen!!.toByteArray())
+                        .plus(o.seen_at!!.toByteArray())
                     else -> throw IllegalStateException()
                 }
             }, { // on error:
@@ -77,14 +77,14 @@ class Sender : WiseService() {
 
                 when (o) {
                     is Message -> dao.seen(o.id, o.chat, contact.id)!!.apply {
-                        dateSent = Time.now()
+                        sent_at = Time.now()
                         dao.updateSeen(this)
                         PageCht.handler?.obtainMessage(
                             PageCht.MSG_SEEN, o.chat.toInt(), 0, this
                         )?.sendToTarget()
                     }
                     is Seen -> {
-                        o.dateSent = Time.now()
+                        o.sent_at = Time.now()
                         dao.updateSeen(o)
                     }
                 }

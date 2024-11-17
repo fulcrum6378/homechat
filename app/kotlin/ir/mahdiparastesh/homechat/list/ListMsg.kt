@@ -110,18 +110,18 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         // seen status of mine
         h.b.seen.isVisible = isMe
         if (isMe) h.b.seen.setImageResource(when {
-            msg.status?.any { it.dateSeen != null } == true -> R.drawable.seen
-            msg.status?.any { it.dateSent != null } == true -> R.drawable.sent
+            msg.status?.any { it.seen_at != null } == true -> R.drawable.seen
+            msg.status?.any { it.sent_at != null } == true -> R.drawable.sent
             else -> R.drawable.no_signal
         })
 
         // seen theirs if not
         var notSeen: List<Seen>? = null
         if (!isMe &&
-            msg.status!!.filter { it.dateSeen == null }.apply { notSeen = this }.isNotEmpty()
+            msg.status!!.filter { it.seen_at == null }.apply { notSeen = this }.isNotEmpty()
         ) CoroutineScope(Dispatchers.IO).launch {
             notSeen!!.forEach {
-                it.dateSeen = Time.now()
+                it.seen_at = Time.now()
                 c.dao.updateSeen(it)
                 msg.status!![msg.status!!.indexOfFirst { st -> st.contact == it.contact }] = it
                 c.m.enqueue(msg.auth, it)
