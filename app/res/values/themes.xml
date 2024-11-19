@@ -4,10 +4,10 @@
     <style name="Theme.HomeChat.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="colorPrimary">#900081</item>
         <item name="colorPrimaryVariant">#900081</item>
-        <item name="colorOnPrimary">?colorPrimary</item>
+        <item name="colorOnPrimary">?colorSecondary</item>
         <item name="colorSecondary">#FFF</item>
         <item name="colorSecondaryVariant">#FFF</item>
-        <item name="colorOnSecondary">?colorSecondary</item>
+        <item name="colorOnSecondary">?colorPrimary</item>
 
         <item name="android:navigationBarColor">@color/background</item>
         <!--errors in AlertDialog if you set ?android:attr/windowBackground -->

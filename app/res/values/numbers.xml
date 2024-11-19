@@ -20,8 +20,9 @@
     <dimen name="radItemIconSize">20sp</dimen>
 
     <!-- PageCht -->
-    <dimen name="replyingToTextSize">15sp</dimen>
-    <dimen name="replyCancelSize">36dp</dimen>
-    <dimen name="replyCancelPad">4dp</dimen>
-    <dimen name="fieldTextSize">18sp</dimen>
+    <dimen name="chtReplyingToTextSize">15sp</dimen>
+    <dimen name="chtReplyCancelSize">36dp</dimen>
+    <dimen name="chtReplyCancelPad">4dp</dimen>
+    <dimen name="chtFieldTextSize">18sp</dimen>
+    <dimen name="chtIconSize">32dp</dimen>
 </resources>

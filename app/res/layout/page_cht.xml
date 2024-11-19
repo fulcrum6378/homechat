@@ -43,7 +43,7 @@
             android:layout_marginTop="14dp"
             android:layout_marginEnd="10dp"
             android:textAppearance="@style/TextAppearance.HomeChat.Regular"
-            android:textSize="@dimen/replyingToTextSize"
+            android:textSize="@dimen/chtReplyingToTextSize"
             app:layout_constraintEnd_toStartOf="@id/replyCancel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -56,18 +56,18 @@
             android:layout_marginEnd="10dp"
             android:paddingBottom="14dp"
             android:textAppearance="@style/TextAppearance.HomeChat.Light"
-            android:textSize="@dimen/replyingToTextSize"
+            android:textSize="@dimen/chtReplyingToTextSize"
             app:layout_constraintEnd_toStartOf="@id/replyCancel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/replyingToContact" />
 
         <ImageView
             android:id="@+id/replyCancel"
-            android:layout_width="@dimen/replyCancelSize"
-            android:layout_height="@dimen/replyCancelSize"
+            android:layout_width="@dimen/chtReplyCancelSize"
+            android:layout_height="@dimen/chtReplyCancelSize"
             android:layout_marginEnd="@dimen/pagePadH"
             android:background="@drawable/button_rectangle_round"
-            android:padding="@dimen/replyCancelPad"
+            android:padding="@dimen/chtReplyCancelPad"
             android:src="@drawable/close"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -106,7 +106,7 @@
             android:paddingBottom="18dp"
             android:textColor="@color/chatText"
             android:textIsSelectable="true"
-            android:textSize="@dimen/fieldTextSize"
+            android:textSize="@dimen/chtFieldTextSize"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/send"
             app:layout_constraintStart_toStartOf="parent"
@@ -114,10 +114,12 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/send"
+            style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/send"
-            android:textColor="@android:color/white"
+            android:contentDescription="@string/send"
+            app:icon="@drawable/send"
+            app:iconSize="@dimen/chtIconSize"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
