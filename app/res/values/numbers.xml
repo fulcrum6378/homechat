@@ -17,7 +17,7 @@
     <dimen name="listPadV">14dp</dimen>
 
     <!-- PageRad -->
-    <dimen name="radItemIconSize">20sp</dimen>
+    <dimen name="radItemIconSize">26sp</dimen>
 
     <!-- PageCht -->
     <dimen name="chtReplyingToTextSize">15sp</dimen>

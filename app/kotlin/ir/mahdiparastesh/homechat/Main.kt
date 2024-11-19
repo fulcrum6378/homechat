@@ -398,7 +398,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
 /*TODO
  * Problems:
- * Vector icons for SEND, PIN and MUTE
  * A device with VPN cannot receive, but can send to a VPN-less device!
  * Regularly update subtitle of Toolbar in PageChat
  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
@@ -407,7 +406,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * Make a soft sound when each message is received in PageChat
  * Drag to reply
  * Hide message?
- * Clear history?
+ * Clear history
  * BINARY {file, voice}
  * Unpair?
  * GIF & Sticker
