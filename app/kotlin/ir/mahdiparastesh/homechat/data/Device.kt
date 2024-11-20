@@ -17,6 +17,7 @@ import java.nio.ByteBuffer
 import kotlin.collections.joinToString
 
 class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
+    /** temporarily unique */
     val name: String = srvInfo.serviceName
     val host: InetAddress
     val port: Int = srvInfo.port
@@ -36,6 +37,40 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
 
 
     fun NsdServiceInfo.attr(key: String): String? = attributes[key]?.let { String(it) }
+
+    fun address(): String = "${host.hostAddress}:$port"
+
+    fun addressPair(): Pair<String, Int> =
+        address().split(":").let { Pair(it[0], it[1].toInt()) }
+
+    suspend fun pair(c: Persistent, error: (msg: Int) -> Unit) {
+        val address = addressPair()
+        Transmitter(address, Receiver.Header.PAIR, {
+            val contacts = c.dao.contactIds().joinToString(",").encodeToByteArray()
+            val chats = c.dao.chatIds().joinToString(",").encodeToByteArray()
+            contacts.size.toShort().toByteArray().plus(contacts)
+                .plus(chats.size.toShort().toByteArray()).plus(chats)
+        }, {
+            withContext(Dispatchers.Main) { error(R.string.pairFailedToConnect) }
+        }) { res ->
+            if (ByteBuffer.wrap(res).int == -1) {
+                withContext(Dispatchers.Main) { error(R.string.pairFailedToPair) }
+                return@Transmitter; }
+
+            val lb = res.toList()
+            val contactId = lb.subList(0, 2).toNumber<Short>()
+            val chatId = lb.subList(2, 4).toNumber<Short>()
+            Contact(contactId, this).apply {
+                c.dao.addContact(this)
+                c.m.contacts?.add(this)
+            }
+            Chat(chatId, contactId.toString()).apply {
+                c.dao.addChat(this)
+                c.m.chats?.add(this)
+            }
+            c.m.radar.update(c.dao)
+        }
+    }
 
     suspend fun matchContact(m: Model, dao: Database.DAO) {
         val matches = m.contacts?.filter { it.equals(this) }
@@ -64,52 +99,13 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
         }
     }
 
-    fun makeAddressPair(): Pair<String, Int> =
-        toString().split(":").let { Pair(it[0], it[1].toInt()) }
-
-    suspend fun pair(c: Persistent, error: (msg: Int) -> Unit) {
-        val address = makeAddressPair()
-        Transmitter(address, Receiver.Header.PAIR, {
-            val contacts = c.dao.contactIds().joinToString(",").encodeToByteArray()
-            val chats = c.dao.chatIds().joinToString(",").encodeToByteArray()
-            contacts.size.toShort().toByteArray().plus(contacts)
-                .plus(chats.size.toShort().toByteArray()).plus(chats)
-        }, {
-            withContext(Dispatchers.Main) { error(R.string.pairFailedToConnect) }
-        }) { res ->
-            if (ByteBuffer.wrap(res).int == -1) {
-                withContext(Dispatchers.Main) { error(R.string.pairFailedToPair) }
-                return@Transmitter; }
-
-            val lb = res.toList()
-            val contactId = lb.subList(0, 2).toNumber<Short>()
-            val chatId = lb.subList(2, 4).toNumber<Short>()
-            Contact(contactId, this).apply {
-                c.dao.addContact(this)
-                c.m.contacts?.add(this)
-            }
-            Chat(chatId, contactId.toString()).apply {
-                c.dao.addChat(this)
-                c.m.chats?.add(this)
-            }
-            c.m.radar.update(c.dao)
-        }
-    }
-
     override fun name(): String = unique ?: name
 
-    override fun toString(): String = "${host.hostAddress}:$port"
-
     override fun equals(other: Any?): Boolean = when (other) {
-        is Device -> host.hostAddress == other.host.hostAddress
+        is Device -> if (unique != null) unique == other.unique else name == other.name
         is Contact -> if (unique != null) unique == other.unique else name == other.device
         else -> false
     }
 
-    override fun hashCode(): Int {
-        var result = name.hashCode()
-        result = 31 * result + host.hashCode()
-        result = 31 * result + (unique?.hashCode() ?: 0)
-        return result
-    }
+    override fun hashCode(): Int = name.hashCode()
 }

@@ -172,8 +172,7 @@ class PageCht : BasePage<Main>() {
     }*/
 
     private fun canSend(bb: Boolean) {
-        b.send.isClickable = bb
-        b.send.alpha = if (bb) 1f else 0.8f
+        b.send.isVisible = bb
     }
 
     fun reply(replyingTo: Message? = null) {

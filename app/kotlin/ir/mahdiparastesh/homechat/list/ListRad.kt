@@ -34,7 +34,7 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
 
         // texts
         h.b.title.text = "${i + 1}. " + (dev?.name ?: chat!!.title())
-        h.b.subtitle.text = dev?.toString() ?: chat!!.onlineStatus(c)
+        h.b.subtitle.text = dev?.address() ?: chat!!.onlineStatus(c)
 
         // counter badge
         val hasNew = chat?.newOnes != null && chat.newOnes!! > 0

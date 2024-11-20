@@ -76,7 +76,7 @@ class Receiver : WiseService() {
 
         // identify the Transmitter
         val fromIp = socket.remoteSocketAddress.toString().substring(1).split(":")[0]
-        val dev = m.radar.devices.find { it.host.hostAddress == fromIp }
+        val dev = m.radar.devices.values.find { it.host.hostAddress == fromIp }
         val contact =
             if (dev != null) m.contacts?.find { it.equals(dev) }
             else m.contacts?.find { it.ip == fromIp }

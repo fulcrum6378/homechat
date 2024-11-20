@@ -43,7 +43,6 @@ import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageRad
 import ir.mahdiparastesh.homechat.page.PageSet
-import ir.mahdiparastesh.homechat.util.Time
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -147,7 +146,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                         }
                     }
                     MSG_LOST -> (msg.obj as NsdServiceInfo).also { srvInfo ->
-                        // don't wrap Device around it!
+                        // NsdServiceInfo lacks the address (host=null, port=0, attributes empty)
                         CoroutineScope(Dispatchers.IO)
                             .launch { m.radar.delete(srvInfo.serviceName, dao) }
                     }
@@ -207,10 +206,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
                 override fun onCapabilitiesChanged(nw: Network, nwc: NetworkCapabilities) {}
                 override fun onAvailable(network: Network) {
                     handler?.obtainMessage(MSG_WIFI, true)?.sendToTarget()
+                    startDiscovery()
                 }
 
                 override fun onLost(network: Network) {
                     handler?.obtainMessage(MSG_WIFI, false)?.sendToTarget()
+                    stopDiscovery()
                 }
             })
 
@@ -279,6 +280,11 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
     }
 
+    private fun stopDiscovery() {
+        if (!discovering) return
+        nsdManager.stopServiceDiscovery(discoveryListener)
+    }
+
     private val discoveryListener = object : NsdManager.DiscoveryListener {
         override fun onDiscoveryStarted(regType: String) {
             discovering = true
@@ -286,7 +292,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         override fun onStartDiscoveryFailed(serviceType: String, errorCode: Int) {
             Toast.makeText(c, "onStartDiscoveryFailed: $errorCode", Toast.LENGTH_LONG).show()
-            nsdManager.stopServiceDiscovery(this)
+            stopDiscovery()
         }
 
         override fun onServiceFound(srvInfo: NsdServiceInfo) {
@@ -308,20 +314,12 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
         override fun onDiscoveryStopped(serviceType: String) {
             discovering = false
-
-            CoroutineScope(Dispatchers.IO).launch {
-                m.radar.devices.forEach {
-                    it.contact?.apply {
-                        online_at = Time.now()
-                        dao.updateContact(this)
-                    }
-                }
-            }
+            CoroutineScope(Dispatchers.IO).launch { m.radar.shutdown(dao) }
         }
 
         override fun onStopDiscoveryFailed(serviceType: String, errorCode: Int) {
             Toast.makeText(c, "onStopDiscoveryFailed: $errorCode", Toast.LENGTH_LONG).show()
-            nsdManager.stopServiceDiscovery(this)
+            stopDiscovery()
         }
     }
 
@@ -371,11 +369,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     override fun onPause() {
         super.onPause()
-
-        // NSD
-        if (discovering) nsdManager.stopServiceDiscovery(discoveryListener)
-
-        // The subtitle of the toolbar
+        stopDiscovery()
         m.radar.updateListeners.remove(tbSubtitleListener)
     }
 

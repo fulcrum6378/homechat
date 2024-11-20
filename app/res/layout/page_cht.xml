@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:ignore="ContentDescription,MissingConstraints">
+    tools:ignore="MissingConstraints">
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
@@ -67,6 +67,7 @@
             android:layout_height="@dimen/chtReplyCancelSize"
             android:layout_marginEnd="@dimen/pagePadH"
             android:background="@drawable/button_rectangle_round"
+            android:contentDescription="@string/cancel"
             android:padding="@dimen/chtReplyCancelPad"
             android:src="@drawable/close"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -118,6 +119,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/send"
+            android:visibility="gone"
             app:icon="@drawable/send"
             app:iconSize="@dimen/chtIconSize"
             app:layout_constraintBottom_toBottomOf="parent"

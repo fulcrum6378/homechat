@@ -15,5 +15,6 @@ class Binary(
     val name: String,
     val size: Long,
     val date_modified: Long,
+    val path: String?,
     val created_at: Long,
 )
