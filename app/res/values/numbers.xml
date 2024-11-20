@@ -18,6 +18,7 @@
 
     <!-- PageRad -->
     <dimen name="radItemIconSize">26sp</dimen>
+    <dimen name="radPairAnimHeight">100dp</dimen>
 
     <!-- PageCht -->
     <dimen name="chtReplyingToTextSize">15sp</dimen>

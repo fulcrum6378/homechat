@@ -14,7 +14,7 @@ android {
         minSdk = 23
         targetSdk = 35
         versionCode = 1
-        versionName = "2.9.8"
+        versionName = "3.1.0"
     }
 
     sourceSets.getByName("main") {
@@ -44,6 +44,7 @@ dependencies {
     ksp(libs.room.compiler)
     implementation(libs.room.ktx) // for "suspend"
     implementation(libs.room.runtime)
+    implementation(libs.lottie)
     implementation(libs.material)
-    implementation(libs.keyboardvisibilityevent)
+    implementation(libs.kbve)
 }

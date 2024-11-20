@@ -43,7 +43,7 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
     fun addressPair(): Pair<String, Int> =
         address().split(":").let { Pair(it[0], it[1].toInt()) }
 
-    suspend fun pair(c: Persistent, error: (msg: Int) -> Unit) {
+    suspend fun pair(c: Persistent, error: (msg: Int) -> Unit, success: () -> Unit) {
         val address = addressPair()
         Transmitter(address, Receiver.Header.PAIR, {
             val contacts = c.dao.contactIds().joinToString(",").encodeToByteArray()
@@ -69,6 +69,7 @@ class Device(srvInfo: NsdServiceInfo) : Radar.Item, Radar.Named {
                 c.m.chats?.add(this)
             }
             c.m.radar.update(c.dao)
+            success()
         }
     }
 

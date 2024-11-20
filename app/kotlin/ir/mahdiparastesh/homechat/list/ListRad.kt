@@ -1,8 +1,8 @@
 package ir.mahdiparastesh.homechat.list
 
 import android.annotation.SuppressLint
+import android.content.DialogInterface
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
@@ -13,6 +13,7 @@ import ir.mahdiparastesh.homechat.base.AnyViewHolder
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Device
 import ir.mahdiparastesh.homechat.databinding.ListRadBinding
+import ir.mahdiparastesh.homechat.databinding.PairingBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.util.EasyMenu
 import kotlinx.coroutines.CoroutineScope
@@ -34,7 +35,8 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
 
         // texts
         h.b.title.text = "${i + 1}. " + (dev?.name ?: chat!!.title())
-        h.b.subtitle.text = dev?.address() ?: chat!!.onlineStatus(c)
+        h.b.subtitle.text =
+            dev?.let { it.host.hostAddress ?: "Unknown IP" } ?: chat!!.onlineStatus(c)
 
         // counter badge
         val hasNew = chat?.newOnes != null && chat.newOnes!! > 0
@@ -73,24 +75,54 @@ class ListRad(private val c: Main) : RecyclerView.Adapter<AnyViewHolder<ListRadB
                 true
             }
         } else if (dev != null) {
-            h.b.root.setOnClickListener {
-                MaterialAlertDialogBuilder(c).apply {
-                    setTitle(R.string.newContact)
-                    setPositiveButton(R.string.pair) { _, _ ->
-                        CoroutineScope(Dispatchers.IO).launch {
-                            dev.pair(c) { msg ->
-                                Toast.makeText(c, msg, Toast.LENGTH_LONG).show()
-                            }
-                        }
-                    }
-                    setNegativeButton(R.string.cancel, null)
-                }.show()
-            }
+            h.b.root.setOnClickListener { dev.pairDialog() }
             h.b.root.setOnLongClickListener(null)
         }
     }
 
     override fun getItemCount(): Int = c.m.radar.size
+
+    @SuppressLint("InflateParams")
+    private fun Device.pairDialog() {
+        val devInfo = StringBuilder()
+            .append(c.getString(R.string.devName)).append(": ")
+            .append(name).append("\n")
+            .append(c.getString(R.string.unique)).append(": ")
+            .append(unique ?: c.getString(R.string.notSet)).append("\n")
+            .append(c.getString(R.string.ipAddress)).append(": ")
+            .append(host.hostAddress ?: c.getString(R.string.unknown)).append("\n")
+            .toString()
+        val bp = PairingBinding.inflate(c.layoutInflater)
+
+        val dialog = MaterialAlertDialogBuilder(c).apply {
+            setTitle(R.string.newContact)
+            setMessage(devInfo)
+            setView(bp.root)
+            setPositiveButton(R.string.pair, null)
+            setNegativeButton(R.string.cancel, null)
+            setCancelable(true)
+        }.show()
+
+        val posButton = dialog.getButton(DialogInterface.BUTTON_POSITIVE)
+        val negButton = dialog.getButton(DialogInterface.BUTTON_NEGATIVE)
+        posButton.setOnClickListener {
+            dialog.setMessage(devInfo)
+            dialog.setCancelable(false)
+            bp.lottie.resumeAnimation()
+            posButton.isVisible = false
+            negButton.isVisible = false
+
+            CoroutineScope(Dispatchers.IO).launch {
+                pair(c, { msg ->
+                    bp.lottie.pauseAnimation()
+                    dialog.setMessage(devInfo + "\n" + c.getString(msg) + "\n")
+                    dialog.setCancelable(true)
+                    posButton.isVisible = true
+                    negButton.isVisible = true
+                }) { dialog.dismiss() }
+            }
+        }
+    }
 
     private fun Chat.pin(bb: Boolean) {
         pinned = bb

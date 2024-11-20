@@ -9,6 +9,6 @@
             app:dialogMessage="@string/setUniqueDesc"
             app:enableCopying="true"
             app:key="unique"
-            app:title="@string/setUnique" />
+            app:title="@string/unique" />
     </PreferenceCategory>
 </PreferenceScreen>
