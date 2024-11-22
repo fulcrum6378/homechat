@@ -29,6 +29,7 @@ import androidx.core.app.ActivityCompat
 import androidx.core.os.bundleOf
 import androidx.core.view.GravityCompat
 import androidx.core.view.children
+import androidx.core.view.isVisible
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.navigation.NavController
@@ -130,6 +131,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         nav.addOnDestinationChangedListener { _, dest, _ ->
             b.nav.menu.children.forEach { it.isChecked = navMap[it.itemId] == dest.id }
             abdt.isDrawerIndicatorEnabled = dest.id == R.id.page_rad
+            b.radar.isVisible = dest.id == R.id.page_rad
         }
         b.nav.setNavigationItemSelectedListener(this)
 

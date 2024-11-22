@@ -19,6 +19,10 @@
 
     <!-- PageRad -->
     <dimen name="radItemIconSize">26sp</dimen>
+    <dimen name="radBadgeSize">24sp</dimen>
+    <dimen name="radBadgeRadius">12sp</dimen>
+    <dimen name="radBadgeText">14sp</dimen>
+    <dimen name="radBadgePadT">3sp</dimen>
     <dimen name="radPairAnimHeight">100dp</dimen>
 
     <!-- PageCht -->

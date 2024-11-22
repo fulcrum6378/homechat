@@ -2,5 +2,5 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <solid android:color="?android:attr/textColor" />
-    <corners android:radius="10sp" />
+    <corners android:radius="@dimen/radBadgeRadius" />
 </shape>
