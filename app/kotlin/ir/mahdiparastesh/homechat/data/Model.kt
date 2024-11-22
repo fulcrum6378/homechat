@@ -9,7 +9,7 @@ class Model : ViewModel() {
     val radar = Radar(this)
     var contacts: CopyOnWriteArrayList<Contact>? = null
     var chats: CopyOnWriteArrayList<Chat>? = null
-    val queue = hashMapOf<Short, ArrayList<Queuable>>()
+    val queue = hashMapOf<Short, CopyOnWriteArrayList<Queuable>>()
     var aliveMain = false
     var aliveSender = false
     var aliveReceiver = false
@@ -17,8 +17,8 @@ class Model : ViewModel() {
     //fun anyPersistentAlive() = aliveMain || aliveReceiver || aliveSender  // used in Main::onDestroy
 
     fun enqueue(contact: Short, item: Queuable) {
-        if (!queue.containsKey(contact)) queue[contact] = arrayListOf<Queuable>(item)
-        else queue[contact]!!.add(item)
+        if (!queue.containsKey(contact)) queue[contact] = CopyOnWriteArrayList<Queuable>()
+        queue[contact]!!.add(item)
     }
 
     fun dequeue(contact: Short, item: Queuable) {

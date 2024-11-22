@@ -12,7 +12,8 @@
         android:paddingTop="15dp"
         android:paddingBottom="5dp"
         android:textAlignment="center"
-        android:textSize="14sp"
+        android:textAppearance="@style/TextAppearance.HomeChat.Bold"
+        android:textSize="@dimen/chtDateText"
         android:visibility="gone"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -47,7 +48,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/chatText"
-                android:textSize="15sp"
+                android:textSize="@dimen/chtReplyText"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
         </androidx.constraintlayout.widget.ConstraintLayout>
@@ -78,7 +79,7 @@
                 android:layout_height="wrap_content"
                 android:paddingBottom="10dp"
                 android:textColor="@color/chatText"
-                android:textSize="18sp"
+                android:textSize="@dimen/chtBodyText"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
 
@@ -96,7 +97,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="5dp"
                 android:textColor="@color/chatTime"
-                android:textSize="12sp"
+                android:textSize="@dimen/chtTimeText"
                 app:layout_constraintStart_toEndOf="@id/seen"
                 app:layout_constraintTop_toBottomOf="@id/text" />
         </androidx.constraintlayout.widget.ConstraintLayout>

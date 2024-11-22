@@ -65,9 +65,10 @@
     <string name="chatUnmute">Unmute</string>
 
     <!-- PageCht -->
-    <string name="newMessage">Message&#8230;</string>
+    <string name="newMessage">Write a message&#8230;</string>
     <string name="reply">Reply</string>
     <string name="replyingTo">Replying to %s</string>
+    <string name="attach">Send an attachment</string>
 
     <!-- PageSet -->
     <string name="setIdentity">Identification</string>

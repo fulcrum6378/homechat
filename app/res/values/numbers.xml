@@ -21,9 +21,12 @@
     <dimen name="radPairAnimHeight">100dp</dimen>
 
     <!-- PageCht -->
+    <dimen name="chtDateText">15sp</dimen>
+    <dimen name="chtReplyText">15sp</dimen>
+    <dimen name="chtBodyText">16sp</dimen>
+    <dimen name="chtTimeText">11sp</dimen>
     <dimen name="chtReplyingToTextSize">15sp</dimen>
     <dimen name="chtReplyCancelSize">36dp</dimen>
     <dimen name="chtReplyCancelPad">4dp</dimen>
-    <dimen name="chtFieldTextSize">18sp</dimen>
-    <dimen name="chtIconSize">32dp</dimen>
+    <dimen name="chtFieldTextSize">16sp</dimen>
 </resources>

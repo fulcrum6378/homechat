@@ -103,6 +103,11 @@ class PageCht : BasePage<Main>() {
         // Reply
         b.replyCancel.setOnClickListener { reply(null) }
 
+        // Attach
+        b.attach.setOnClickListener {
+            // TODO
+        }
+
         // Field
         b.field.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}

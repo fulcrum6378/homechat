@@ -89,9 +89,21 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="30sp"
-        android:paddingLeft="@dimen/pagePadH"
-        android:paddingRight="@dimen/pagePadH"
+        android:paddingStart="2dp"
+        android:paddingEnd="7dp"
         app:layout_constraintBottom_toBottomOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/attach"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@string/attach"
+            app:icon="@drawable/attach"
+            app:iconSize="32dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.appcompat.widget.AppCompatEditText
             android:id="@+id/field"
@@ -105,12 +117,13 @@
             android:maxLines="7"
             android:paddingTop="18dp"
             android:paddingBottom="18dp"
+            android:textAppearance="@style/TextAppearance.HomeChat.Regular"
             android:textColor="@color/chatText"
             android:textIsSelectable="true"
             android:textSize="@dimen/chtFieldTextSize"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/send"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintStart_toEndOf="@id/attach"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.button.MaterialButton
@@ -121,7 +134,7 @@
             android:contentDescription="@string/send"
             android:visibility="gone"
             app:icon="@drawable/send"
-            app:iconSize="@dimen/chtIconSize"
+            app:iconSize="28dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
