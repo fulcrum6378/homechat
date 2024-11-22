@@ -22,23 +22,23 @@
 
 
     <!-- #TextAppearance -->
-    <style name="TextAppearance.HomeChat.Regular" parent="@android:style/TextAppearance">
+    <style name="TextAppearance.HomeChat.Nav" parent="@android:style/TextAppearance">
         <item name="fontFamily">@font/ubuntu_regular</item>
-        <item name="android:textSize">@dimen/normalText</item>
+        <item name="android:textSize">@dimen/navItemsText</item>
     </style>
 
-    <style name="TextAppearance.HomeChat.Bold" parent="@android:style/TextAppearance">
+    <style name="TextAppearance.HomeChat.Toolbar.Title" parent="@android:style/TextAppearance">
         <item name="fontFamily">@font/ubuntu_bold</item>
-        <item name="android:textSize">@dimen/largeText</item>
+        <item name="android:textSize">@dimen/toolbarTitle</item>
     </style>
 
-    <style name="TextAppearance.HomeChat.Light" parent="@android:style/TextAppearance">
-        <item name="fontFamily">@font/ubuntu_light</item>
-        <item name="android:textSize">@dimen/smallText</item>
+    <style name="TextAppearance.HomeChat.Toolbar.Subtitle" parent="@android:style/TextAppearance">
+        <item name="fontFamily">@font/ubuntu_regular</item>
+        <item name="android:textSize">@dimen/toolbarSubtitle</item>
     </style>
 
-    <style name="TextAppearance.HomeChat.Italic" parent="@android:style/TextAppearance">
-        <item name="fontFamily">@font/ubuntu_light</item>
-        <item name="android:textSize">@dimen/normalText</item>
+    <style name="TextAppearance.HomeChat.Popup" parent="@android:style/TextAppearance">
+        <item name="fontFamily">@font/ubuntu_regular</item>
+        <item name="android:textSize">@dimen/popupText</item>
     </style>
 </resources>

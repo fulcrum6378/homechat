@@ -7,15 +7,16 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:ignore="MissingConstraints">
+        android:layout_height="match_parent">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:layout_constraintTop_toTopOf="parent"
             app:navigationIcon="?homeAsUpIndicator"
-            app:titleTextAppearance="@style/TextAppearance.HomeChat.Bold" />
+            app:subtitleTextAppearance="@style/TextAppearance.HomeChat.Toolbar.Subtitle"
+            app:titleTextAppearance="@style/TextAppearance.HomeChat.Toolbar.Title" />
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/pager"
@@ -31,14 +32,15 @@
             android:id="@+id/tbShadow"
             style="@style/shadow"
             android:visibility="invisible"
-            app:layout_constraintTop_toBottomOf="@id/toolbar" />
+            app:layout_constraintTop_toBottomOf="@id/toolbar"
+            tools:ignore="MissingConstraints" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <com.google.android.material.navigation.NavigationView
         android:id="@+id/nav"
-        android:layout_width="wrap_content"
+        android:layout_width="280dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        app:itemTextAppearance="@style/TextAppearance.HomeChat.Regular"
+        app:itemTextAppearance="@style/TextAppearance.HomeChat.Nav"
         app:menu="@menu/nav" />
 </androidx.drawerlayout.widget.DrawerLayout>

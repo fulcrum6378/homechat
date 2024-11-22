@@ -12,18 +12,14 @@
         <item name="android:navigationBarColor">@color/background</item>
         <!--errors in AlertDialog if you set ?android:attr/windowBackground -->
         <item name="android:statusBarColor">@color/background</item>
-        <item name="android:textAppearance">@style/TextAppearance.HomeChat.Regular</item>
-        <item name="android:textAppearanceSmall">@style/TextAppearance.HomeChat.Regular</item>
-        <item name="android:textAppearanceMedium">@style/TextAppearance.HomeChat.Regular</item>
-        <item name="android:textAppearanceLarge">@style/TextAppearance.HomeChat.Bold</item>
         <item name="android:windowBackground">@color/background</item>
         <item name="colorControlNormal">?android:textColor</item><!--drawerToggle-->
         <item name="colorControlHighlight">?android:attr/textColor</item>
         <item name="colorControlActivated">?android:attr/textColor</item>
+        <item name="fontFamily">@font/ubuntu_regular</item>
         <item name="itemRippleColor">?rippleColor</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.HomeChat.Dialogue</item>
         <item name="navigationViewStyle">@style/Widget.HomeChat.Nav</item>
-        <!--<item name="popupMenuStyle">@style/Widget.HomeChat.PopupMenu</item>-->
         <item name="rippleColor">#20900081</item>
         <item name="textAppearanceLargePopupMenu">@style/TextAppearance.HomeChat.Popup</item>
         <item name="textAppearanceSmallPopupMenu">@style/TextAppearance.HomeChat.Popup</item>
@@ -50,10 +46,6 @@
         <item name="android:popupBackground">@drawable/custom_popupmenu_background</item>
     </style>-->
 
-    <style name="TextAppearance.HomeChat.Popup" parent="TextAppearance.HomeChat.Regular">
-        <item name="android:textSize">16sp</item>
-    </style>
-
     <style name="ThemeOverlay.HomeChat.Dialogue" parent="ThemeOverlay.Material3.MaterialAlertDialog">
         <!--<item name="alertDialogStyle">@style/Theme.HomeChat.Dialogue</item>
         <item name="materialAlertDialogTitleTextStyle">@style/Theme.HomeChat.Dialogue.Title</item>
@@ -61,6 +53,10 @@
         <item name="buttonBarPositiveButtonStyle">@style/Widget.HomeChat.Dialogue.Button</item>
         <item name="buttonBarNegativeButtonStyle">@style/Widget.HomeChat.Dialogue.Button</item>
         <item name="buttonBarNeutralButtonStyle">@style/Widget.HomeChat.Dialogue.Button</item>-->
+    </style>
+
+    <style name="Widget.HomeChat.IconButton" parent="@style/Widget.Material3.Button.IconButton">
+        <item name="iconTint">?android:textColor</item>
     </style>
 
     <style name="ShapeAppearance_HomeChat_Nav">

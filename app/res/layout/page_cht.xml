@@ -42,8 +42,8 @@
             android:layout_marginStart="@dimen/pagePadH"
             android:layout_marginTop="14dp"
             android:layout_marginEnd="10dp"
-            android:textAppearance="@style/TextAppearance.HomeChat.Regular"
             android:textSize="@dimen/chtReplyingToTextSize"
+            app:fontFamily="@font/ubuntu_regular"
             app:layout_constraintEnd_toStartOf="@id/replyCancel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
@@ -55,8 +55,8 @@
             android:layout_marginStart="@dimen/pagePadH"
             android:layout_marginEnd="10dp"
             android:paddingBottom="14dp"
-            android:textAppearance="@style/TextAppearance.HomeChat.Light"
             android:textSize="@dimen/chtReplyingToTextSize"
+            app:fontFamily="@font/ubuntu_light"
             app:layout_constraintEnd_toStartOf="@id/replyCancel"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/replyingToContact" />
@@ -95,7 +95,7 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/attach"
-            style="@style/Widget.Material3.Button.IconButton"
+            style="@style/Widget.HomeChat.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/attach"
@@ -117,10 +117,10 @@
             android:maxLines="7"
             android:paddingTop="18dp"
             android:paddingBottom="18dp"
-            android:textAppearance="@style/TextAppearance.HomeChat.Regular"
             android:textColor="@color/chatText"
             android:textIsSelectable="true"
             android:textSize="@dimen/chtFieldTextSize"
+            app:fontFamily="@font/ubuntu_regular"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@id/send"
             app:layout_constraintStart_toEndOf="@id/attach"
@@ -128,10 +128,11 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/send"
-            style="@style/Widget.Material3.Button.IconButton"
+            style="@style/Widget.HomeChat.IconButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="@string/send"
+            android:saveEnabled="false"
             android:visibility="gone"
             app:icon="@drawable/send"
             app:iconSize="28dp"
