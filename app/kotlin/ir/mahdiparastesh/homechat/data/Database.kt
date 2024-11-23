@@ -77,5 +77,9 @@ abstract class Database : RoomDatabase() {
 
         @Update
         suspend fun updateSeen(item: Seen)
+
+
+        @Insert
+        suspend fun addBinary(item: Binary): Long
     }
 }

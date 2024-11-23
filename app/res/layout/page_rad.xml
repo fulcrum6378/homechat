@@ -12,9 +12,12 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:alpha="0.5"
+        android:drawablePadding="5dp"
         android:text="@string/radarEmpty"
         android:textAlignment="center"
+        android:textSize="19sp"
         app:drawableTopCompat="@drawable/radar_empty"
+        app:fontFamily="@font/ubuntu_italic"
         app:layout_constraintWidth_percent="0.8" />
 
     <androidx.recyclerview.widget.RecyclerView

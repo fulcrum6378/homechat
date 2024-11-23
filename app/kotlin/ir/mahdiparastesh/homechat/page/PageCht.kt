@@ -1,6 +1,7 @@
 package ir.mahdiparastesh.homechat.page
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -18,6 +19,7 @@ import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.base.BasePage
+import ir.mahdiparastesh.homechat.data.Binary
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Seen
@@ -28,11 +30,15 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import net.yslibrary.android.keyboardvisibilityevent.KeyboardVisibilityEvent
+import java.io.File
+import java.io.FileInputStream
+import java.io.FileOutputStream
 
 class PageCht : BasePage<Main>() {
     lateinit var b: PageChtBinding
     lateinit var chat: Chat
     private var replyingTo: Message? = null
+    private val binCacheDir by lazy { "${c.cacheDir.absolutePath}/binary/" }
 
     override fun rv(): RecyclerView? = if (::b.isInitialized) b.list else null
     override fun onCreateView(
@@ -104,8 +110,16 @@ class PageCht : BasePage<Main>() {
         b.replyCancel.setOnClickListener { reply(null) }
 
         // Attach
+        val bcdf = File(binCacheDir)
+        if (!bcdf.exists()) bcdf.mkdir()
         b.attach.setOnClickListener {
-            // TODO
+            c.launch.pageCht = this
+            c.launch.attach.launch(
+                Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+                    addCategory(Intent.CATEGORY_OPENABLE)
+                    type = "*/*"
+                }
+            )
         }
 
         // Field
@@ -194,6 +208,19 @@ class PageCht : BasePage<Main>() {
         b.replyingToMessage.text =
             if (bb) replyingTo.shorten()
             else ""
+    }
+
+    suspend fun attach(intent: Intent) {
+        val fd = intent.data?.let { c.contentResolver.openFileDescriptor(it, "r") } ?: return
+        val binId = c.dao.addBinary(
+            Binary(fd.statSize, c.contentResolver.getType(intent.data!!), intent.dataString)
+        )
+        FileInputStream(fd.fileDescriptor).use { fis ->
+            FileOutputStream(binCacheDir + binId.toString()).use { fos ->
+                fis.copyTo(fos)
+            }
+        }
+        fd.close()
     }
 
     override fun onDestroy() {

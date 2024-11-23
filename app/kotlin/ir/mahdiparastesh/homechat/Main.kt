@@ -20,7 +20,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.annotation.WorkerThread
 import androidx.appcompat.app.ActionBarDrawerToggle
@@ -44,6 +43,7 @@ import ir.mahdiparastesh.homechat.databinding.MainBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.page.PageRad
 import ir.mahdiparastesh.homechat.page.PageSet
+import ir.mahdiparastesh.homechat.util.ActivityLaunchers
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -69,6 +69,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         R.id.navRadar to R.id.page_rad,
         R.id.navSettings to R.id.page_set,
     )
+    val launch = ActivityLaunchers(this)
 
     private lateinit var nsdManager: NsdManager
     private lateinit var mServiceName: String
@@ -197,7 +198,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         // ask for permissions
         reqPermissions.forEach {
             if (ActivityCompat.checkSelfPermission(c, it) != PackageManager.PERMISSION_GRANTED)
-                reqPermLauncher.launch(it)
+                launch.requestPermissions.launch(it)
         }
 
         // monitor network connectivity
@@ -345,11 +346,6 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
         override fun onServiceInfoCallbackUnregistered() {}
     }*/
 
-    /** Requests all the required permissions. (currently only for notifications in Android 13+) */
-    private val reqPermLauncher = registerForActivityResult(
-        ActivityResultContracts.RequestPermission()
-    ) { /*isGranted ->*/ }
-
     val tbSubtitleListener = object : Radar.OnUpdateListener {
         override fun onRadarUpdated() {
             if (mm.wifi.value == false) {
@@ -394,6 +390,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
 /*TODO
  * Problems:
+ * Cancel sending message
  * A device with VPN cannot receive, but can send to a VPN-less device!
  * Regularly update subtitle of Toolbar in PageChat
  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
