@@ -16,7 +16,6 @@ import androidx.navigation.NavController
 import androidx.recyclerview.widget.RecyclerView
 import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
-import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.base.BasePage
 import ir.mahdiparastesh.homechat.data.Binary
@@ -139,32 +138,9 @@ class PageCht : BasePage<Main>() {
             if (text.isBlank()) return@setOnClickListener
             b.field.setText("")
             CoroutineScope(Dispatchers.IO).launch {
-                val ids = c.mm.messages!!.map { it.id }
-                var chosenId = 0L
-                do chosenId++ while (chosenId in ids)
-                val msg = Message(
-                    chosenId, chat.id, Chat.ME, Receiver.Header.TEXT.value, text, replyingTo?.id
-                )
-                c.dao.addMessage(msg)
-                c.mm.messages?.add(msg)
-                for (contact in chat.contacts!!) {
-                    c.m.enqueue(contact.id, msg)
-
-                    Seen(chosenId, chat.id, contact.id).apply {
-                        c.dao.addSeen(this)
-                        if (msg.status == null) msg.status = arrayListOf()
-                        msg.status!!.add(this)
-                    } // Do not queue the Seen now! It'll be created automatically on the target device!
-                }
-
-                withContext(Dispatchers.Main) {
-                    Sender.init(c)
-                    c.mm.messages?.size?.also { size ->
-                        b.list.adapter?.notifyItemInserted(size - 1)
-                        b.list.scrollToPosition(size - 1)
-                    }
-                    reply(null)
-                }
+                Message(
+                    findUniqueId(), chat.id, Chat.ME, Message.Type.TEXT.value, text, replyingTo?.id
+                ).send()
             }
         }
 
@@ -212,15 +188,58 @@ class PageCht : BasePage<Main>() {
 
     suspend fun attach(intent: Intent) {
         val fd = intent.data?.let { c.contentResolver.openFileDescriptor(it, "r") } ?: return
-        val binId = c.dao.addBinary(
-            Binary(fd.statSize, c.contentResolver.getType(intent.data!!), intent.dataString)
+
+        val msgId = findUniqueId()
+        val bin = Binary(
+            fd.statSize, c.contentResolver.getType(intent.data!!), intent.dataString,
+            0.toByte(), msgId, chat.id, Chat.ME
         )
+        val binId = c.dao.addBinary(bin)
+
+        Message(
+            msgId, chat.id, Chat.ME, Message.Type.FILE.value, binId.toString(),
+            replyingTo?.id
+        ).send()
+        for (contact in this@PageCht.chat.contacts!!)
+            c.m.enqueue(contact.id, bin)
+
+        // cache the file
         FileInputStream(fd.fileDescriptor).use { fis ->
             FileOutputStream(binCacheDir + binId.toString()).use { fos ->
                 fis.copyTo(fos)
             }
         }
         fd.close()
+    }
+
+    private fun findUniqueId(): Long {
+        val ids = c.mm.messages!!.filter { it.auth == Chat.ME }.map { it.id }
+        var chosenId = 0L
+        do chosenId++ while (chosenId in ids)
+        return chosenId
+    }
+
+    private suspend fun Message.send() {
+        c.dao.addMessage(this)
+        c.mm.messages?.add(this)
+        for (contact in this@PageCht.chat.contacts!!) {
+            c.m.enqueue(contact.id, this)
+
+            Seen(id, this@PageCht.chat.id, contact.id).apply {
+                c.dao.addSeen(this)
+                if (status == null) status = arrayListOf()
+                status!!.add(this)
+            } // Do not queue the Seen now! It'll be created automatically on the target device!
+        }
+
+        withContext(Dispatchers.Main) {
+            Sender.init(c)
+            c.mm.messages?.size?.also { size ->
+                b.list.adapter?.notifyItemInserted(size - 1)
+                b.list.scrollToPosition(size - 1)
+            }
+            reply(null)
+        }
     }
 
     override fun onDestroy() {

@@ -400,7 +400,8 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * Drag to reply
  * Hide message?
  * Clear history
- * BINARY {file, voice}
+ * Voice Binary
+ * Multiple Binaries
  * Unpair?
  * GIF & Sticker
  * Typing status

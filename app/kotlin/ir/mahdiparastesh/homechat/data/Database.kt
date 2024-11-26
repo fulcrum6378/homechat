@@ -56,8 +56,8 @@ abstract class Database : RoomDatabase() {
         @Insert(onConflict = OnConflictStrategy.ABORT)
         suspend fun addMessage(item: Message)
 
-        /*@Update
-        suspend fun updateMessage(item: Message)*/
+        @Update
+        suspend fun updateMessage(item: Message)
 
 
         @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat")
@@ -78,6 +78,12 @@ abstract class Database : RoomDatabase() {
         @Update
         suspend fun updateSeen(item: Seen)
 
+
+        @Query("SELECT * FROM binary WHERE id LIKE :id LIMIT 1")
+        suspend fun binary(id: Long): Binary?
+
+        @Query("SELECT * FROM binary WHERE msg LIKE :msg AND chat LIKE :chat AND auth LIKE :auth")
+        suspend fun binariesByMessage(msg: Long, chat: Short, auth: Short): List<Binary>
 
         @Insert
         suspend fun addBinary(item: Binary): Long

@@ -26,6 +26,7 @@ import java.net.Socket
 import java.net.SocketException
 import java.nio.ByteBuffer
 import java.util.concurrent.CopyOnWriteArrayList
+import kotlin.collections.toByteArray
 
 class Receiver : WiseService() {
     private lateinit var server: ServerSocket
@@ -87,6 +88,7 @@ class Receiver : WiseService() {
         Log.println(Log.ASSERT, packageName, "RECEIVER: GOT ${header.name}")
         val len = header.getLength(input.readNBytesCompat(header.writeLengthInNBytes))
         val out: ByteArray = when (header) {
+
             Header.PAIR -> (if (dev != null) {
                 // grab the list of contact IDs, suggest a number OUTSIDE them and create a Contact
                 val contactsLen = input.readNBytesCompat(2).toNumber<Short>().toInt()
@@ -116,14 +118,35 @@ class Receiver : WiseService() {
                 contactId.toByteArray().plus(chatId.toByteArray())
             } else (-1).toShort().toByteArray())
 
-            Header.TEXT, Header.FILE, Header.COOR -> if (contact != null) {
-                decodeMessage(input.readNBytesCompat(len).toList(), header, contact).apply {
+            Header.MESSAGE -> if (contact != null) {
+                val raw = input.readNBytesCompat(len).toList()
+                Message(
+                    id = raw.subList(0, 8).toNumber(),
+                    chat = raw.subList(8, 10).toNumber(),
+                    auth = contact.id,
+                    time = raw.subList(10, 18).toNumber(),
+                    repl = raw.subList(18, 26).toNumber<Long>().let { if (it == -1L) null else it },
+                    type = raw.subList(26, 27)[0],
+                    data = String(raw.subList(27, raw.size).toByteArray()),
+                ).apply {
                     val theChat = m.chats?.find { it.id == chat } ?: dao.chat(chat)
                     dao.addMessage(this)
+
                     val seen = Seen(id, chat, Chat.ME)
                     dao.addSeen(seen)
                     status = arrayListOf(seen)
                     theChat.checkForNewOnes(dao)
+
+                    if (type == Message.Type.FILE.value) {
+                        val dataSpl = data.split(Message.BINARY_SEP).toTypedArray()
+                        for (bin in dao.binariesByMessage(id, chat, contact.id))
+                            dataSpl[bin.pos_in_msg.toInt()] = bin.id.toString()
+                        val newData = dataSpl.joinToString(Message.BINARY_SEP)
+                        if (data != newData) {
+                            data = newData
+                            dao.updateMessage(this)
+                        }
+                    }
 
                     if (PageCht.handler != null)
                         PageCht.handler?.obtainMessage(
@@ -154,6 +177,29 @@ class Receiver : WiseService() {
                 STAT_SUCCESS.toByteArray()
             } else STAT_CONTACT_NOT_FOUND.toByteArray()
 
+            Header.BINARY -> if (contact != null) {
+                val raw = input.readNBytesCompat(len).toList()
+                Binary(
+                    sourceId = raw.subList(0, 8).toNumber(),
+                    size = raw.subList(8, 16).toNumber(),
+                    msg = raw.subList(16, 24).toNumber(),
+                    chat = raw.subList(24, 32).toNumber(),
+                    auth = contact.id,
+                    createdAt = raw.subList(32, 40).toNumber(),
+                    posInMsg = raw.subList(40, 41).toNumber(),
+                    type =
+                    if (raw.size == 41) null
+                    else String(raw.subList(41, raw.size).toByteArray())
+                ).apply {
+                    val binId = dao.addBinary(this)
+                    dao.message(msg, chat, auth)?.also { m ->
+                        m.data = binId.toString()
+                        dao.updateMessage(m)
+                    }
+                }
+                STAT_SUCCESS.toByteArray()
+            } else STAT_CONTACT_NOT_FOUND.toByteArray()
+
             else -> throw IllegalArgumentException("${header.name}: ${hb.toInt()}")
         }
         output.write(out)
@@ -172,16 +218,6 @@ class Receiver : WiseService() {
         } while (chosenId in ids)
         return chosenId
     }
-
-    private fun decodeMessage(raw: List<Byte>, header: Header, contact: Contact): Message = Message(
-        type = header.value,
-        auth = contact.id,
-        id = raw.subList(0, 8).toNumber(),
-        chat = raw.subList(8, 10).toNumber(),
-        time = raw.subList(10, 18).toNumber(),
-        repl = raw.subList(18, 26).toNumber<Long>().let { if (it == -1L) null else it },
-        data = String(raw.subList(26, raw.size).toByteArray()),
-    )
 
     private suspend fun Message.notify(theChat: Chat, sendingContact: Contact) {
         theChat.matchContacts(m.contacts!!)
@@ -223,18 +259,13 @@ class Receiver : WiseService() {
     enum class Header(
         val value: Byte, val writeLengthInNBytes: Int, val responseBytes: Int = Byte.SIZE_BYTES
     ) {
-        PAIR(0x01, Short.SIZE_BYTES, 4), // <length><all Contact ids><length><all Chat ids>
+        PAIR(0x01, Short.SIZE_BYTES, 4),
+        MESSAGE(0x02, Short.SIZE_BYTES),
+        SEEN(0x03, Byte.SIZE_BYTES),
+        BINARY(0x04, Byte.SIZE_BYTES),
+        FILE(0x05, Int.SIZE_BYTES),
+        PROF(0x0E, Int.SIZE_BYTES); // TODO Profile picture
 
-        // Profile picture
-        PROF(0x0E, Int.SIZE_BYTES),
-
-        // Seen: <id*4><chat*2><date*4><repl*4><data*n>
-        SEEN(0x0F, Byte.SIZE_BYTES),
-
-        // Message: <msg*4><chat*2><dateSeen*4>
-        TEXT(0x10, Short.SIZE_BYTES),
-        FILE(0x11, Int.SIZE_BYTES),
-        COOR(0x12, Byte.SIZE_BYTES);
 
         fun getLength(ba: ByteArray): Int {
             if (ba.size == Byte.SIZE_BYTES) return ba[0].toInt()

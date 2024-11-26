@@ -4,6 +4,7 @@ import android.content.Intent
 import android.util.Log
 import ir.mahdiparastesh.homechat.base.Persistent
 import ir.mahdiparastesh.homechat.base.WiseService
+import ir.mahdiparastesh.homechat.data.Binary
 import ir.mahdiparastesh.homechat.data.Chat
 import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Model
@@ -54,10 +55,18 @@ class Sender : WiseService() {
                         .plus(o.chat.toByteArray())
                         .plus(o.time.toByteArray())
                         .plus((o.repl ?: -1L).toByteArray())
+                        .plus(o.type.toByteArray())
                         .plus(o.data.encodeToByteArray())
                     is Seen -> o.msg.toByteArray()
                         .plus(o.chat.toByteArray())
                         .plus(o.seen_at!!.toByteArray())
+                    is Binary -> o.id.toByteArray()
+                        .plus(o.size.toByteArray())
+                        .plus(o.msg.toByteArray())
+                        .plus(o.chat.toByteArray())
+                        .plus(o.created_at.toByteArray())
+                        .plus(o.pos_in_msg.toByteArray())
+                        .plus((o.type ?: "").encodeToByteArray())
                     else -> throw IllegalStateException()
                 }
             }, { // on error:
@@ -106,6 +115,7 @@ class Sender : WiseService() {
         const val QUEUE_FILE = "queue.txt"
         const val Q_MESSAGE = "m"
         const val Q_SEEN = "s"
+        const val Q_BINARY = "b"
         val charset = Charsets.US_ASCII
 
 
@@ -125,6 +135,7 @@ class Sender : WiseService() {
                         contact.id, when (spl[1]) {
                             Q_MESSAGE -> c.dao.message(spl[2].toLong(), spl[3].toShort(), Chat.ME)
                             Q_SEEN -> c.dao.seen(spl[2].toLong(), spl[3].toShort(), Chat.ME)
+                            Q_BINARY -> c.dao.binary(spl[2].toLong())
                             else -> throw IllegalStateException()
                         }!!
                     )
@@ -148,13 +159,10 @@ class Sender : WiseService() {
         fun toQueue(m: Model, target: Short): String = when (this) {
             is Message -> "$target-$Q_MESSAGE-$id-$chat"
             is Seen -> "$target-$Q_SEEN-$msg-$chat"
+            is Binary -> "$target-$Q_BINARY-$id"
             else -> throw IllegalArgumentException()
         }
 
-        fun header(): Receiver.Header = when (this) {
-            is Message -> Receiver.Header.entries.find { it.value == type }!!
-            is Seen -> Receiver.Header.SEEN
-            else -> throw IllegalArgumentException()
-        }
+        fun header(): Receiver.Header
     }
 }

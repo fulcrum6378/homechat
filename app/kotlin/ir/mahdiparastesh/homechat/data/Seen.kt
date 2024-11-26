@@ -3,6 +3,7 @@ package ir.mahdiparastesh.homechat.data
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
+import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
 
 @Suppress("PropertyName")
@@ -34,6 +35,8 @@ class Seen : Sender.Queuable {
         this.sent_at = sent_at
         this.seen_at = seen_at
     }
+
+    override fun header(): Receiver.Header = Receiver.Header.SEEN
 
     override fun equals(other: Any?): Boolean {
         if (other !is Seen) return false

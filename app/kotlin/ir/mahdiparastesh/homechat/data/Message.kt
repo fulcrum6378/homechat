@@ -4,6 +4,7 @@ import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Ignore
 import androidx.room.Index
+import ir.mahdiparastesh.homechat.Receiver
 import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.util.Time
 
@@ -47,6 +48,9 @@ class Message : Sender.Queuable {
     @Transient
     var status: ArrayList<Seen>? = null
 
+
+    override fun header(): Receiver.Header = Receiver.Header.MESSAGE
+
     fun me() = auth == Chat.ME
 
     suspend fun matchSeen(dao: Database.DAO) {
@@ -66,5 +70,14 @@ class Message : Sender.Queuable {
         result = 31 * result + chat
         result = 31 * result + auth
         return result
+    }
+
+    companion object {
+        const val BINARY_SEP = ","
+    }
+
+    enum class Type(val value: Byte) {
+        TEXT(0x00),
+        FILE(0x01),
     }
 }
