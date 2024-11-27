@@ -394,6 +394,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * A device with VPN cannot receive, but can send to a VPN-less device!
  * Regularly update subtitle of Toolbar in PageChat
  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
+ * Tablet numbers.xml
  * -
  * Extension:
  * Make a soft sound when each message is received in PageChat

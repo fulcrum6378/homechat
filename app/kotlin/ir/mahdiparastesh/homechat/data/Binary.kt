@@ -20,7 +20,8 @@ import ir.mahdiparastesh.homechat.util.Time
     )]
 )
 class Binary(
-    @PrimaryKey(autoGenerate = true) val id: Long,
+    @PrimaryKey(autoGenerate = true) var id: Long,
+    val alias: Long?,
     val size: Long,
     val type: String?,
     val uri: String?,
@@ -35,13 +36,14 @@ class Binary(
     constructor(
         size: Long, type: String?, uri: String?,
         posInMsg: Byte, msg: Long, chat: Short, auth: Short,
-    ) : this(0L, size, type, uri, posInMsg, msg, chat, auth, null, Time.now())
+        alias: Long? = null,
+    ) : this(0L, alias, size, type, uri, posInMsg, msg, chat, auth, null, Time.now())
 
     // target device
     constructor(
         size: Long, type: String?, sourceId: Long, createdAt: Long,
         posInMsg: Byte, msg: Long, chat: Short, auth: Short,
-    ) : this(0L, size, type, null, posInMsg, msg, chat, auth, sourceId, createdAt)
+    ) : this(0L, null, size, type, null, posInMsg, msg, chat, auth, sourceId, createdAt)
 
 
     override fun header(): Receiver.Header = Receiver.Header.BINARY

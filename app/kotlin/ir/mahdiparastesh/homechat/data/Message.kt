@@ -48,6 +48,10 @@ class Message : Sender.Queuable {
     @Transient
     var status: ArrayList<Seen>? = null
 
+    @Ignore
+    @Transient
+    var binaries: List<Binary>? = null
+
 
     override fun header(): Receiver.Header = Receiver.Header.MESSAGE
 
@@ -55,6 +59,11 @@ class Message : Sender.Queuable {
 
     suspend fun matchSeen(dao: Database.DAO) {
         status = ArrayList(dao.seenForMessage(id, chat))
+    }
+
+    suspend fun queryBinaries(dao: Database.DAO) {
+        if (type != Type.FILE.value) return
+        binaries = dao.binariesByMessage(id, chat, auth)
     }
 
     fun shorten(max: Int = 30): String =

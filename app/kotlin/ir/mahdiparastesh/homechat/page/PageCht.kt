@@ -64,7 +64,10 @@ class PageCht : BasePage<Main>() {
 
         // Load data
         if (c.mm.messages == null) CoroutineScope(Dispatchers.IO).launch {
-            c.mm.messages = ArrayList(c.dao.messages(chat.id)).onEach { it.matchSeen(c.dao) }
+            c.mm.messages = ArrayList(c.dao.messages(chat.id)).onEach {
+                it.matchSeen(c.dao)
+                it.queryBinaries(c.dao)
+            }
             withContext(Dispatchers.Main) { updateList() }
         }
 
@@ -195,11 +198,15 @@ class PageCht : BasePage<Main>() {
             0.toByte(), msgId, chat.id, Chat.ME
         )
         val binId = c.dao.addBinary(bin)
+        bin.id = binId  // required for enqueue -> toQueue
 
         Message(
             msgId, chat.id, Chat.ME, Message.Type.FILE.value, binId.toString(),
             replyingTo?.id
-        ).send()
+        ).apply {
+            binaries = listOf(bin)
+        }.send()
+
         for (contact in this@PageCht.chat.contacts!!)
             c.m.enqueue(contact.id, bin)
 

@@ -183,13 +183,13 @@ class Receiver : WiseService() {
                     sourceId = raw.subList(0, 8).toNumber(),
                     size = raw.subList(8, 16).toNumber(),
                     msg = raw.subList(16, 24).toNumber(),
-                    chat = raw.subList(24, 32).toNumber(),
+                    chat = raw.subList(24, 26).toNumber(),
                     auth = contact.id,
-                    createdAt = raw.subList(32, 40).toNumber(),
-                    posInMsg = raw.subList(40, 41).toNumber(),
+                    createdAt = raw.subList(26, 34).toNumber(),
+                    posInMsg = raw.subList(34, 35).toNumber(),
                     type =
-                    if (raw.size == 41) null
-                    else String(raw.subList(41, raw.size).toByteArray())
+                    if (raw.size == 35) null
+                    else String(raw.subList(35, raw.size).toByteArray())
                 ).apply {
                     val binId = dao.addBinary(this)
                     dao.message(msg, chat, auth)?.also { m ->

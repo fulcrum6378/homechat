@@ -17,6 +17,7 @@ import ir.mahdiparastesh.homechat.Main
 import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.base.AnyViewHolder
+import ir.mahdiparastesh.homechat.data.Message
 import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.page.PageCht
@@ -102,7 +103,13 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         })
 
         // data
-        h.b.text.text = msg.data
+        val isText = msg.type == Message.Type.TEXT.value
+        h.b.text.isVisible = isText
+        if (isText) {
+            h.b.text.text = msg.data
+        } else if (msg.type == Message.Type.FILE.value) {
+            // TODO
+        }
 
         // time
         h.b.time.text = Time.formatTime(msg.time)
