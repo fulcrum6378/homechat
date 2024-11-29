@@ -280,7 +280,10 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
 
     private fun startDiscovery() {
         if (discovering) return
-        nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
+        try {
+            nsdManager.discoverServices(SERVICE_TYPE, NsdManager.PROTOCOL_DNS_SD, discoveryListener)
+        } catch (_: IllegalArgumentException) { // listener already in use
+        }
     }
 
     private fun stopDiscovery() {

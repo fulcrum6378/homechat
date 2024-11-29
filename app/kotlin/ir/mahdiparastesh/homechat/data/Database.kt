@@ -60,11 +60,12 @@ abstract class Database : RoomDatabase() {
         suspend fun updateMessage(item: Message)
 
 
-        @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat")
-        suspend fun seenForMessage(msg: Long, chat: Short): List<Seen>
+        @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat AND auth LIKE :auth")
+        suspend fun seenForMessage(msg: Long, chat: Short, auth: Short): List<Seen>
 
-        @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat AND contact LIKE :contact LIMIT 1")
-        suspend fun seen(msg: Long, chat: Short, contact: Short): Seen?
+        @Query("SELECT * FROM seen WHERE msg LIKE :msg AND chat LIKE :chat AND auth LIKE :auth " +
+                "AND contact LIKE :contact LIMIT 1")
+        suspend fun seen(msg: Long, chat: Short, auth: Short, contact: Short): Seen?
 
         @Query("SELECT msg FROM seen WHERE chat LIKE :chat AND contact LIKE -1 AND seen_at IS NULL")
         suspend fun unseenInChat(chat: Short): List<Long>

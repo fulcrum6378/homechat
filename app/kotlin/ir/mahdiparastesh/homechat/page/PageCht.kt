@@ -80,7 +80,7 @@ class PageCht : BasePage<Main>() {
                     }
                     MSG_SEEN -> (msg.obj as Seen).apply {
                         val index = c.mm.messages?.indexOfFirst {
-                            it.id == this@apply.msg && it.auth // TODO
+                            it.id == this@apply.msg && it.auth == this@apply.auth
                         } ?: return@apply
                         if (index != -1) {
                             c.mm.messages!![index].saw(this@apply)
@@ -215,7 +215,7 @@ class PageCht : BasePage<Main>() {
         for (contact in this@PageCht.chat.contacts!!) {
             c.m.enqueue(contact.id, this)
 
-            val seen = Seen(id, this@PageCht.chat.id, contact.id)
+            val seen = Seen(id, this@PageCht.chat.id, Chat.ME, contact.id)
             c.dao.addSeen(seen)
             saw(seen)
             // Do not queue the Seen now! It'll be created automatically on the target device!

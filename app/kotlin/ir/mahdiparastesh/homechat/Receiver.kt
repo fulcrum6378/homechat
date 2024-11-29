@@ -132,7 +132,7 @@ class Receiver : WiseService() {
                     val theChat = m.chats?.find { it.id == chat } ?: dao.chat(chat)
                     dao.addMessage(this)
 
-                    val seen = Seen(id, chat, Chat.ME)
+                    val seen = Seen(id, chat, contact.id, Chat.ME)
                     dao.addSeen(seen)
                     saw(seen)
                     theChat.checkForNewOnes(dao)
@@ -163,6 +163,7 @@ class Receiver : WiseService() {
                 dao.seen(
                     msg = raw.subList(0, 8).toNumber(),
                     chat = raw.subList(8, 10).toNumber(),
+                    auth = Chat.ME,
                     contact = contact.id,
                 )!!.apply {
                     seen_at = raw.subList(10, 18).toNumber()

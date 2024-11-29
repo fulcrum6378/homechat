@@ -59,7 +59,7 @@ class Message : Sender.Queuable {
 
     suspend fun querySeen(dao: Database.DAO) {
         seen = hashMapOf()
-        for (s in dao.seenForMessage(id, chat)) seen!![s.contact] = s
+        for (s in dao.seenForMessage(id, chat, auth)) seen!![s.contact] = s
     }
 
     fun saw(item: Seen) {

@@ -85,7 +85,7 @@ class Sender : WiseService() {
                 }
 
                 when (o) {
-                    is Message -> dao.seen(o.id, o.chat, contact.id)!!.apply {
+                    is Message -> dao.seen(o.id, o.chat, Chat.ME, contact.id)!!.apply {
                         sent_at = Time.now()
                         dao.updateSeen(this)
                         PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, this)?.sendToTarget()
@@ -130,9 +130,13 @@ class Sender : WiseService() {
                     val contact = c.m.contacts?.find { it.id == spl[0].toShort() } ?: return@forEach
                     c.m.enqueue(
                         contact.id, when (spl[1]) {
-                            Q_MESSAGE -> c.dao.message(spl[2].toLong(), spl[3].toShort(), Chat.ME)
-                            Q_SEEN -> c.dao.seen(spl[2].toLong(), spl[3].toShort(), Chat.ME)
-                            Q_BINARY -> c.dao.binary(spl[2].toLong())
+                            Q_MESSAGE ->
+                                c.dao.message(spl[2].toLong(), spl[3].toShort(), Chat.ME)
+                            Q_SEEN -> c.dao.seen(
+                                spl[2].toLong(), spl[3].toShort(), spl[4].toShort(), Chat.ME
+                            )
+                            Q_BINARY ->
+                                c.dao.binary(spl[2].toLong())
                             else -> throw IllegalStateException()
                         }!!
                     )
@@ -155,7 +159,7 @@ class Sender : WiseService() {
     interface Queuable { // "<receiver>-<type>-<indices**>"
         fun toQueue(m: Model, target: Short): String = when (this) {
             is Message -> "$target-$Q_MESSAGE-$id-$chat"
-            is Seen -> "$target-$Q_SEEN-$msg-$chat"
+            is Seen -> "$target-$Q_SEEN-$msg-$chat-$auth"
             is Binary -> "$target-$Q_BINARY-$id"
             else -> throw IllegalArgumentException()
         }
