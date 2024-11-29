@@ -47,8 +47,7 @@ class PageCht : BasePage<Main>() {
     companion object {
         const val ARG_CHAT_ID = "chat_id"
         const val MSG_INSERTED = 0
-        const val MSG_UPDATED = 1
-        const val MSG_SEEN = 2
+        const val MSG_SEEN = 1
         var handler: Handler? = null
     }
 
@@ -65,7 +64,7 @@ class PageCht : BasePage<Main>() {
         // Load data
         if (c.mm.messages == null) CoroutineScope(Dispatchers.IO).launch {
             c.mm.messages = ArrayList(c.dao.messages(chat.id)).onEach {
-                it.matchSeen(c.dao)
+                it.querySeen(c.dao)
                 it.queryBinaries(c.dao)
             }
             withContext(Dispatchers.Main) { updateList() }
@@ -76,32 +75,16 @@ class PageCht : BasePage<Main>() {
             override fun handleMessage(msg: android.os.Message) {
                 when (msg.what) {
                     MSG_INSERTED -> (msg.obj as Message).apply {
-                        c.mm.messages?.also { list ->
-                            list.add(this)
-                            b.list.adapter?.notifyItemInserted(list.size - 1)
-                            b.list.scrollToPosition(list.size - 1)
-                        }
-                    }
-                    MSG_UPDATED -> (msg.obj as Message).apply {
-                        c.mm.messages?.also { list ->
-                            val index = list.indexOfFirst { it.id == id }
-                            if (index != -1) {
-                                list[index] = this
-                                b.list.adapter?.notifyItemChanged(index)
-                                b.list.scrollToPosition(list.size - 1)
-                            }
-                        }
+                        c.mm.messages?.add(this)
+                        b.list.adapter?.notifyItemInserted(c.mm.messages?.size?.let { it - 1 } ?: 0)
                     }
                     MSG_SEEN -> (msg.obj as Seen).apply {
-                        c.mm.messages?.also { list ->
-                            val index = list.indexOfFirst { it.id == this@apply.msg }
-                            if (index != -1) {
-                                if (list[index].status == null) list[index].status = arrayListOf()
-                                else list[index].status?.removeAll { it.contact == this@apply.contact }
-                                list[index].status?.add(this@apply)
-                                b.list.adapter?.notifyItemChanged(index)
-                                b.list.scrollToPosition(list.size - 1)
-                            }
+                        val index = c.mm.messages?.indexOfFirst {
+                            it.id == this@apply.msg && it.auth // TODO
+                        } ?: return@apply
+                        if (index != -1) {
+                            c.mm.messages!![index].saw(this@apply)
+                            b.list.adapter?.notifyItemChanged(index)
                         }
                     }
                 }
@@ -232,11 +215,10 @@ class PageCht : BasePage<Main>() {
         for (contact in this@PageCht.chat.contacts!!) {
             c.m.enqueue(contact.id, this)
 
-            Seen(id, this@PageCht.chat.id, contact.id).apply {
-                c.dao.addSeen(this)
-                if (status == null) status = arrayListOf()
-                status!!.add(this)
-            } // Do not queue the Seen now! It'll be created automatically on the target device!
+            val seen = Seen(id, this@PageCht.chat.id, contact.id)
+            c.dao.addSeen(seen)
+            saw(seen)
+            // Do not queue the Seen now! It'll be created automatically on the target device!
         }
 
         withContext(Dispatchers.Main) {

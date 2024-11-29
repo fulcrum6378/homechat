@@ -46,7 +46,7 @@ class Message : Sender.Queuable {
 
     @Ignore
     @Transient
-    var status: ArrayList<Seen>? = null
+    var seen: HashMap<Short, Seen>? = null
 
     @Ignore
     @Transient
@@ -57,8 +57,14 @@ class Message : Sender.Queuable {
 
     fun me() = auth == Chat.ME
 
-    suspend fun matchSeen(dao: Database.DAO) {
-        status = ArrayList(dao.seenForMessage(id, chat))
+    suspend fun querySeen(dao: Database.DAO) {
+        seen = hashMapOf()
+        for (s in dao.seenForMessage(id, chat)) seen!![s.contact] = s
+    }
+
+    fun saw(item: Seen) {
+        if (seen == null) seen = hashMapOf()
+        seen!![item.contact] = item
     }
 
     suspend fun queryBinaries(dao: Database.DAO) {

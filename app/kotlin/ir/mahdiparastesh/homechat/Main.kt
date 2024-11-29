@@ -409,4 +409,5 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * https://developer.android.com/develop/ui/views/notifications/bubbles (Android 10/11+)
  * Group chat
  * Voice/video call
+ * White notification icon
  */

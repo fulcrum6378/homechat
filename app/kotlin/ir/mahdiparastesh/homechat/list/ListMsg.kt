@@ -18,7 +18,6 @@ import ir.mahdiparastesh.homechat.R
 import ir.mahdiparastesh.homechat.Sender
 import ir.mahdiparastesh.homechat.base.AnyViewHolder
 import ir.mahdiparastesh.homechat.data.Message
-import ir.mahdiparastesh.homechat.data.Seen
 import ir.mahdiparastesh.homechat.databinding.ListMsgBinding
 import ir.mahdiparastesh.homechat.page.PageCht
 import ir.mahdiparastesh.homechat.util.EasyMenu
@@ -28,6 +27,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.*
+import kotlin.collections.set
 
 class ListMsg(private val c: Main, private val f: PageCht) :
     RecyclerView.Adapter<AnyViewHolder<ListMsgBinding>>() {
@@ -117,25 +117,10 @@ class ListMsg(private val c: Main, private val f: PageCht) :
         // seen status of mine
         h.b.seen.isVisible = isMe
         if (isMe) h.b.seen.setImageResource(when {
-            msg.status?.any { it.seen_at != null } == true -> R.drawable.seen
-            msg.status?.any { it.sent_at != null } == true -> R.drawable.sent
+            msg.seen?.values?.any { it.seen_at != null } == true -> R.drawable.seen
+            msg.seen?.values?.any { it.sent_at != null } == true -> R.drawable.sent
             else -> R.drawable.no_signal
         })
-
-        // seen theirs if not
-        var notSeen: List<Seen>? = null
-        if (!isMe &&
-            msg.status!!.filter { it.seen_at == null }.apply { notSeen = this }.isNotEmpty()
-        ) CoroutineScope(Dispatchers.IO).launch {
-            notSeen!!.forEach {
-                it.seen_at = Time.now()
-                c.dao.updateSeen(it)
-                msg.status!![msg.status!!.indexOfFirst { st -> st.contact == it.contact }] = it
-                c.m.enqueue(msg.auth, it)
-            }
-            f.chat.checkForNewOnes(c.dao)
-            Sender.init(c)
-        }
 
         // clicks
         h.b.body.setOnClickListener {
@@ -154,4 +139,23 @@ class ListMsg(private val c: Main, private val f: PageCht) :
     } // Don't put onBindView in a companion object for exporting, make a dynamic class
 
     override fun getItemCount(): Int = c.mm.messages?.size ?: 0
+
+    override fun onViewAttachedToWindow(h: AnyViewHolder<ListMsgBinding>) {
+        val msg = c.mm.messages?.getOrNull(h.layoutPosition) ?: return
+
+        // seen if it's not mine
+        if (!msg.me()) {
+            var notSeen = msg.seen!!.values.filter { it.seen_at == null }
+            if (notSeen.isNotEmpty()) CoroutineScope(Dispatchers.IO).launch {
+                notSeen.forEach {
+                    it.seen_at = Time.now()
+                    c.dao.updateSeen(it)
+                    msg.seen!![it.contact] = it
+                    c.m.enqueue(msg.auth, it)
+                }
+                f.chat.checkForNewOnes(c.dao)
+                Sender.init(c)
+            }
+        }
+    }
 }

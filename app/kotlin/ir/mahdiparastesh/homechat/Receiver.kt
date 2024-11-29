@@ -134,7 +134,7 @@ class Receiver : WiseService() {
 
                     val seen = Seen(id, chat, Chat.ME)
                     dao.addSeen(seen)
-                    status = arrayListOf(seen)
+                    saw(seen)
                     theChat.checkForNewOnes(dao)
 
                     if (type == Message.Type.FILE.value) {
@@ -149,14 +149,10 @@ class Receiver : WiseService() {
                     }
 
                     if (PageCht.handler != null)
-                        PageCht.handler?.obtainMessage(
-                            PageCht.MSG_INSERTED, chat.toInt(), if (theChat.muted) 0 else 1, this
-                        )?.sendToTarget()
+                        PageCht.handler?.obtainMessage(PageCht.MSG_INSERTED, this)?.sendToTarget()
                     else {
                         if (!theChat.muted) notify(theChat, contact)
-                        Main.handler?.obtainMessage(
-                            Main.MSG_NEW_MESSAGE, chat.toInt(), if (theChat.muted) 0 else 1, this
-                        )?.sendToTarget()
+                        Main.handler?.obtainMessage(Main.MSG_NEW_MESSAGE)?.sendToTarget()
                     }
                 }
                 STAT_SUCCESS.toByteArray()
@@ -165,14 +161,13 @@ class Receiver : WiseService() {
             Header.SEEN -> if (contact != null) {
                 val raw = input.readNBytesCompat(len).toList()
                 dao.seen(
-                    contact = contact.id,
                     msg = raw.subList(0, 8).toNumber(),
                     chat = raw.subList(8, 10).toNumber(),
+                    contact = contact.id,
                 )!!.apply {
                     seen_at = raw.subList(10, 18).toNumber()
                     dao.updateSeen(this)
-                    PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, chat.toInt(), 0, this)
-                        ?.sendToTarget()
+                    PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, this)?.sendToTarget()
                 }
                 STAT_SUCCESS.toByteArray()
             } else STAT_CONTACT_NOT_FOUND.toByteArray()

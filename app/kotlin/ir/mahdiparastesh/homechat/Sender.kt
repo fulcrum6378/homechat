@@ -88,9 +88,7 @@ class Sender : WiseService() {
                     is Message -> dao.seen(o.id, o.chat, contact.id)!!.apply {
                         sent_at = Time.now()
                         dao.updateSeen(this)
-                        PageCht.handler?.obtainMessage(
-                            PageCht.MSG_SEEN, o.chat.toInt(), 0, this
-                        )?.sendToTarget()
+                        PageCht.handler?.obtainMessage(PageCht.MSG_SEEN, this)?.sendToTarget()
                     }
                     is Seen -> {
                         o.sent_at = Time.now()
@@ -98,7 +96,6 @@ class Sender : WiseService() {
                     }
                 }
                 m.dequeue(target, o)
-
             }
             else break
         }
