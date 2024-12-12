@@ -398,6 +398,7 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * Regularly update subtitle of Toolbar in PageChat
  * https://developer.android.com/develop/ui/views/components/settings/organize-your-settings
  * Tablet numbers.xml
+ * Hide the radar when no network is detected
  * -
  * Extension:
  * Make a soft sound when each message is received in PageChat
@@ -413,4 +414,9 @@ class Main : AppCompatActivity(), Persistent, NavigationView.OnNavigationItemSel
  * Group chat
  * Voice/video call
  * White notification icon
+ * Show my IP in a box opened when you click on radar_indicator and also be able to switch discovery on/off
+ *
+ * We'll need to run a service the whole time and that would consume a lot of battery!
+ * That's why this app is a BAD IDEA and should be ARCHIVED!
+ * https://stackoverflow.com/questions/18170498/long-running-service-consumes-a-lot-of-battery
  */

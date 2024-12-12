@@ -1,9 +1,9 @@
 [versions]
-agp = "8.7.2"
+agp = "8.7.3"
 kotlin = "2.0.20"
 ksp = "2.0.20-1.0.25"
 coreKtx = "1.15.0"
-navigation = "2.8.4"
+navigation = "2.8.5"
 preference = "1.2.1"
 room = "2.6.1"
 lottie = "6.6.0"
